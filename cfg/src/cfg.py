@@ -252,7 +252,7 @@ class CFG():
         production_rule_list.append(production_rule)
 
         input_word = Word([Character("children")])
-        output_word = Word([Character("A"),Character(","),Character("children")])
+        output_word = Word([Character("A"),Character("children")])
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 

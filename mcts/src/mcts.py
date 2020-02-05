@@ -63,7 +63,7 @@ def mcts( action_set, budget, max_iterations, exploration_exploitation_parameter
                 def is_overbudget(a):
                     seq_copy = copy.deepcopy(current.sequence)
                     seq_copy.append(a)
-                    return cost(seq_copy) > budget
+                    return cost(seq_copy) >= budget
 
                 new_unpicked_child_actions = [a for a in new_unpicked_child_actions if not is_overbudget(a)]
 

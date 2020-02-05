@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 '''
 Basic MCTS implementation
 Graeme Best
@@ -18,11 +19,11 @@ def run():
     for i in range(num_actions):
         id = i
         action_set.append(Action(id,i))
-    budget = 7
+    budget = 4
     
 
     # Solve it with MCTS
-    exploration_exploitation_parameter = 0.8 # =1.0 is recommended. <1.0 more exploitation. >1.0 more exploration. 
+    exploration_exploitation_parameter = 1.0 # =1.0 is recommended. <1.0 more exploitation. >1.0 more exploration. 
     max_iterations = 2000
     [solution, root, list_of_all_nodes, winner] = mcts( action_set, budget, max_iterations, exploration_exploitation_parameter )
 
