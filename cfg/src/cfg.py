@@ -114,7 +114,7 @@ class CFG():
         #self.printWord()
 
         # Print all words
-        self.printAllTerminalWords(5)
+        self.printAllTerminalWords(4)
     
     def generateGrammar(self):
 
@@ -158,7 +158,7 @@ class CFG():
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
         '''
-
+        '''
         input_word = Word([Character("S")])
         output_word = Word([Character("("), Character("S"), Character(")")])
         production_rule = ProductionRule(input_word, output_word)
@@ -175,8 +175,91 @@ class CFG():
         output_word = Word([Character("("), Character(")")])
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
+        '''
+        '''
+        # 
+        input_word = Word([Character("S")])
+        output_word = Word([Character("->")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
 
+
+        input_word = Word([Character("S")])
+        output_word = Word([Character("?")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+
+        input_word = Word([Character("->")])
+        output_word = Word([Character("execution")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("->")])
+        output_word = Word([Character("S"), Character("S")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+
+        input_word = Word([Character("->")])
+        output_word = Word([Character("->"), Character("S")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("?")])
+        output_word = Word([Character("execution")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("?")])
+        output_word = Word([Character("S"), Character("S")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("?")])
+        output_word = Word([Character("?"), Character("S")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("execution")])
+        output_word = Word([Character("condition"), Character("action")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
         #print(production_rule_list)
+        '''
+        # Word = entire tree
+
+        input_word = Word([Character("S")])
+        output_word = Word([Character("tree")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+
+        input_word = Word([Character("tree")])
+        output_word = Word([Character("A"),Character("("),Character("children"),Character(")")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        '''
+        input_word = Word([Character("tree")])
+        output_word = Word([Character("A")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+        '''
+        input_word = Word([Character("children")])
+        output_word = Word([Character("A")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("children")])
+        output_word = Word([Character("A"),Character(","),Character("children")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("children")])
+        output_word = Word([Character("tree")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
 
         return production_rule_list
 
@@ -285,13 +368,13 @@ class CFG():
                             #print("Applied rule " + str(j))
 
                             # print word
-                            #output_word.printWord()
+                            output_word.printWord()
 
                 if no_output:
                     terminal_list.append(current_list[i])
-                    current_list[i].printWord()
+                    #current_list[i].printWord()
                  
-            
+            print("=======")
             current_list = new_list
             depth += 1
 
