@@ -108,8 +108,10 @@ def mcts( action_set, budget, max_iterations, exploration_exploitation_parameter
 
         ################################
         # Rollout
-        rollout_sequence = rollout(subsequence=current.sequence, action_set=action_set, budget=budget)
-        rollout_reward = reward(action_sequence=rollout_sequence)
+        #rollout_sequence = rollout(subsequence=current.sequence, action_set=action_set, budget=budget)
+        #rollout_reward = reward(action_sequence=rollout_sequence)
+        rollout_word = ???
+        rollout_reward = reward(word = rollout_word)
 
         ################################
         # Back-propagation

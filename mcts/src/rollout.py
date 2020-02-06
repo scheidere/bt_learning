@@ -8,7 +8,9 @@ Jan 2020
 from cost import cost
 import random
 import copy
+from cfg import Word, Character, CFG, ProductionRule
 
+'''
 def rollout(subsequence, action_set, budget):
     # Random rollout policy
     # Pick random actions until budget is exhausted
@@ -22,3 +24,7 @@ def rollout(subsequence, action_set, budget):
 
     return sequence
 
+'''
+
+def rollout(partial_word, cfg, budget):
+    pass

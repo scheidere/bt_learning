@@ -11,8 +11,13 @@ from action import Action, printActionSequence
 from tree_node import countNodes
 from plot_tree import plotTree
 import time, sys
+from cfg import Word, Character
 
 def run():
+
+    test_word = Word([Character("S")])
+    test_word.printWord()
+
     # Setup the problem
     num_actions = 3
     action_set = []
