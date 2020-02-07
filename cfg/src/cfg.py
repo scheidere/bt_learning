@@ -381,6 +381,30 @@ class CFG():
             if no_outputs:
                 all_rules_tried = True
 
+    def applyAllProductionRules(self, word):
+        '''
+        Return list of all child words of the input word
+        '''
+
+        child_words = []
+        for i in range(len(cfg.grammar)):
+            output_word_list = cfg.grammar[i].applyProductionRule(word)
+
+            # Check if word in output_word_list already in child_words
+            for output_word in output_word_list:
+                # If output_word not in child_words:
+                duplicate_found = False
+                for word in child_words:
+                    if output_word.equal(word):
+                        duplicate_found = True
+                if not duplicate_found:        
+                    child_words.append(output_word)
+            
+
+        return child_words
+
+
+
 
              
 

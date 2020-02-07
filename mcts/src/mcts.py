@@ -13,14 +13,15 @@ from action import Action, printActionSequence
 import copy
 import random
 import math
+from cfg import CFG, Word, Character
 
-def mcts( action_set, budget, max_iterations, exploration_exploitation_parameter ):
+def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter ):
 
     ################################
     # Setup
-    start_sequence = []
-    unpicked_child_actions = copy.deepcopy(action_set)
-    root = TreeNode(parent=None, sequence=start_sequence, budget=budget, unpicked_child_actions=unpicked_child_actions)
+    start_sequence = [Word(Character("S"))]
+    unpicked_child_words = cfg.applyAllProductionRules(start_sequence)
+    root = TreeNode(parent=None, sequence=start_sequence, budget=budget, unpicked_child_words=unpicked_child_words)
     list_of_all_nodes = []
     list_of_all_nodes.append(root) # for debugging only
 
@@ -38,38 +39,39 @@ def mcts( action_set, budget, max_iterations, exploration_exploitation_parameter
         while True: 
 
             # Are there any children to be added here?
-            if current.unpicked_child_actions: # if not empty
+            if current.unpicked_child_words: # if not empty
 
                 # Pick one of the children that haven't been added
                 # Do this at random
-                num_unpicked_child_actions = len(current.unpicked_child_actions)
-                if num_unpicked_child_actions == 1:
+                num_unpicked_child_words = len(current.unpicked_child_words)
+                if num_unpicked_child_words == 1:
                     child_index = 0
                 else:
-                    child_index = random.randint(0,num_unpicked_child_actions-1)
-                child_action = current.unpicked_child_actions[child_index]
+                    child_index = random.randint(0,num_unpicked_child_words-1)
+                child_word = current.unpicked_child_words[child_index]
 
                 # Remove the child form the unpicked list
-                del current.unpicked_child_actions[child_index]
+                del current.unpicked_child_words[child_index]
 
-                # Setup the new action sequence
+                # Setup the new word sequence
                 new_sequence = copy.deepcopy(current.sequence)
-                new_sequence.append(child_action)
+                new_sequence.append(child_word)
                 new_budget_left = budget - cost(new_sequence)
 
                 # Setup the new child's unpicked children
                 # Remove any over budget children from this set
-                new_unpicked_child_actions = copy.deepcopy(action_set)
-                def is_overbudget(a):
+                new_unpicked_child_words = cfg.applyAllProductionRules(child_word)
+
+                def is_overbudget(w):
                     seq_copy = copy.deepcopy(current.sequence)
-                    seq_copy.append(a)
+                    seq_copy.append(w)
                     return cost(seq_copy) >= budget
 
-                new_unpicked_child_actions = [a for a in new_unpicked_child_actions if not is_overbudget(a)]
+                new_unpicked_child_words = [w for w in new_unpicked_child_words if not is_overbudget(w)]
 
                 # Create the new node and add it to the tree
                 # printActionSequence(new_sequence)
-                new_child_node = TreeNode(parent=current, sequence=new_sequence, budget=new_budget_left, unpicked_child_actions=new_unpicked_child_actions)
+                new_child_node = TreeNode(parent=current, sequence=new_sequence, budget=new_budget_left, unpicked_child_words=new_unpicked_child_words)
                 current.children.append(new_child_node)
                 current = new_child_node
                 list_of_all_nodes.append(new_child_node) # for debugging only
@@ -110,7 +112,7 @@ def mcts( action_set, budget, max_iterations, exploration_exploitation_parameter
         # Rollout
         #rollout_sequence = rollout(subsequence=current.sequence, action_set=action_set, budget=budget)
         #rollout_reward = reward(action_sequence=rollout_sequence)
-        rollout_word = ???
+        rollout_word = rollout(partial_word=???, cfg=, budget=budget)
         rollout_reward = reward(word = rollout_word)
 
         ################################

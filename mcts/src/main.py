@@ -11,26 +11,29 @@ from action import Action, printActionSequence
 from tree_node import countNodes
 from plot_tree import plotTree
 import time, sys
-from cfg import Word, Character
+from cfg import Word, Character, CFG
 
 def run():
 
-    test_word = Word([Character("S")])
-    test_word.printWord()
+    # Create CFG object
+    cfg = CFG()
 
+    '''
     # Setup the problem
     num_actions = 3
     action_set = []
     for i in range(num_actions):
         id = i
         action_set.append(Action(id,i))
+    '''
+    
     budget = 4
     
 
     # Solve it with MCTS
     exploration_exploitation_parameter = 1.0 # =1.0 is recommended. <1.0 more exploitation. >1.0 more exploration. 
     max_iterations = 2000
-    [solution, root, list_of_all_nodes, winner] = mcts( action_set, budget, max_iterations, exploration_exploitation_parameter )
+    [solution, root, list_of_all_nodes, winner] = mcts( cfg, budget, max_iterations, exploration_exploitation_parameter )
 
     # Display the tree
     printActionSequence(solution)
