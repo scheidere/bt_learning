@@ -37,8 +37,10 @@ def run():
 
     # Display the tree
     ###printActionSequence(solution) #this is not set up for words instead of sequences for actions
-    plotTree(list_of_all_nodes, winner, action_set, False, budget, 1, exploration_exploitation_parameter)
-    plotTree(list_of_all_nodes, winner, action_set, True, budget, 2, exploration_exploitation_parameter)
+    for soln in solution:
+        soln.printWord()
+    #plotTree(list_of_all_nodes, winner, action_set, False, budget, 1, exploration_exploitation_parameter)
+    #plotTree(list_of_all_nodes, winner, action_set, True, budget, 2, exploration_exploitation_parameter)
 
     # Wait for Ctrl+C
     while True:
