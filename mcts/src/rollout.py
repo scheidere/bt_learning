@@ -8,7 +8,7 @@ Jan 2020
 from cost import cost
 import random
 import copy
-import numpy
+import numpy as np 
 from cfg import Word, Character, CFG, ProductionRule
 
 '''

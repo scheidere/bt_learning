@@ -387,8 +387,8 @@ class CFG():
         '''
 
         child_words = []
-        for i in range(len(cfg.grammar)):
-            output_word_list = cfg.grammar[i].applyProductionRule(word)
+        for i in range(len(self.grammar)):
+            output_word_list = self.grammar[i].applyProductionRule(word) 
 
             # Check if word in output_word_list already in child_words
             for output_word in output_word_list:

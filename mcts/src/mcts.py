@@ -19,8 +19,8 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter ):
 
     ################################
     # Setup
-    start_sequence = [Word(Character("S"))]
-    unpicked_child_words = cfg.applyAllProductionRules(start_sequence)
+    start_sequence = [Word([Character("S")])]
+    unpicked_child_words = cfg.applyAllProductionRules(start_sequence[0]) #??? #breaks here
     root = TreeNode(parent=None, sequence=start_sequence, budget=budget, unpicked_child_words=unpicked_child_words)
     list_of_all_nodes = []
     list_of_all_nodes.append(root) # for debugging only
@@ -112,7 +112,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter ):
         # Rollout
         #rollout_sequence = rollout(subsequence=current.sequence, action_set=action_set, budget=budget)
         #rollout_reward = reward(action_sequence=rollout_sequence)
-        rollout_word = rollout(partial_word=???, cfg=, budget=budget)
+        rollout_word = rollout(partial_word=current.sequence[-1], cfg=cfg, budget=budget)
         rollout_reward = reward(word = rollout_word)
 
         ################################

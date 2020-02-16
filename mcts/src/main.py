@@ -36,7 +36,7 @@ def run():
     [solution, root, list_of_all_nodes, winner] = mcts( cfg, budget, max_iterations, exploration_exploitation_parameter )
 
     # Display the tree
-    printActionSequence(solution)
+    ###printActionSequence(solution) #this is not set up for words instead of sequences for actions
     plotTree(list_of_all_nodes, winner, action_set, False, budget, 1, exploration_exploitation_parameter)
     plotTree(list_of_all_nodes, winner, action_set, True, budget, 2, exploration_exploitation_parameter)
 
