@@ -10,11 +10,9 @@ from tree_node import TreeNode
 
 '''
 todo:
-* make color = score
+* improve the ordering of child nodes
 * hide text -- show as tooltip instead
 * make winner a different shape/color
-* identify by node, not label -- so that non-unique labels aren't combined
-* display something when unpicked children exists -- perhaps draw the node (that doesn't exist) grayed out
 '''
 
 
