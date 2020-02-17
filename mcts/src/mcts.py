@@ -62,6 +62,15 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter ):
                 # Remove any over budget children from this set
                 new_unpicked_child_words = cfg.applyAllProductionRules(child_word)
 
+                # print("word:")
+                # child_word.printWord()
+
+                # print("has children:")
+                # for w in new_unpicked_child_words:
+                #     w.printWord()
+
+
+
                 def is_overbudget(w):
                     seq_copy = copy.deepcopy(current.sequence)
                     seq_copy.append(w)

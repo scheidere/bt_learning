@@ -55,8 +55,18 @@ def reward(word):
         if char.equal(char_A):
             num_A_in_string += 1
 
+    # also penalise any non-terminal words
+    non_terminal_penalty = 10
+    char_children = Character("children")
+    for char in word.list:
+         if char.equal(char_children):
+            num_A_in_string -= non_terminal_penalty
+
+    if num_A_in_string < 0:
+        num_A_in_string = 0
+
     if num_A_in_string <= 10:
-        reward = num_A_in_string/10 #already normalized if num_A_in_string <= 10
+        reward = num_A_in_string/10.0 #already normalized if num_A_in_string <= 10
     else:
         reward = 0
 

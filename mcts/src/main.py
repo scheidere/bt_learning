@@ -9,7 +9,8 @@ Jan 2020
 from mcts import mcts
 from action import Action, printActionSequence
 from tree_node import countNodes
-from plot_tree import plotTree
+# from plot_tree import plotTree
+from plot_cfg_tree import plot_cfg_tree
 import time, sys
 from cfg import Word, Character, CFG
 
@@ -27,20 +28,27 @@ def run():
         action_set.append(Action(id,i))
     '''
     
-    budget = 4
+    budget = 12
     
 
     # Solve it with MCTS
     exploration_exploitation_parameter = 1.0 # =1.0 is recommended. <1.0 more exploitation. >1.0 more exploration. 
-    max_iterations = 2000
+    max_iterations = 10000
     [solution, root, list_of_all_nodes, winner] = mcts( cfg, budget, max_iterations, exploration_exploitation_parameter )
 
     # Display the tree
     ###printActionSequence(solution) #this is not set up for words instead of sequences for actions
     for soln in solution:
         soln.printWord()
+
+    # OLD plotting function -- does not work for these cfg trees
     #plotTree(list_of_all_nodes, winner, action_set, False, budget, 1, exploration_exploitation_parameter)
     #plotTree(list_of_all_nodes, winner, action_set, True, budget, 2, exploration_exploitation_parameter)
+
+    # new plotting function
+    use_uct = False # True case doesn't currently work
+    max_height = 7
+    plot_cfg_tree(list_of_all_nodes, winner, use_uct, max_height, exploration_exploitation_parameter)
 
     # Wait for Ctrl+C
     while True:

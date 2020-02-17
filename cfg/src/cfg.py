@@ -15,6 +15,9 @@ class Character():
     def equal(self, char):
         return self.label == char.label
 
+    def toString(self):
+        return self.label
+
 
 class Word():
     def __init__(self, input_list):
@@ -46,6 +49,12 @@ class Word():
                     return False
 
         return True
+
+    def toString(self):
+        str_list = []
+        for char in self.list:
+            str_list.append(char.toString())
+        return " ".join(str_list)
     
 
 class ProductionRule():
@@ -102,6 +111,12 @@ class ProductionRule():
             new_word_list.append(new_word)
 
         return new_word_list
+
+    def printProductionRule(self):
+        input_word_string = self.input_word.toString()
+        output_word_string = self.output_word.toString()
+        print_string = input_word_string + " -> " + output_word_string
+        print(print_string)
 
 
 class CFG():
@@ -381,14 +396,25 @@ class CFG():
             if no_outputs:
                 all_rules_tried = True
 
-    def applyAllProductionRules(self, word):
+    def applyAllProductionRules(self, input_word):
         '''
         Return list of all child words of the input word
         '''
 
+        # print("applyAllProductionRules")
+        # print("input word: ")
+        # input_word.printWord()
+
         child_words = []
         for i in range(len(self.grammar)):
-            output_word_list = self.grammar[i].applyProductionRule(word) 
+            output_word_list = self.grammar[i].applyProductionRule(input_word) 
+
+            # print("applying production rule: ")
+            # self.grammar[i].printProductionRule()
+
+            # print("generates words: ")
+            # for w in output_word_list:
+            #     w.printWord()
 
             # Check if word in output_word_list already in child_words
             for output_word in output_word_list:
