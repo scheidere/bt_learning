@@ -1,8 +1,9 @@
-
 #!/usr/bin/env python
 #import bla
 
-
+#import behavior_tree
+from behavior_tree.behavior_tree import Sequence, Fallback, Condition, Action, BehaviorTree
+import rospy
 
 
 class Character():
@@ -59,6 +60,8 @@ class Word():
     def createBT(self):        
         
         nodes_worklist = []
+
+        bt = BehaviorTree('')
         
         for i in range(len(self.list)-1):
 
@@ -81,17 +84,17 @@ class Word():
             if char.equal(Character("()")):
                 node_label = "condition" # Will be the text of the specific condition node
                 node = Condition(node_label)
-                self.node_text = node_label
+                bt.node_text = node_label
             if char.equal(Character("[]")):
                 node_label = "action" # Will be the text of the specific action node
                 node = Action(node_label)
-                self.node_text = node_label
-                self.active_ids[node_label] = 0
+                bt.node_text = node_label
+                bt.active_ids[node_label] = 0
 
 
             # Check if it is the root node, and if so add to list
-            if self.root == None:
-                self.root = node
+            if bt.root == None:
+                bt.root = node
                 nodes_worklist.append(node)
                 continue
 
@@ -99,10 +102,10 @@ class Word():
             if next_char.equal(Character("(")):
                 # Current node (char) is a child of current parent but also a parent itself
                 # Add it as a child to its parent
+                parent = nodes_worklist[-1]
                 parent.add_child(node)
                 # Add it to the worklist so its children can be added subsequently
                 nodes_worklist.append(node)
-                parent = nodes_worklist[-1]
                 
             elif char.equal(Character(")")):
                 # Done with children of most recent parent
@@ -111,7 +114,10 @@ class Word():
                 
             elif not char.equal(Character("(")):
                 # Remember each child node of current parent
+                parent = nodes_worklist[-1]
                 parent.add_child(node)    
+
+        return bt.root
     
 
 class ProductionRule():
@@ -544,8 +550,13 @@ if __name__ == "__main__":
 
     # Execute only if run as a script
     
-    cfg = CFG()
+    #cfg = CFG()
 
-    test = Word()
+    rospy.init_node('behavior_tree_node')
+
+    test = Word([Character("->"),Character("("),Character("[]"),Character("?"),Character("("),Character("[]"),Character("()"),Character(")"),Character(")")])
 
     test.createBT()
+
+    while True:
+        rospy.sleep(0.1)
