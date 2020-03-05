@@ -142,6 +142,9 @@ def getColor(reward, min_reward, max_reward):
     b = 0
     '''
 
+    if min_reward == max_reward:
+        max_reward = min_reward + 1
+
     # colormap
     # adapted from http://blogs.perl.org/users/ovid/2010/12/perl101-red-to-green-gradient.html
     middle = (min_reward + max_reward) / 2

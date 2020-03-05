@@ -37,6 +37,7 @@ def reward(action_sequence):
     return reward_normalised
     
     '''
+
 def reward(word):
 
     # Another simple reward function to test A-tree cfg build
@@ -71,4 +72,39 @@ def reward(word):
         reward = 0
 
     return reward
-    
+
+''' 
+def reward(word):
+
+    # Simple reward function to test behavior tree production rules
+
+    reward = 0
+
+    # Given current word, which is an instance of the cfg word class
+    # Find number of sets of parentheses in that word to determine depth from root (1 set is depth = 1)
+
+    # The number of sets of parentheses is equivalent to the number of one kind of parenthesis (i.e. ( or ))
+    num_sets_parentheses = 0
+    char_p = Character("(")
+
+    for char in word.list:
+        if char.equal(char_p):
+            num_sets_parentheses += 1
+
+    # also penalise any non-terminal words
+    non_terminal_penalty = 10
+    char_children = Character("children")
+    for char in word.list:
+         if char.equal(char_children):
+            num_sets_parentheses -= non_terminal_penalty
+
+    if num_sets_parentheses < 0:
+        num_sets_parentheses = 0
+
+    if num_sets_parentheses <= 10:
+        reward = num_sets_parentheses/10.0 #already normalized if num_A_in_string <= 10
+    else:
+        reward = 0
+
+    return reward
+'''

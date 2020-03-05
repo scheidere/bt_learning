@@ -55,6 +55,63 @@ class Word():
         for char in self.list:
             str_list.append(char.toString())
         return " ".join(str_list)
+
+    def createBT(self):        
+        
+        nodes_worklist = []
+        
+        for i in range(len(self.list)-1):
+
+            char = self.list[i]
+            next_char = self.list[i+1]
+        
+            node = None
+
+            # Determine the kind of node char is
+            if char.equal(Character("?")):
+                node = Fallback()
+            if char.equal(Character("->")):
+                node = Sequence()
+            '''
+            if char.equal(Character("||")):
+                arguments = ??? # Number of children parallel node has
+                node = Parallel(int(arguments[0]))
+                self.num_child = int(arguments[0])
+            '''
+            if char.equal(Character("()")):
+                node_label = "condition" # Will be the text of the specific condition node
+                node = Condition(node_label)
+                self.node_text = node_label
+            if char.equal(Character("[]")):
+                node_label = "action" # Will be the text of the specific action node
+                node = Action(node_label)
+                self.node_text = node_label
+                self.active_ids[node_label] = 0
+
+
+            # Check if it is the root node, and if so add to list
+            if self.root == None:
+                self.root = node
+                nodes_worklist.append(node)
+                continue
+
+            # Check for "(" after a node character, denoting the latter is a parent node
+            if next_char.equal(Character("(")):
+                # Current node (char) is a child of current parent but also a parent itself
+                # Add it as a child to its parent
+                parent.add_child(node)
+                # Add it to the worklist so its children can be added subsequently
+                nodes_worklist.append(node)
+                parent = nodes_worklist[-1]
+                
+            elif char.equal(Character(")")):
+                # Done with children of most recent parent
+                nodes_worklist.pop()
+                parent = nodes_worklist[-1]
+                
+            elif not char.equal(Character("(")):
+                # Remember each child node of current parent
+                parent.add_child(node)    
     
 
 class ProductionRule():
@@ -192,7 +249,7 @@ class CFG():
         production_rule_list.append(production_rule)
         '''
         '''
-        # 
+        # test
         input_word = Word([Character("S")])
         output_word = Word([Character("->")])
         production_rule = ProductionRule(input_word, output_word)
@@ -242,6 +299,7 @@ class CFG():
         production_rule_list.append(production_rule)
         #print(production_rule_list)
         '''
+        '''
         # Word = entire tree
 
         input_word = Word([Character("S")])
@@ -249,17 +307,16 @@ class CFG():
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
-
         input_word = Word([Character("tree")])
         output_word = Word([Character("A"),Character("("),Character("children"),Character(")")])
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
         '''
-        input_word = Word([Character("tree")])
-        output_word = Word([Character("A")])
-        production_rule = ProductionRule(input_word, output_word)
-        production_rule_list.append(production_rule)
+        #input_word = Word([Character("tree")])
+        #output_word = Word([Character("A")])
+        #production_rule = ProductionRule(input_word, output_word)
+        #production_rule_list.append(production_rule)
         '''
         input_word = Word([Character("children")])
         output_word = Word([Character("A")])
@@ -275,6 +332,55 @@ class CFG():
         output_word = Word([Character("tree")])
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
+        '''
+        
+        # Behavior Tree Production Rules
+        input_word = Word([Character("S")])
+        output_word = Word([Character("tree")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("tree")])
+        output_word = Word([Character("?"),Character("("),Character("A"),Character("children"),Character(")")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("tree")])
+        output_word = Word([Character("->"),Character("("),Character("A"),Character("children"),Character(")")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("tree")])
+        output_word = Word([Character("||"),Character("("),Character("A"),Character("children"),Character(")")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("children")])
+        output_word = Word([Character("A"),Character("children")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("children")])
+        output_word = Word([Character("A")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("A")])
+        output_word = Word([Character("[]")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("A")])
+        output_word = Word([Character("()")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("A")])
+        output_word = Word([Character("tree")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+        
+
 
         return production_rule_list
 
@@ -439,3 +545,7 @@ if __name__ == "__main__":
     # Execute only if run as a script
     
     cfg = CFG()
+
+    test = Word()
+
+    test.createBT()
