@@ -66,7 +66,9 @@ class Word():
         for i in range(len(self.list)-1):
 
             char = self.list[i]
+            char.printLabel()
             next_char = self.list[i+1]
+            next_char.printLabel()
         
             node = None
 
@@ -91,6 +93,8 @@ class Word():
                 bt.node_text = node_label
                 bt.active_ids[node_label] = 0
 
+            if not node:
+                bt.nodes.append(node)
 
             # Check if it is the root node, and if so add to list
             if bt.root == None:
@@ -115,8 +119,11 @@ class Word():
             elif not char.equal(Character("(")):
                 # Remember each child node of current parent
                 parent = nodes_worklist[-1]
-                parent.add_child(node)    
+                parent.add_child(node)   
 
+        print("Finished")
+        print(bt)
+        print(bt.print_BT())
         return bt.root
     
 
@@ -558,5 +565,4 @@ if __name__ == "__main__":
 
     test.createBT()
 
-    while True:
-        rospy.sleep(0.1)
+    rospy.spin()
