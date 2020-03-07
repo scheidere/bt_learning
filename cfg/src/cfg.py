@@ -142,7 +142,7 @@ class Word():
         print("Finished")
         #print(bt)
         bt.print_BT()
-        return bt.root
+        return bt.root, bt
     
 
 class ProductionRule():
@@ -568,8 +568,9 @@ class CFG():
 
 
 class BehaviorTreeNode:
-    def __init__(self, config_filename):
-        self.tree = bt.BehaviorTree(config_filename)
+    def __init__(self, bt_object):
+        #self.tree = bt.BehaviorTree(config_filename)
+        self.tree = bt_object
         for node in self.tree.nodes:
             node.init_ros()
 
@@ -589,7 +590,7 @@ def timer_callback(event):
     cv2.imshow('img', img)
     cv2.waitKey(1)
     '''
-
+'''
 if __name__ == '__main__':
     rospy.init_node('behavior_tree_node')
     
@@ -602,7 +603,7 @@ if __name__ == '__main__':
     timer = rospy.Timer(rospy.Duration(0.05), timer_callback)
 
     rospy.spin()
-
+'''
              
 
 if __name__ == "__main__":
@@ -615,7 +616,7 @@ if __name__ == "__main__":
 
     test = Word([Character("->"),Character("("),Character("[]"),Character("?"),Character("("),Character("[]"),Character("()"),Character(")"),Character(")")])
 
-    bt1 = test.createBT()
+    bt1root,bt1 = test.createBT()
 
     #rospy.spin()
 
