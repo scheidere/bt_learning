@@ -2,8 +2,16 @@
 #import bla
 
 #import behavior_tree
-from behavior_tree.behavior_tree import Sequence, Fallback, Condition, Action, BehaviorTree
+from behavior_tree.behavior_tree import Sequence, Fallback, Condition, Action, BehaviorTree, Node
 import rospy
+
+# from behavior_tree_node
+import rospy
+from std_msgs.msg import String, Bool
+import behavior_tree.behavior_tree as bt
+import behavior_tree.behavior_tree_graphviz as gv
+import cv2
+import zlib
 
 
 class Character():
@@ -75,8 +83,10 @@ class Word():
             # Determine the kind of node char is
             if char.equal(Character("?")):
                 node = Fallback()
+                #print(node)
             if char.equal(Character("->")):
                 node = Sequence()
+                #print(node)
             '''
             if char.equal(Character("||")):
                 arguments = ??? # Number of children parallel node has
@@ -86,14 +96,22 @@ class Word():
             if char.equal(Character("()")):
                 node_label = "condition" # Will be the text of the specific condition node
                 node = Condition(node_label)
+                #print(node)
                 bt.node_text = node_label
             if char.equal(Character("[]")):
                 node_label = "action" # Will be the text of the specific action node
                 node = Action(node_label)
+                #print(node)
                 bt.node_text = node_label
                 bt.active_ids[node_label] = 0
 
-            if not node:
+            #print("before if not node statement")
+            #print(node)
+            if node:
+                #print("Check if node exists")
+                #node.print_node()
+                #print("and after it")
+                #print(node)
                 bt.nodes.append(node)
 
             # Check if it is the root node, and if so add to list
@@ -122,8 +140,8 @@ class Word():
                 parent.add_child(node)   
 
         print("Finished")
-        print(bt)
-        print(bt.print_BT())
+        #print(bt)
+        bt.print_BT()
         return bt.root
     
 
@@ -549,7 +567,41 @@ class CFG():
         return child_words
 
 
+class BehaviorTreeNode:
+    def __init__(self, config_filename):
+        self.tree = bt.BehaviorTree(config_filename)
+        for node in self.tree.nodes:
+            node.init_ros()
 
+def timer_callback(event):
+    node.tree.tick()#root.tick(True)
+
+    source = gv.get_graphviz(node.tree)
+    source_msg = String()
+    source_msg.data = source
+    graphviz_pub.publish(source_msg)
+
+    compressed = String()
+    compressed.data = zlib.compress(source)
+    compressed_pub.publish(compressed)
+    '''
+    img = gv.get_graphviz_image(source)
+    cv2.imshow('img', img)
+    cv2.waitKey(1)
+    '''
+
+if __name__ == '__main__':
+    rospy.init_node('behavior_tree_node')
+    
+    config_filename = rospy.get_param('~config', '')
+    
+    node = BehaviorTreeNode(config_filename)
+
+    graphviz_pub = rospy.Publisher('behavior_tree_graphviz', String, queue_size=1)
+    compressed_pub = rospy.Publisher('behavior_tree_graphviz_compressed', String, queue_size=1)
+    timer = rospy.Timer(rospy.Duration(0.05), timer_callback)
+
+    rospy.spin()
 
              
 
@@ -559,10 +611,22 @@ if __name__ == "__main__":
     
     #cfg = CFG()
 
-    rospy.init_node('behavior_tree_node')
+    #rospy.init_node('behavior_tree_node')
 
     test = Word([Character("->"),Character("("),Character("[]"),Character("?"),Character("("),Character("[]"),Character("()"),Character(")"),Character(")")])
 
-    test.createBT()
+    bt1 = test.createBT()
+
+    #rospy.spin()
+
+    rospy.init_node('behavior_tree_node')
+    
+    #config_filename = rospy.get_param('~config', '')
+    
+    node = BehaviorTreeNode(bt1)
+
+    graphviz_pub = rospy.Publisher('behavior_tree_graphviz', String, queue_size=1)
+    compressed_pub = rospy.Publisher('behavior_tree_graphviz_compressed', String, queue_size=1)
+    timer = rospy.Timer(rospy.Duration(0.05), timer_callback)
 
     rospy.spin()
