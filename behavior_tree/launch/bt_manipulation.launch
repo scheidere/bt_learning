@@ -1,0 +1,7 @@
+<launch>
+
+  <node name="behavior_tree" pkg="behavior_tree" type="bt_manipulation_node.py" output="screen">
+    <param name="config" type="string" value="$(find behavior_tree)/config/colle2_copy.tree" />
+  </node>
+
+</launch>

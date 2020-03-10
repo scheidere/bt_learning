@@ -1,0 +1,47 @@
+|| 2
+	|| 3
+		?
+			->
+				(This Agent Assigned to Local Task 1)
+				[Perform Local Task 1]
+			->
+				(This Agent Assigned to Local Task 2)
+				[Perform Local Task 2]
+			->
+				(This Agent is not Assigned)
+				[Rest]
+		?
+			->
+				[Perform Global Task 1]
+				[Perform Global Task 2]
+				[Perform Global Task 3]
+			[Perform Global Task 4]
+		->
+			?
+				(Local Task Finished)
+				(New Global Task Executed)
+			(Check Consistency)
+			[Assign Agents]
+	|| 3
+		->
+			?
+				(Local Task Finished)
+				(New Global Task Executed)
+			(Check Consistency)
+			[Assign Agents]
+		?
+			->
+				[Perform Global Task 1]
+				[Perform Global Task 2]
+				[Perform Global Task 3]
+			[Perform Global Task 4]
+		?
+			->
+				(This Agent Assigned to Local Task 1)
+				[Perform Local Task 1]
+			->
+				(This Agent Assigned to Local Task 2)
+				[Perform Local Task 2]
+			->
+				(This Agent is not Assigned)
+				[Rest]
