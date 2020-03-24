@@ -140,6 +140,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter ):
     # Extract solution
     # calculate best solution so far
     # by recursively choosing child with highest average reward
+    '''
     current = root
     while current.children: # is not empty
 
@@ -157,5 +158,19 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter ):
 
     solution = current.sequence
     winner = current
+    '''
+
+    # Extract best single node from search tree
+    best_node = None
+    for node in list_of_all_nodes:
+        if not best_node:
+            best_node = node
+        elif best_node.average_evaluation_score < node.average_evaluation_score:
+            print(best_node.average_evaluation_score)
+            print(node.average_evaluation_score)
+            best_node = node
+
+    solution = best_node.sequence
+    winner = best_node
 
     return [solution, root, list_of_all_nodes, winner]

@@ -74,9 +74,9 @@ class Word():
         for i in range(len(self.list)-1):
 
             char = self.list[i]
-            char.printLabel()
+            #char.printLabel()
             next_char = self.list[i+1]
-            next_char.printLabel()
+            #next_char.printLabel()
         
             node = None
 
@@ -84,26 +84,31 @@ class Word():
             if char.equal(Character("?")):
                 node = Fallback()
                 #print(node)
-            if char.equal(Character("->")):
+            elif char.equal(Character("->")):
                 node = Sequence()
                 #print(node)
-            '''
-            if char.equal(Character("||")):
-                arguments = ??? # Number of children parallel node has
-                node = Parallel(int(arguments[0]))
-                self.num_child = int(arguments[0])
-            '''
-            if char.equal(Character("()")):
+                '''
+                if char.equal(Character("||")):
+                    arguments = ??? # Number of children parallel node has
+                    node = Parallel(int(arguments[0]))
+                    self.num_child = int(arguments[0])
+                '''
+            elif char.equal(Character("()")):
                 node_label = "condition" # Will be the text of the specific condition node
                 node = Condition(node_label)
                 #print(node)
                 bt.node_text = node_label
-            if char.equal(Character("[]")):
+            elif char.equal(Character("[]")):
                 node_label = "action" # Will be the text of the specific action node
                 node = Action(node_label)
                 #print(node)
                 bt.node_text = node_label
                 bt.active_ids[node_label] = 0
+            else:
+                # Catches ||, (, and maybe )
+                # Which leaves node = None
+                #char.printLabel()
+                pass
 
             #print("before if not node statement")
             #print(node)
@@ -113,12 +118,17 @@ class Word():
                 #print("and after it")
                 #print(node)
                 bt.nodes.append(node)
+            else:
+                #print(node)
+                pass
 
             # Check if it is the root node, and if so add to list
             if bt.root == None:
                 bt.root = node
                 nodes_worklist.append(node)
                 continue
+
+            #print(nodes_worklist)
 
             # Check for "(" after a node character, denoting the latter is a parent node
             if next_char.equal(Character("(")):
@@ -139,9 +149,9 @@ class Word():
                 parent = nodes_worklist[-1]
                 parent.add_child(node)   
 
-        print("Finished")
+        #print("Finished")
         #print(bt)
-        bt.print_BT()
+        #bt.print_BT()
         return bt.root, bt
     
 
@@ -381,11 +391,12 @@ class CFG():
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
+        '''
         input_word = Word([Character("tree")])
         output_word = Word([Character("||"),Character("("),Character("A"),Character("children"),Character(")")])
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
-
+        '''
         input_word = Word([Character("children")])
         output_word = Word([Character("A"),Character("children")])
         production_rule = ProductionRule(input_word, output_word)

@@ -7,6 +7,7 @@ Jan 2020
 
 from action import Action #, printActionSequence
 from cfg import Word, Character
+from simulator import TempSimulator
 '''
 def reward(action_sequence):
     
@@ -37,7 +38,7 @@ def reward(action_sequence):
     return reward_normalised
     
     '''
-
+'''
 def reward(word):
 
     # Another simple reward function to test A-tree cfg build
@@ -72,8 +73,8 @@ def reward(word):
         reward = 0
 
     return reward
-
-''' 
+'''
+'''
 def reward(word):
 
     # Simple reward function to test behavior tree production rules
@@ -107,4 +108,28 @@ def reward(word):
         reward = 0
 
     return reward
+
+'''
+
+
+
+
+###RUN SIMULATOR (which returns reward)
+def reward(word):
+
+    reward = TempSimulator(word).simReward()
+
+    word.printWord()
+    print(reward)
+
+    return reward
+
+'''
+if __name__ == "__main__":
+
+    word = Word([Character("->"),Character("("),Character("[]"),Character("?"),Character("("),Character("[]"),Character("()"),Character(")"),Character(")")])
+
+    reward(word)
+
+    print(reward(word))
 '''

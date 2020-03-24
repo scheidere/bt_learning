@@ -28,11 +28,11 @@ def run():
         action_set.append(Action(id,i))
     '''
     
-    budget = 12
+    budget = 6
     
 
     # Solve it with MCTS
-    exploration_exploitation_parameter = 1.0 # =1.0 is recommended. <1.0 more exploitation. >1.0 more exploration. 
+    exploration_exploitation_parameter = 5.0 # =1.0 is recommended. <1.0 more exploitation. >1.0 more exploration. 
     max_iterations = 10000
     [solution, root, list_of_all_nodes, winner] = mcts( cfg, budget, max_iterations, exploration_exploitation_parameter )
 
@@ -47,7 +47,7 @@ def run():
 
     # new plotting function
     use_uct = False # True case doesn't currently work
-    max_height = 7
+    max_height = 5
     plot_cfg_tree(list_of_all_nodes, winner, use_uct, max_height, exploration_exploitation_parameter)
 
     # Wait for Ctrl+C
