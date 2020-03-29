@@ -1,0 +1,3 @@
+int32 vertex_idx
+---
+EdgeObservation[] observed_edges
