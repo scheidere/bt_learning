@@ -1,6 +1,6 @@
 
 import yaml
-import rospack
+import rospkg
 import rospy
 from behavior_tree import *
 from behavior_tree_msgs.msg import Status, Active
