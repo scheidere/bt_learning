@@ -78,7 +78,7 @@ class TargetBelief():
 
         self.sensor_range = self.config["sensor_range"]
 
-    def prior(self):
+    def init_prior(self):
         num_vertices = len(world.vertices)
         return 1/num_vertices
 
@@ -114,21 +114,25 @@ class TargetBelief():
         # get robot observation
         z = world.robot_env_observation(self.x,self.y)
 
-        is_first = False
-        if not is_first:
+        is_first = True
+        if is_first:
             for vertex_idx in xrange(len(world.vertices)):
-                init = likelihood(world,z)*prior()
+                init = self.likelihood(world,z)*self.init_prior()
                 prob_dist.append(init)
 
-            is_first = True
+            is_first = False
             #NEED TO NORMALIZE AGAIN
 
         else:
-            for vertex_idx in xrange(len(world.vertices)):
-                update = ??? do recursively
+            for prior in prob_dist:
+                update = likelihood*
                 prob_dist.append(update)
 
-        #return list same len as self.vertices with a prob for each
+        return prob_dist
+
+        
+
+
 
 
 
