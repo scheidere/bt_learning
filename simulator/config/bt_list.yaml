@@ -1,0 +1,7 @@
+actions:
+  - go_to_surface
+  - random_walk
+
+conditions:
+  - at_surface
+  - artifact_found

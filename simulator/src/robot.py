@@ -24,6 +24,10 @@ import planners
 
 import random
 
+from bt_interface import *
+from behavior_tree.behavior_tree import *
+from cfg import *
+
 # import cProfile
 
 
@@ -141,7 +145,9 @@ class Robot():
     PLANNER_TYPE_RANDOM = 1
     PLANNER_TYPE_SHORTEST = 2
 
-    def __init__(self, config, robot_id, num_robots, seed):
+    def __init__(self, config, robot_id, num_robots, seed, bt):
+
+        self.bt = bt
 
         self.robot_id = robot_id
         self.speed = config["robot_speed"]
@@ -188,6 +194,9 @@ class Robot():
         rospy.Subscriber('/send_observations', SendObservations, self.callback_receive)
         rospy.Subscriber('/position', RobotPosition, self.receive_position)
         '''
+
+        # Setup BT interface
+        self.bt_interface = BT_Interface(bt)
 
         # plot
         print("plot")
@@ -521,8 +530,13 @@ if __name__ == '__main__':
     seed = rospy.get_param('~seed')
 
     try:
-        real_robot = True
-        robot = Robot(config, robot_id, num_robots, seed)
+
+        # Setup a simple BT
+        character_list = [Character('->'),Character('('),Character('()'),Character('[]'),Character(')')]
+        cfg_word = Word()
+        bt = cfg_word.createBT()
+
+        robot = Robot(config, robot_id, num_robots, seed, bt)
         # cProfile.run('RobotController(config, robot)')
         robot_controller = RobotController(config, robot)
     except rospy.ROSInterruptException: pass
