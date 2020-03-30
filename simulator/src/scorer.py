@@ -22,11 +22,25 @@ class Scorer():
 	RESPONSE_NONE = 3
 
 	def __init__(self, world):
-		pass
+		self.world = world
 
-	def submit_target(self, target_location, robot_state):
-		#Scorer.RESPONSE_CORRECT
-		pass
+	def submit_target(self, target_location, robot_belief):
+		# target_location is where the target actually is, i.e. y
+		# robot_belief is the location where the robot believes the target is (because it is above a certain prob?)
+		
+		if robot_belief == target_location:
+			response = Scorer.RESPONSE_CORRECT
+		elif robot_belief != None:
+			response = Scorer.RESPONSE_FALSE
+		else:
+			response == Scorer.RESPONSE_NONE
 
-		#return Correct, False or No Response (i.e.)
+		return response
+
+
+		#need to call this in Robot class
+
+		#where does the robot make the choice of what belief vertex to submit? need this as input
+
+		#what does the robot do given the output of the above function?	
 
