@@ -64,6 +64,7 @@ class BT_Interface():
     
 
     def getActiveActions(self):
+        # returns list of all actions that are active currently as a list of strings (i.e. names)
 
         active_actions = []
         
@@ -78,7 +79,11 @@ class BT_Interface():
         return active_actions
 
     def setConditionStatus(self, condition, success):
-
+        # it takes as input a condition label ex. 'at surface'
+        # also takes success, which is boolean: True or False
+        # if you call this function with success = True and that label
+        # then it tells BT that 'at surface' is successful
+        
         try:
             nodes = self.condition_nodes[condition]
         except KeyError:

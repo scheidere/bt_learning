@@ -5,6 +5,7 @@ import rospkg
 import sys
 import yaml
 import random
+import numpy as np
 
 import cPickle as pickle
 #from simulator.srv import PickleString
@@ -88,6 +89,10 @@ class World():
 
         self.test_indices()
 
+        self.vertex_target_idx = self.create_target_idx()
+    '''
+    #old likelihood function we have replaced
+    # it did not account for beyond sensor range -> 0
     def robot_env_observations(self, vertex_robot, vertex_target):
         # need robot location, robot sensor model, and the actual target location
 
@@ -123,14 +128,25 @@ class World():
             return True
         else:
             return False
+    '''
 
-    def create_target(self):
+    def robot_env_observations(self, vertex_robot_idx): 
+        likelihoods = self.sensor_model.all_likelihoods(vertex_robot_idx, vertex_target_idx)
+        #return a single observation, z based on the probability distribution
+        return np.random.choice(a=len(self.vertices)+1, p=likelihoods)
+
+    def set_sensor_model(self, sensor_model):
+        # normally do this is __init__, but in this context the sensor model gets created after init
+
+        self.sensor_model = sensor_model
+
+    def create_target_idx(self):
         #pick random vertex
         random_vertex_idx = random.randrange(len(self.vertices))
 
-        random_vertex = self.vertices[random_vertex_idx]
+        #random_vertex = self.vertices[random_vertex_idx]
 
-        return random_vertex
+        return random_vertex_idx
 
     def pickle_graph(self):
         graph = GraphPickle(self.vertices, self.edge_matrix)

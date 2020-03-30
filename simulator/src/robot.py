@@ -16,6 +16,9 @@ import matplotlib.pyplot as plt
 
 import world
 from world import World
+from world import distance
+
+from sensor_model import SensorModel
 
 import copy
 
@@ -73,70 +76,38 @@ class State():
 
 class TargetBelief():
     #prob distribution over the vertices
-    def __init__(self, world, vertex_robot):
+    def __init__(self, num_vertices, sensor_model):
         #self.world = world # could do it this way too
 
-        self.x = vertex_robot ??? # location of robot
-        self.y = world.create_target() # generates a random_vertex where the target is
-        ###self.possible_zs = [self.y,not y, None]  # location robot believes the target is
+        self.num_vertices = num_vertices
 
-        self.sensor_range = self.config["sensor_range"]
+        self.sensor_model = sensor_model
+
+        self.init_prior()
 
     def init_prior(self):
-        num_vertices = len(world.vertices)
-        return 1/num_vertices
+        ## P(Y)
 
+        self.prob_dist = []
+        for i in xrange(self.num_vertices):
+            self.prob_dist.append(1.0/self.num_vertices)
 
-    def likelihood(self,world, z):
-        # distance from robot to z
-        d = world.distance(self.x,z)
+    def likelihood(self, x, y, z):
 
-        # before normalization
-        if d < self.sensor_range:
-            p_correct = 0.95 - 0.01*d #f
-            p_false = 0.2 #g
-            p_none = 1 - p_correct #1-f
-        else:
-            p_correct = 0
-            p_false = 0
-            p_none = 1
+        likelihoods = self.sensor_model.all_likelihoods(x, y)
+        return likelihoods[z]
+
+    def bayes_update(self, x, z):
+        ## P(Y|Z)
+
+        total = 0
+        for y in xrange(len(self.prob_dist)):
+            self.prob_dist[y] = self.likelihood(x, y, z)*self.prob_dist[y]
+            total += self.prob_dist[y]
 
         # Normalize
-        norm = p_correct + p_false + p_none #same as 1 + p_false
-        p_correct = p_correct/norm
-        p_false = p_false/norm
-        p_none = p_none/norm
-
-        return p_correct, p_false, p_none
-
-    def generate_distribution(self, world):
-        
-        prob_dist = []
-
-        # remember to normalize again after each update
-
-        # get robot observation
-        z = world.robot_env_observation(self.x,self.y)
-
-        is_first = True
-        if is_first:
-            for vertex_idx in xrange(len(world.vertices)):
-                init = self.likelihood(world,z)*self.init_prior()
-                prob_dist.append(init)
-
-            is_first = False
-            #NEED TO NORMALIZE AGAIN
-
-        else:
-            for prior in prob_dist:
-                update = likelihood*
-                prob_dist.append(update)
-
-        return prob_dist
-
-        
-
-
+        for y in xrange(len(self.prob_dist)):
+            self.prob_dist[y] = self.prob_dist[y]/total
 
 
 
@@ -169,7 +140,6 @@ class Robot():
         #self.publisher_observation_send = rospy.Publisher('/send_observations', SendObservations, queue_size=10)
         #self.publisher_position = rospy.Publisher('/position', RobotPosition, queue_size=10)
         #self.publisher_statistics = rospy.Publisher('/statistics', ScoringStatistics, queue_size=10)
-        
 
         # Setup navigation roadmap graph
         # rospy.loginfo("robot getting base world from ground truth")
@@ -198,12 +168,23 @@ class Robot():
         # Setup BT interface
         self.bt_interface = BT_Interface(bt)
 
+        num_vertices = len(self.known_world.vertices)
+
+        # create sensor model
+        self.sensor_model = SensorModel(config,num_vertices)
+
+        self.known_world.set_sensor_model(self.sensor_model)
+
+        # Generate belief of where target could be
+        self.target_belief = TargetBelief(num_vertices, self.sensor_model)
+
         # plot
         print("plot")
         self.h_state = None
         if config["robot_plot"]:
             rospy.loginfo("plotting robot world")
             self.plot_robot()
+
 
         print("finished init")
 
@@ -258,44 +239,16 @@ class Robot():
             # Observe
             if new_vertex:
                 print("observe")
-                self.observe()
-                '''
-                # Share observation
-                if self.communicate_observations == 'always':
-                    self.send_observations( self.state.vertex_from_idx )
-                elif self.communicate_observations == 'communication_planner':
-                    debug_mode = False
-                    vertex_idx = self.state.vertex_from_idx
-                    do_comms = communication_planner.plan_communication(self, self.get_observations_msg(vertex_idx), debug_mode )
-                    if do_comms:
-                        already_communicated = vertex_idx in self.vertices_communicated
-                        if already_communicated:
-                            # ?? why is it being sent again!!
-                            rospy.logwarn("duplicate communication??")
-                            debug_mode = True
-                            do_comms_check_again = communication_planner.plan_communication(self, self.get_observations_msg(vertex_idx), debug_mode )
-                            if not do_comms_check_again:
-                                rospy.logwarn('changed mind on second check??')
-                        self.send_observations( self.state.vertex_from_idx )                        
-                elif self.communicate_observations == 'on_predicted_path':
-                    self.send_observations_on_predicted_path( self.state.vertex_from_idx )
-                elif self.communicate_observations == 'never':
-                    pass
-                else:
-                    rospy.logerr("communicate_observations type not specified")
-                '''
+
+                x = self.state.vertex_from_idx
+                z = self.observe(x)
+                self.target_belief.bayes_update(x,z)
+
         # plot
         if config["robot_plot"]:
             #rospy.loginfo("plotting robot world")
             self.plot_robot()
-    '''
-    def publish_statistics(self):
-        self.publisher_statistics.publish(self.scoring_statistics)
-    
-    def publish_statistics_event(self,event):
-        # wraper for timer event
-        self.publish_statistics()
-    '''
+
     def plan(self, debug=False):
         #rospy.loginfo("Generating new plan")
 
@@ -334,21 +287,8 @@ class Robot():
             else:
                 return action_sequence
 
-    def observe(self):
-        pass
-        # need to observe targets instead of observing graph itself
-
-    '''            
-    def observe(self):
-        # ask the ground truth for an observation
-        # rospy.loginfo("Making an observation")
-        rospy.wait_for_service('get_ground_truth_observation')
-        get_ground_truth_observation = rospy.ServiceProxy('get_ground_truth_observation', GroundTruthObservation)
-        observed_edges = get_ground_truth_observation(self.state.vertex_from_idx).observed_edges
-
-        # merge this into the world belief
-        self.known_world.merge_observations(observed_edges)
-    '''
+    def observe(self,x):
+        return self.known_world.robot_env_observations(x)
 
     def plot_robot(self):
         plt.rcParams['toolbar'] = 'None'

@@ -29,8 +29,12 @@ class GoToKnownTarget(Planner):
 	pass
 	# need to brainstorm/just will take more time
 
-class GoToSurfaceAndCommRange(Planner):
-	pass
+class GoToSurface(Planner):
+	pass ******
+
+class GoToCommsRange(Planner):
+	pass ******
+	#need to define which vertices are in comms range in world.py
 
 
 class PlannerRandomWalk(Planner):
