@@ -7,6 +7,6 @@ conditions:
   - in_comms #need to write this check, similar to at_surface check except relates to vertices_in_comms_range
   #which in turn is generated from the world class given a comms range defined there (Need to write that function too)
   - at_surface
-  - target_found_05
-  - target_found_07
-  - target_found_09
+  - target_found_50
+  - target_found_70
+  - target_found_90

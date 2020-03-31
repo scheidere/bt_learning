@@ -141,11 +141,10 @@ class World():
     def generateCommsRangeVertices(self):
         idx_list = []
         for vertex in self.vertices:
-            if distance_to_base(vertex) < self.comms_range:
+            if distance_to_base(vertex) < self.comms_range and vertex.position.z > self.surface_level - 0.0001::
                 list.append(vertex.vertex_idx)
 
-        return idx_list #list of indices of vertices in comms range
-
+        return idx_list #list of indices of vertices in comms range (and at surface)
 
     def robot_env_observations(self, vertex_robot_idx): 
         likelihoods = self.sensor_model.all_likelihoods(vertex_robot_idx, vertex_target_idx)

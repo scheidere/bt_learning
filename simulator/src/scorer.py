@@ -27,15 +27,15 @@ class Scorer():
 		self.score = 0
 		self.finished = False
 
-	def submit_target(self, robot_belief_idx, robot_location_idx, is_at_surface, num_iterations):
+	def submit_target(self, robot_belief_idx, robot_location_idx, is_at_surface, is_in_comms, num_iterations):
 		# robot_belief_idx: location where the robot believes the target is (because it is above a certain prob?)
 		# robot_location_idx: vertex idx where robot is
 
 		target_location_idx = self.world.vertex_target_idx
-		vertices_in_comms_range = self.world.vertices_in_comms_range
+		#vertices_in_comms_range = self.world.vertices_in_comms_range
 
 		# First, check if you are within comms range and at surface
-		if is_at_surface and robot_location_idx in vertices_in_comms_range:
+		if is_at_surface and is_in_comms:
 			if robot_belief_idx == target_location_idx:
 				self.finished = True
 				self.score = -num_iterations

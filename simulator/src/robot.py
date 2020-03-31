@@ -66,7 +66,7 @@ class State():
     def at_vertex(self):
         return self.vertex_from_idx == self.vertex_to_idx
 
-    # Determine if you are at the surface or not 
+    # Determine if robot is at the surface or not 
     def at_surface(self, world):
         position = self.get_position(world)
         at_surface = world.surface_level
@@ -75,11 +75,34 @@ class State():
         else:
             return False
 
+    # Determine if robot is at a vertex in comms range
     def in_comms(self, world, vertex_idx):
         if vertex_idx in world.vertices_in_comms_range:
             return True
         else:
             return False
+
+    def target_found_50(self, target_belief):
+        for p in target_belief.prob_dist:
+            if p > 0.5:
+                return True
+
+        return False
+
+    def target_found_70(self, world):
+        for p in target_belief.prob_dist:
+            if p > 0.7:
+                return True
+
+        return False
+
+    def target_found_90(self, world):
+        for p in target_belief.prob_dist:
+            if p > 0.9:
+                return True
+
+        return False
+
 
 class TargetBelief():
     #prob distribution over the vertices
@@ -141,6 +164,7 @@ class Robot():
 
     PLANNER_TYPE_RANDOM = 1
     PLANNER_TYPE_SHORTEST = 2
+    PLANNER_TYPE_COMMSRANGE = 3
 
     def __init__(self, config, robot_id, num_robots, seed, bt):
 
@@ -285,29 +309,63 @@ class Robot():
             # Check if at surface, either True or False
             is_at_surface = self.state.at_surface(self.known_world)
 
+            # Check if in comms range, True or False
+            is_in_comms = self.state.in_comms(self.known_world, x)
+
             # If the robot has reported something
             #if robot_has_ans:
             if robot_belief_idx: #if this is not None, the robot wants to report its answer
-                response = self.basestation_scorer.submit_target(robot_belief_idx, x, is_at_surface, num_iterations)
-
-            # if response is that answer is correct, stop sim, you are done -> done in robot controller
-
-            # if false, update prob_dist accordingly (i.e. 0 at guess that is false, then normalize)
-            ### DO UPDATE write new update function for this case
-            #found_false_update() in TargetBelief TO DO
+                response = self.basestation_scorer.submit_target(robot_belief_idx, x, is_at_surface, is_in_comms, num_iterations)
 
             if response == basestation_scorer.RESPONSE_FALSE:
                 self.target_belief.found_false_update(robot_belief_idx)
 
             # if no response, nothing happens
 
+            # Condition checks
+            self.condition_updates(is_at_surface,is_in_comms)
 
-            
+            # Get active actions, and choose new action accordingly
+            self.new_action(???)
 
         # plot
         if config["robot_plot"]:
             #rospy.loginfo("plotting robot world")
             self.plot_robot()
+
+    def condition_updates(self, is_at_surface, is_in_comms):
+
+        # Set condition statuses so they can be updated each iteration
+        # and used to choose actions accordingly
+
+        if is_at_surface:
+            self.bt_interface.setConditionStatus('at_surface', True)
+        else:
+            self.bt_interface.setConditionStatus('at_surface', False)
+
+        if is_in_comms:
+            self.bt_interface.setConditionStatus('in_comms', True)
+        else:
+            self.bt_interface.setConditionStatus('in_comms', False)
+
+        if target_found_50:
+            self.bt_interface.setConditionStatus('target_found_50', True)
+        else:
+            self.bt_interface.setConditionStatus('target_found_50', False)
+
+        if target_found_70:
+            self.bt_interface.setConditionStatus('target_found_70', True)
+        else:
+            self.bt_interface.setConditionStatus('target_found_70', False)
+
+        if target_found_90:
+            self.bt_interface.setConditionStatus('target_found_90', True)
+        else:
+            self.bt_interface.setConditionStatus('target_found_90', False)
+
+    def new_action(self, ???):
+        ??? #this will relate to getActiveActions in bt_interface
+
 
     def plan(self, debug=False):
         #rospy.loginfo("Generating new plan")
@@ -507,7 +565,7 @@ class RobotController():
                         rospy.logerr("rate control lagging: num_iterations: " + str(num_iterations) + " expected: " + str(expected_num_iterations))
                         rospy.logwarn("current rate: " + str(current_rate) + " cpu usage: " + str(cpu_usage)) 
 
-                if robot.basestation_scorer.finished:
+                if robot.basestation_scorer.finished: #checks if answer is correct, and if so stops sim
                     break
 
         return robot.basestation_scorer.score
