@@ -21,6 +21,10 @@ def distance(vertex_start, vertex_end):
     # Euclidean distance, for now
     return ( (vertex_start.position.x-vertex_end.position.x)**2 + (vertex_start.position.y-vertex_end.position.y)**2 + (vertex_start.position.z-vertex_end.position.z)**2)**0.5
 
+def distance_to_base(vertex):
+    # Euclidean distance from basestation at 0,0,0 to vertex
+    return ( (vertex_start.position.x-0)**2 + (vertex_start.position.y-0)**2 + (vertex_start.position.z-0)**2)**0.5
+
 # Generalized (including z) vertex
 class Vertex():
     def __init__(self, x, y, z, vertex_idx):
@@ -90,6 +94,10 @@ class World():
         self.test_indices()
 
         self.vertex_target_idx = self.create_target_idx()
+
+        self.comms_range = self.config["comms_range"]
+
+        self.vertices_in_comms_range = self.generateCommsRangeVertices()
     '''
     #old likelihood function we have replaced
     # it did not account for beyond sensor range -> 0
@@ -129,6 +137,15 @@ class World():
         else:
             return False
     '''
+
+    def generateCommsRangeVertices(self):
+        idx_list = []
+        for vertex in self.vertices:
+            if distance_to_base(vertex) < self.comms_range:
+                list.append(vertex.vertex_idx)
+
+        return idx_list #list of indices of vertices in comms range
+
 
     def robot_env_observations(self, vertex_robot_idx): 
         likelihoods = self.sensor_model.all_likelihoods(vertex_robot_idx, vertex_target_idx)

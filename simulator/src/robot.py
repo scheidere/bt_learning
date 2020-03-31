@@ -19,6 +19,7 @@ from world import World
 from world import distance
 
 from sensor_model import SensorModel
+from scorer import Scorer
 
 import copy
 
@@ -74,6 +75,12 @@ class State():
         else:
             return False
 
+    def in_comms(self, world, vertex_idx):
+        if vertex_idx in world.vertices_in_comms_range:
+            return True
+        else:
+            return False
+
 class TargetBelief():
     #prob distribution over the vertices
     def __init__(self, num_vertices, sensor_model):
@@ -108,6 +115,25 @@ class TargetBelief():
         # Normalize
         for y in xrange(len(self.prob_dist)):
             self.prob_dist[y] = self.prob_dist[y]/total
+
+    def found_false_update(self, vertex_false_idx):
+        # You now know that the target is not where you chose, so prob = 0 there
+        self.prob_dist[vertex_false_idx] = 0
+
+        # Normalize to accomodate change
+        for y in xrange(len(self.prob_dist)):
+            self.prob_dist[y] = self.prob_dist[y]/total
+
+    def generateRobotBeliefIdx(self)
+        # Robot chooses best based on the probability that a vertex is the target's location
+        idx_with_max_p = None
+        for p in self.prob_dist:
+            if idx_with_max_p == None:
+                idx_with_max_p = p
+            elif self.prob_dist[idx_with_max_p] < p:
+                idx_with_max_p = p
+
+        return idx_with_max_p
 
 
 
@@ -165,7 +191,7 @@ class Robot():
         rospy.Subscriber('/position', RobotPosition, self.receive_position)
         '''
 
-        # Setup BT interface
+        # Set up BT interface
         self.bt_interface = BT_Interface(bt)
 
         num_vertices = len(self.known_world.vertices)
@@ -177,6 +203,9 @@ class Robot():
 
         # Generate belief of where target could be
         self.target_belief = TargetBelief(num_vertices, self.sensor_model)
+
+        # Set up Scorer
+        self.basestation_scorer = Scorer(self.known_world)
 
         # plot
         print("plot")
@@ -209,7 +238,7 @@ class Robot():
         return number
 
 
-    def do_iteration(self):
+    def do_iteration(self, num_iterations):
         #rospy.loginfo("robot do_iteration")
 
         #self.scoring_statistics.count_iterations += 1
@@ -243,6 +272,37 @@ class Robot():
                 x = self.state.vertex_from_idx
                 z = self.observe(x)
                 self.target_belief.bayes_update(x,z)
+
+            # default is that robot does not know answer
+            #robot_has_ans = False # maybe relates to BT, BT can learn this (report action node)
+            robot_belief_idx = None
+
+            # Choose vertex idx to report as belief of target location based on prob dist
+            robot_belief_idx = self.target_belief.generateRobotBeliefIdx()
+            #if robot_belief_idx:
+                #robot_has_ans = True
+
+            # Check if at surface, either True or False
+            is_at_surface = self.state.at_surface(self.known_world)
+
+            # If the robot has reported something
+            #if robot_has_ans:
+            if robot_belief_idx: #if this is not None, the robot wants to report its answer
+                response = self.basestation_scorer.submit_target(robot_belief_idx, x, is_at_surface, num_iterations)
+
+            # if response is that answer is correct, stop sim, you are done -> done in robot controller
+
+            # if false, update prob_dist accordingly (i.e. 0 at guess that is false, then normalize)
+            ### DO UPDATE write new update function for this case
+            #found_false_update() in TargetBelief TO DO
+
+            if response == basestation_scorer.RESPONSE_FALSE:
+                self.target_belief.found_false_update(robot_belief_idx)
+
+            # if no response, nothing happens
+
+
+            
 
         # plot
         if config["robot_plot"]:
@@ -434,7 +494,7 @@ class RobotController():
             #print("exp num iterations", expected_num_iterations)
             if num_iterations <= expected_num_iterations:
                 iteration_start_time = rospy.Time.now()
-                robot.do_iteration()       
+                robot.do_iteration(num_iterations)       
                 num_iterations += 1   
                 iteration_end_time = rospy.Time.now()
                 work_time += iteration_end_time - iteration_start_time
@@ -447,11 +507,11 @@ class RobotController():
                         rospy.logerr("rate control lagging: num_iterations: " + str(num_iterations) + " expected: " + str(expected_num_iterations))
                         rospy.logwarn("current rate: " + str(current_rate) + " cpu usage: " + str(cpu_usage)) 
 
-            # if use_sleep:
-            #     rospy.sleep(0.01)
-            # else:
-            #     # rate.sleep()
-            #     
+                if robot.basestation_scorer.finished:
+                    break
+
+        return robot.basestation_scorer.score
+      
 
 
 
