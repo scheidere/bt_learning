@@ -103,19 +103,19 @@ class Word():
                 node = Action(node_label)
                 #bt.node_text = node_label
                 bt.active_ids[node_label] = 0
-            '''
-            elif char.equal(Character("()")):
-                node_label = "condition" # Will be the text of the specific condition node
-                node = Condition(node_label)
-                #print(node)
-                bt.node_text = node_label
-            elif char.equal(Character("[]")):
-                node_label = "action" # Will be the text of the specific action node
-                node = Action(node_label)
-                #print(node)
-                bt.node_text = node_label
-                bt.active_ids[node_label] = 0
-            '''
+                '''
+                elif char.equal(Character("()")):
+                    node_label = "condition" # Will be the text of the specific condition node
+                    node = Condition(node_label)
+                    #print(node)
+                    bt.node_text = node_label
+                elif char.equal(Character("[]")):
+                    node_label = "action" # Will be the text of the specific action node
+                    node = Action(node_label)
+                    #print(node)
+                    bt.node_text = node_label
+                    bt.active_ids[node_label] = 0
+                '''
             else:
                 # Catches ||, (, and maybe )
                 # Which leaves node = None
