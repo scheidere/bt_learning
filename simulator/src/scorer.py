@@ -43,7 +43,7 @@ class Scorer():
 			else:
 				response = Scorer.RESPONSE_FALSE
 		else: # either not in comms range or not at surface so robot should receive nothing from basestation
-			response == Scorer.RESPONSE_NONE
+			response = Scorer.RESPONSE_NONE
 
 		return response
 

@@ -1,16 +1,19 @@
 
+from world import distance
+
 class SensorModel():
-	def __init__(self, config, num_vertices):
-		self.sensor_range = self.config["sensor_range"]
-		self.num_vertices = num_vertices
+    def __init__(self, config, num_vertices, world):
+        self.config = config
+        self.sensor_range = self.config["sensor_range"]
+        self.num_vertices = num_vertices
+        self.world = world
 
-	def all_likelihoods(self, x, y):
+    def all_likelihoods(self, x, y):
         ## P(Z|Y)
-
         likelihoods = []
         for z in xrange(self.num_vertices):
             # distance from robot to z
-            d = distance(x,z)
+            d = distance(self.world.vertices[x],self.world.vertices[z])
 
             # before normalization
             if d < self.sensor_range:

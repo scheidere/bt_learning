@@ -93,6 +93,17 @@ class Word():
                     node = Parallel(int(arguments[0]))
                     self.num_child = int(arguments[0])
                 '''
+            elif char.label[0] == '(' and not char.equal(Character("(")):
+                node_label = char.label.replace('(', '').replace(')', '')
+                node = Condition(node_label)
+                #bt.node_text = node_label
+
+            elif char.label[0] == '[':
+                node_label = char.label.replace('[', '').replace(']', '')
+                node = Action(node_label)
+                #bt.node_text = node_label
+                bt.active_ids[node_label] = 0
+            '''
             elif char.equal(Character("()")):
                 node_label = "condition" # Will be the text of the specific condition node
                 node = Condition(node_label)
@@ -104,6 +115,7 @@ class Word():
                 #print(node)
                 bt.node_text = node_label
                 bt.active_ids[node_label] = 0
+            '''
             else:
                 # Catches ||, (, and maybe )
                 # Which leaves node = None

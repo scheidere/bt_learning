@@ -2,7 +2,7 @@
 import yaml
 import rospkg
 import rospy
-from behavior_tree import *
+from behavior_tree.behavior_tree import *
 from behavior_tree_msgs.msg import Status, Active
 
 def getActionsConditions():
@@ -54,6 +54,7 @@ class BT_Interface():
         else:
             for n in self.bt.nodes:
                 if n.__class__ == Condition:
+                    print(n.label,"n.label")
                     if n.label not in self.condition_nodes:
 
                         # Create empty list
@@ -68,7 +69,7 @@ class BT_Interface():
 
         active_actions = []
         
-        for n in self.actions_nodes.values():
+        for n in self.action_nodes.values():
             is_active = False
             for node in n:
                 if node.is_active:
@@ -84,6 +85,8 @@ class BT_Interface():
         # if you call this function with success = True and that label
         # then it tells BT that 'at surface' is successful
         
+        print(self.condition_nodes.keys())
+
         try:
             nodes = self.condition_nodes[condition]
         except KeyError:

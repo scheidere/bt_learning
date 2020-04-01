@@ -23,7 +23,7 @@ def distance(vertex_start, vertex_end):
 
 def distance_to_base(vertex):
     # Euclidean distance from basestation at 0,0,0 to vertex
-    return ( (vertex_start.position.x-0)**2 + (vertex_start.position.y-0)**2 + (vertex_start.position.z-0)**2)**0.5
+    return ( (vertex.position.x-0)**2 + (vertex.position.y-0)**2 + (vertex.position.z-0)**2)**0.5
 
 # Generalized (including z) vertex
 class Vertex():
@@ -141,13 +141,13 @@ class World():
     def generateCommsRangeVertices(self):
         idx_list = []
         for vertex in self.vertices:
-            if distance_to_base(vertex) < self.comms_range and vertex.position.z > self.surface_level - 0.0001::
-                list.append(vertex.vertex_idx)
+            if distance_to_base(vertex) < self.comms_range and vertex.position.z > self.surface_level - 0.0001:
+                idx_list.append(vertex.vertex_idx)
 
         return idx_list #list of indices of vertices in comms range (and at surface)
 
     def robot_env_observations(self, vertex_robot_idx): 
-        likelihoods = self.sensor_model.all_likelihoods(vertex_robot_idx, vertex_target_idx)
+        likelihoods = self.sensor_model.all_likelihoods(vertex_robot_idx, self.vertex_target_idx)
         #return a single observation, z based on the probability distribution
         return np.random.choice(a=len(self.vertices)+1, p=likelihoods)
 

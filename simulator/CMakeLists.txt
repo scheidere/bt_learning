@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   behavior_tree
   behavior_tree_msgs
+  cfg
 )
 
 ## System dependencies are found with CMake's conventions

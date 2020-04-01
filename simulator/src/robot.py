@@ -30,7 +30,8 @@ import random
 
 from bt_interface import *
 from behavior_tree.behavior_tree import *
-from cfg import *
+from cfg import CFG, Word, Character
+
 
 # import cProfile
 
@@ -76,32 +77,14 @@ class State():
             return False
 
     # Determine if robot is at a vertex in comms range
-    def in_comms(self, world, vertex_idx):
-        if vertex_idx in world.vertices_in_comms_range:
-            return True
+    def in_comms(self, world):
+        if self.at_vertex():
+            if self.vertex_from_idx in world.vertices_in_comms_range:
+                return True
+            else:
+                return False
         else:
             return False
-
-    def target_found_50(self, target_belief):
-        for p in target_belief.prob_dist:
-            if p > 0.5:
-                return True
-
-        return False
-
-    def target_found_70(self, world):
-        for p in target_belief.prob_dist:
-            if p > 0.7:
-                return True
-
-        return False
-
-    def target_found_90(self, world):
-        for p in target_belief.prob_dist:
-            if p > 0.9:
-                return True
-
-        return False
 
 
 class TargetBelief():
@@ -143,20 +126,49 @@ class TargetBelief():
         # You now know that the target is not where you chose, so prob = 0 there
         self.prob_dist[vertex_false_idx] = 0
 
+        # Get new total
+        total = 0
+        for y in xrange(len(self.prob_dist)):
+            total += self.prob_dist[y]
+
         # Normalize to accomodate change
         for y in xrange(len(self.prob_dist)):
             self.prob_dist[y] = self.prob_dist[y]/total
 
-    def generateRobotBeliefIdx(self)
+    def generateRobotBeliefIdx(self):
         # Robot chooses best based on the probability that a vertex is the target's location
         idx_with_max_p = None
-        for p in self.prob_dist:
+        for i in xrange(len(self.prob_dist)):
+            p = self.prob_dist[i]
             if idx_with_max_p == None:
-                idx_with_max_p = p
-            elif self.prob_dist[idx_with_max_p] < p:
-                idx_with_max_p = p
+                max_p = p
+                idx_with_max_p = i
+            elif max_p < p:
+                max_p = p
+                idx_with_max_p = i
 
         return idx_with_max_p
+
+    def target_found_50(self):
+        for p in self.prob_dist:
+            if p > 0.5:
+                return True
+
+        return False
+
+    def target_found_70(self):
+        for p in self.prob_dist:
+            if p > 0.7:
+                return True
+
+        return False
+
+    def target_found_90(self):
+        for p in self.prob_dist:
+            if p > 0.9:
+                return True
+
+        return False
 
 
 
@@ -164,7 +176,7 @@ class Robot():
 
     PLANNER_TYPE_RANDOM = 1
     PLANNER_TYPE_SHORTEST = 2
-    PLANNER_TYPE_COMMSRANGE = 3
+    PLANNER_TYPE_COMMSRANGE = 3  #need to use this below, want to test original shortest path planner first
 
     def __init__(self, config, robot_id, num_robots, seed, bt):
 
@@ -215,13 +227,14 @@ class Robot():
         rospy.Subscriber('/position', RobotPosition, self.receive_position)
         '''
 
+        print(bt)
         # Set up BT interface
         self.bt_interface = BT_Interface(bt)
 
         num_vertices = len(self.known_world.vertices)
 
         # create sensor model
-        self.sensor_model = SensorModel(config,num_vertices)
+        self.sensor_model = SensorModel(config,num_vertices,self.known_world)
 
         self.known_world.set_sensor_model(self.sensor_model)
 
@@ -297,83 +310,118 @@ class Robot():
                 z = self.observe(x)
                 self.target_belief.bayes_update(x,z)
 
-            # default is that robot does not know answer
-            #robot_has_ans = False # maybe relates to BT, BT can learn this (report action node)
-            robot_belief_idx = None
+                # default is that robot does not know answer
+                #robot_has_ans = False # maybe relates to BT, BT can learn this (report action node)
 
-            # Choose vertex idx to report as belief of target location based on prob dist
-            robot_belief_idx = self.target_belief.generateRobotBeliefIdx()
-            #if robot_belief_idx:
-                #robot_has_ans = True
+                # Choose vertex idx to report as belief of target location based on prob dist
+                robot_belief_idx = self.target_belief.generateRobotBeliefIdx()
 
-            # Check if at surface, either True or False
-            is_at_surface = self.state.at_surface(self.known_world)
+                # Check if at surface, either True or False
+                is_at_surface = self.state.at_surface(self.known_world)
 
-            # Check if in comms range, True or False
-            is_in_comms = self.state.in_comms(self.known_world, x)
+                # Check if in comms range, True or False
+                is_in_comms = self.state.in_comms(self.known_world)
 
-            # If the robot has reported something
-            #if robot_has_ans:
-            if robot_belief_idx: #if this is not None, the robot wants to report its answer
+                # If the robot has reported something
                 response = self.basestation_scorer.submit_target(robot_belief_idx, x, is_at_surface, is_in_comms, num_iterations)
 
-            if response == basestation_scorer.RESPONSE_FALSE:
-                self.target_belief.found_false_update(robot_belief_idx)
+                if response == self.basestation_scorer.RESPONSE_FALSE:
+                    self.target_belief.found_false_update(robot_belief_idx)
 
             # if no response, nothing happens
 
             # Condition checks
-            self.condition_updates(is_at_surface,is_in_comms)
+            self.condition_updates()
 
-            # Get active actions, and choose new action accordingly
-            self.new_action(???)
+            # Set status of active actions (running or failure, currently not considering success)
+            # if a plan is executing, it is running, otherwise it is a failure (even though the action is 'active')
+            self.set_action_status()
 
         # plot
         if config["robot_plot"]:
             #rospy.loginfo("plotting robot world")
             self.plot_robot()
 
-    def condition_updates(self, is_at_surface, is_in_comms):
+    def condition_updates(self):
 
         # Set condition statuses so they can be updated each iteration
         # and used to choose actions accordingly
 
-        if is_at_surface:
-            self.bt_interface.setConditionStatus('at_surface', True)
-        else:
-            self.bt_interface.setConditionStatus('at_surface', False)
+        is_at_surface = self.state.at_surface(self.known_world)
+        is_in_comms = self.state.in_comms(self.known_world)
+        target_found_50 = self.target_belief.target_found_50()
+        target_found_70 = self.target_belief.target_found_70()
+        target_found_90 = self.target_belief.target_found_90()
 
-        if is_in_comms:
-            self.bt_interface.setConditionStatus('in_comms', True)
-        else:
-            self.bt_interface.setConditionStatus('in_comms', False)
 
-        if target_found_50:
-            self.bt_interface.setConditionStatus('target_found_50', True)
-        else:
-            self.bt_interface.setConditionStatus('target_found_50', False)
+        self.bt_interface.setConditionStatus('at_surface', is_at_surface)
 
-        if target_found_70:
-            self.bt_interface.setConditionStatus('target_found_70', True)
-        else:
-            self.bt_interface.setConditionStatus('target_found_70', False)
+        self.bt_interface.setConditionStatus('in_comms', is_in_comms)
 
-        if target_found_90:
-            self.bt_interface.setConditionStatus('target_found_90', True)
-        else:
-            self.bt_interface.setConditionStatus('target_found_90', False)
+        self.bt_interface.setConditionStatus('target_found_50', target_found_50)
 
-    def new_action(self, ???):
-        ??? #this will relate to getActiveActions in bt_interface
+        self.bt_interface.setConditionStatus('target_found_70', target_found_70)
+
+        self.bt_interface.setConditionStatus('target_found_90', target_found_90)
+
+        # ... more conditions
+
+
+    def get_planner_type(self):
+        active_actions = self.bt_interface.getActiveActions()
+
+        if 'go_to_comms' in active_actions:
+            self.planner_type == Robot.PLANNER_TYPE_COMMSRANGE
+
+        elif 'random_walk' in active_actions:
+            self.planner_type == Robot.PLANNER_TYPE_RANDOM
+
+        elif 'shortest_path' in active_actions:
+            self.planner_type == Robot.PLANNER_TYPE_SHORTEST
+
+        # ... more actions (planners)
+
+    def set_action_status(self):
+        active_actions = self.bt_interface.getActiveActions()
+
+        for action in active_actions:
+            if action == 'go_to_comms':
+                if self.planner_type == Robot.PLANNER_TYPE_COMMSRANGE:
+                    self.bt_interface.setActionStatusRunning(action)
+                else:
+                    self.bt_interface.setActionStatusFailure(action)
+            elif action == 'random_walk':
+                if self.planner_type == Robot.PLANNER_TYPE_RANDOM:
+                    self.bt_interface.setActionStatusRunning(action)
+                else:
+                    self.bt_interface.setActionStatusFailure(action)
+            elif action == 'shortest_path':
+                if self.planner_type == Robot.PLANNER_TYPE_SHORTEST:
+                    self.bt_interface.setActionStatusRunning(action)
+                else:
+                    self.bt_interface.setActionStatusFailure(action)
+            else:
+                print("set_action_status: Action does not exist")
 
 
     def plan(self, debug=False):
         #rospy.loginfo("Generating new plan")
 
+        self.get_planner_type()
+
         if self.planner_type == Robot.PLANNER_TYPE_RANDOM:
             planner = planners.PlannerRandomWalk(self, self.known_world)
             action_sequence = planner.plan()
             return action_sequence
+
+        elif self.planner_type == Robot.PLANNER_TYPE_COMMSRANGE:
+            planner = planners.PlannerCommsRange(self, self.known_world)
+
+            planner.set_parameters(self.state.vertex_from_idx)
+
+            action_sequence = planner.plan(debug)
+            return action_sequence
+
 
         elif self.planner_type == Robot.PLANNER_TYPE_SHORTEST:
             planner = planners.PlannerShortestPath(self, self.known_world)
@@ -527,7 +575,10 @@ class RobotController():
     def __init__(self, config, robot):
         # Give an initial observation
         print("Give an initial observation")
-        robot.observe()
+        x = robot.state.vertex_from_idx
+        z = robot.observe(x)
+        robot.target_belief.bayes_update(x,z)
+
 
         # periodically publish statistics/scores etc
         #rospy.Timer(rospy.Duration(0.1), robot.publish_statistics_event, oneshot=False)
@@ -590,9 +641,9 @@ if __name__ == '__main__':
     try:
 
         # Setup a simple BT
-        character_list = [Character('->'),Character('('),Character('()'),Character('[]'),Character(')')]
-        cfg_word = Word()
-        bt = cfg_word.createBT()
+        character_list = [Character('->'),Character('('),Character('(in_comms)'),Character('[random_walk]'),Character(')')]
+        cfg_word = Word(character_list) #???##this gave an arg error ???
+        bt_root, bt = cfg_word.createBT()
 
         robot = Robot(config, robot_id, num_robots, seed, bt)
         # cProfile.run('RobotController(config, robot)')
