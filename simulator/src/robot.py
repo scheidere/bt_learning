@@ -32,6 +32,9 @@ from bt_interface import *
 from behavior_tree.behavior_tree import *
 from cfg import CFG, Word, Character
 
+import behavior_tree.behavior_tree_graphviz as gv
+import zlib
+
 
 # import cProfile
 
@@ -227,7 +230,7 @@ class Robot():
         rospy.Subscriber('/position', RobotPosition, self.receive_position)
         '''
 
-        print(bt)
+        #print(bt)
         # Set up BT interface
         self.bt_interface = BT_Interface(bt)
 
@@ -280,31 +283,34 @@ class Robot():
 
         #self.scoring_statistics.count_iterations += 1
 
-        distance_to_travel = self.speed
-        print("dist to travel", distance_to_travel)
-        while distance_to_travel > 0:
+        tick_bt(self.bt)
 
+        distance_to_travel = self.speed
+        #print("dist to travel", distance_to_travel)
+        while distance_to_travel > 0:
+            tick_bt(self.bt)
+            
             # Plan
-            print("plan")
+            #print("plan")
             action_sequence = None          
             if self.state.at_vertex():
-                print("plan statement")
+                #print("plan statement")
                 action_sequence = robot.plan()
 
             # Move
-            print("move")
+            #print("move")
             [new_vertex, distance_traveled] = self.move(action_sequence, distance_to_travel)
             if distance_traveled == 0:
-                print("move 1")
+                #print("move 1")
                 distance_to_travel = 0
             else:
-                print("move 2")
+                #print("move 2")
                 distance_to_travel -= distance_traveled
             #self.publish_position() # for plotting purposes
 
             # Observe
             if new_vertex:
-                print("observe")
+                #print("observe")
 
                 x = self.state.vertex_from_idx
                 z = self.observe(x)
@@ -369,6 +375,7 @@ class Robot():
 
     def get_planner_type(self):
         active_actions = self.bt_interface.getActiveActions()
+        print(active_actions)
 
         if 'go_to_comms' in active_actions:
             self.planner_type == Robot.PLANNER_TYPE_COMMSRANGE
@@ -378,6 +385,9 @@ class Robot():
 
         elif 'shortest_path' in active_actions:
             self.planner_type == Robot.PLANNER_TYPE_SHORTEST
+        else:
+            print("get_planner_type: No planner was picked")
+
 
         # ... more actions (planners)
 
@@ -621,7 +631,21 @@ class RobotController():
 
         return robot.basestation_scorer.score
       
+def init_bt(bt):
+    for node in bt.nodes:
+        node.init_ros()
 
+def tick_bt(bt):
+    bt.tick()#root.tick(True)
+
+    source = gv.get_graphviz(bt)
+    source_msg = String()
+    source_msg.data = source
+    graphviz_pub.publish(source_msg)
+
+    compressed = String()
+    compressed.data = zlib.compress(source)
+    compressed_pub.publish(compressed)
 
 
 # Main function.
@@ -641,9 +665,17 @@ if __name__ == '__main__':
     try:
 
         # Setup a simple BT
-        character_list = [Character('->'),Character('('),Character('(in_comms)'),Character('[random_walk]'),Character(')')]
-        cfg_word = Word(character_list) #???##this gave an arg error ???
+        character_list = [Character('?'),Character('('), Character('->'),Character('('),\
+            Character('(target_found_90)'),Character('?'),Character('('),Character('(in_comms)'),\
+            Character('[go_to_comms]'),Character(')'),Character(')'),Character('[random_walk]'),Character(')')]
+        cfg_word = Word(character_list) 
         bt_root, bt = cfg_word.createBT()
+        init_bt(bt)
+
+        graphviz_pub = rospy.Publisher('behavior_tree_graphviz', String, queue_size=1)
+        compressed_pub = rospy.Publisher('behavior_tree_graphviz_compressed', String, queue_size=1)
+
+        tick_bt(bt)
 
         robot = Robot(config, robot_id, num_robots, seed, bt)
         # cProfile.run('RobotController(config, robot)')

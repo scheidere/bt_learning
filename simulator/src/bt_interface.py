@@ -54,7 +54,7 @@ class BT_Interface():
         else:
             for n in self.bt.nodes:
                 if n.__class__ == Condition:
-                    print(n.label,"n.label")
+                    #print(n.label,"n.label")
                     if n.label not in self.condition_nodes:
 
                         # Create empty list
@@ -75,7 +75,7 @@ class BT_Interface():
                 if node.is_active:
                     is_active = True
             if is_active:
-                active_actions.append(n.label)
+                active_actions.append(n[0].label)
 
         return active_actions
 
@@ -85,21 +85,22 @@ class BT_Interface():
         # if you call this function with success = True and that label
         # then it tells BT that 'at surface' is successful
         
-        print(self.condition_nodes.keys())
+        #print(self.condition_nodes.keys())
 
         try:
             nodes = self.condition_nodes[condition]
         except KeyError:
-            print("setConditionStatus condition " + condition + " does not exist in BT")
+            pass
+            #print("setConditionStatus condition " + condition + " does not exist in BT")
         else:
 
             # Set the status of a condition to SUCCESS or FAILURE
             if success == True:
                 for node in nodes:
-                    node.set_status(Status.SUCCESS)
+                    node.set_status(ReturnStatus(Status.SUCCESS))
             elif success == False:
                 for node in nodes:
-                    node.set_status(Status.FAILURE)
+                    node.set_status(ReturnStatus(Status.FAILURE))
             else:
                 print("setConditionStatus: incorrect argument")
 
@@ -110,7 +111,7 @@ class BT_Interface():
             print("setActionStatusFailure action " + action + " does not exist in BT")
         else:
             for node in nodes:
-                node.set_status(Status.FAILURE)
+                node.set_status(ReturnStatus(Status.FAILURE))
 
     def setActionStatusRunning(self, action):
         try:
@@ -119,7 +120,7 @@ class BT_Interface():
             print("setActionStatusFailure action " + action + " does not exist in BT")
         else:
             for node in nodes:
-                node.set_status(Status.RUNNING)
+                node.set_status(ReturnStatus(Status.RUNNING))
 
     def setActionStatusSuccess(self, action):
         try:
@@ -128,4 +129,4 @@ class BT_Interface():
             print("setActionStatusFailure action " + action + " does not exist in BT")
         else:
             for node in nodes:
-                node.set_status(Status.SUCCESS)
+                node.set_status(ReturnStatus(Status.SUCCESS))

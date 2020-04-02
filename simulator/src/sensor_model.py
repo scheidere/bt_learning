@@ -18,7 +18,7 @@ class SensorModel():
             # before normalization
             if d < self.sensor_range:
                 if z == y:
-                    p = 0.95 - 0.01*d #f
+                    p = 0.95 - (0.95/self.sensor_range)*d #f 
                 else:
                     p = 0.2 #g
                 #p_none = 1 - p_correct #1-f
