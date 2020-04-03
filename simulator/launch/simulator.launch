@@ -11,7 +11,7 @@
 		<param name="bt_list" type="string" value="$(arg bt_list)" />
 		<param name="robot_id" type="int" value="0" />
 		<param name="num_robots" type="int" value="$(arg num_robots)" />
-		<param name="seed" type="int" value= "0" />
+		<param name="seed" type="int" value= "1" />
 	</node>
 
 	<!--<node pkg="comms_planning" type="scenario_launcher.py" name="scenario_launcher" output="screen">

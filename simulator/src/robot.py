@@ -285,6 +285,14 @@ class Robot():
 
         tick_bt(self.bt)
 
+        # Printing for debugging
+        #r_prob_dist = [round(p, 3) for p in self.target_belief.prob_dist]
+        #print("prob_dist:",r_prob_dist)
+        #print('goal:',self.known_world.vertex_target_idx)
+        #position_goal = self.known_world.vertices[self.known_world.vertex_target_idx].position
+        #print('position of goal:', position_goal.x,position_goal.y)
+        #print('prob at goal:',r_prob_dist[self.known_world.vertex_target_idx])
+
         distance_to_travel = self.speed
         #print("dist to travel", distance_to_travel)
         while distance_to_travel > 0:
@@ -355,6 +363,7 @@ class Robot():
 
         is_at_surface = self.state.at_surface(self.known_world)
         is_in_comms = self.state.in_comms(self.known_world)
+        #print('thinks it is in comms',is_in_comms)
         target_found_50 = self.target_belief.target_found_50()
         target_found_70 = self.target_belief.target_found_70()
         target_found_90 = self.target_belief.target_found_90()
@@ -375,19 +384,20 @@ class Robot():
 
     def get_planner_type(self):
         active_actions = self.bt_interface.getActiveActions()
-        print(active_actions)
+        #print(active_actions)
 
         if 'go_to_comms' in active_actions:
-            self.planner_type == Robot.PLANNER_TYPE_COMMSRANGE
+            self.planner_type = Robot.PLANNER_TYPE_COMMSRANGE
 
         elif 'random_walk' in active_actions:
-            self.planner_type == Robot.PLANNER_TYPE_RANDOM
+            self.planner_type = Robot.PLANNER_TYPE_RANDOM
 
         elif 'shortest_path' in active_actions:
-            self.planner_type == Robot.PLANNER_TYPE_SHORTEST
+            self.planner_type = Robot.PLANNER_TYPE_SHORTEST
         else:
             print("get_planner_type: No planner was picked")
 
+        #print('planner type',self.planner_type)
 
         # ... more actions (planners)
 
@@ -399,17 +409,17 @@ class Robot():
                 if self.planner_type == Robot.PLANNER_TYPE_COMMSRANGE:
                     self.bt_interface.setActionStatusRunning(action)
                 else:
-                    self.bt_interface.setActionStatusFailure(action)
+                    self.bt_interface.setActionStatusSuccess(action)
             elif action == 'random_walk':
                 if self.planner_type == Robot.PLANNER_TYPE_RANDOM:
                     self.bt_interface.setActionStatusRunning(action)
                 else:
-                    self.bt_interface.setActionStatusFailure(action)
+                    self.bt_interface.setActionStatusSuccess(action)
             elif action == 'shortest_path':
                 if self.planner_type == Robot.PLANNER_TYPE_SHORTEST:
                     self.bt_interface.setActionStatusRunning(action)
                 else:
-                    self.bt_interface.setActionStatusFailure(action)
+                    self.bt_interface.setActionStatusSuccess(action)
             else:
                 print("set_action_status: Action does not exist")
 
@@ -472,7 +482,7 @@ class Robot():
         ax = plt.gca()
 
         if not self.h_state: #don't redraw if already drawn
-            self.known_world.plot_world(ax)
+            self.known_world.plot_world(ax,self.target_belief)
 
 
         if self.h_state != None:
@@ -583,11 +593,15 @@ class Robot():
 
 class RobotController():
     def __init__(self, config, robot):
+        self.config = config
+        self.robot = robot
+
+    def run(self):
         # Give an initial observation
         print("Give an initial observation")
-        x = robot.state.vertex_from_idx
-        z = robot.observe(x)
-        robot.target_belief.bayes_update(x,z)
+        x = self.robot.state.vertex_from_idx
+        z = self.robot.observe(x)
+        self.robot.target_belief.bayes_update(x,z)
 
 
         # periodically publish statistics/scores etc
@@ -595,7 +609,7 @@ class RobotController():
 
         # use_sleep = config["ground_truth_plot"] or config["robot_plot"] 
 
-        iteration_rate = config["iteration_rate"]
+        iteration_rate = self.config["iteration_rate"]
         # rate = rospy.Rate( config["iteration_rate"] )
         start_time = rospy.Time.now()
         num_iterations = 0
@@ -613,11 +627,11 @@ class RobotController():
             #print("exp num iterations", expected_num_iterations)
             if num_iterations <= expected_num_iterations:
                 iteration_start_time = rospy.Time.now()
-                robot.do_iteration(num_iterations)       
+                self.robot.do_iteration(num_iterations)       
                 num_iterations += 1   
                 iteration_end_time = rospy.Time.now()
                 work_time += iteration_end_time - iteration_start_time
-                print("num iterations <= expected num interations")
+                #print("num iterations <= expected num interations")
                 if ( current_time - start_time ).to_sec() != 0: #don't divide by zero
                     current_rate = num_iterations / ( current_time - start_time ).to_sec()
                     cpu_usage = work_time.to_sec() / (current_time - start_time).to_sec()
@@ -626,11 +640,12 @@ class RobotController():
                         rospy.logerr("rate control lagging: num_iterations: " + str(num_iterations) + " expected: " + str(expected_num_iterations))
                         rospy.logwarn("current rate: " + str(current_rate) + " cpu usage: " + str(cpu_usage)) 
 
-                if robot.basestation_scorer.finished: #checks if answer is correct, and if so stops sim
+                if self.robot.basestation_scorer.finished: #checks if answer is correct, and if so stops sim
                     break
 
-        return robot.basestation_scorer.score
-      
+        return self.robot.basestation_scorer.score
+    
+
 def init_bt(bt):
     for node in bt.nodes:
         node.init_ros()
@@ -668,6 +683,7 @@ if __name__ == '__main__':
         character_list = [Character('?'),Character('('), Character('->'),Character('('),\
             Character('(target_found_90)'),Character('?'),Character('('),Character('(in_comms)'),\
             Character('[go_to_comms]'),Character(')'),Character(')'),Character('[random_walk]'),Character(')')]
+        #character_list = [Character('->'),Character('('),Character('[go_to_comms]'),Character(')')]
         cfg_word = Word(character_list) 
         bt_root, bt = cfg_word.createBT()
         init_bt(bt)
@@ -680,4 +696,6 @@ if __name__ == '__main__':
         robot = Robot(config, robot_id, num_robots, seed, bt)
         # cProfile.run('RobotController(config, robot)')
         robot_controller = RobotController(config, robot)
+        score = robot_controller.run()
+        print('Score: ', score)
     except rospy.ROSInterruptException: pass

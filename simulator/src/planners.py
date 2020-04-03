@@ -200,6 +200,7 @@ class PlannerCommsRange(PlannerShortestPath):
 
 	def plan(self, debug=False):
 		#rospy.loginfo("PlannerShortestPath plan()")
+		#debug = True
 		try: 
 			self.vertex_start_idx
 		except AttributeError:
@@ -221,6 +222,9 @@ class PlannerCommsRange(PlannerShortestPath):
 		prev = [-1] * num_vertices
 		dist_to_go[self.vertex_start_idx] = 0
 
+		if debug:
+			print(self.vertex_start_idx)
+
 		open_set = [True] * num_vertices
 
 		#iteration_count = 0 # for debugging
@@ -236,6 +240,9 @@ class PlannerCommsRange(PlannerShortestPath):
 			# check if vertex is in comms range, and if so that is the goal
 			# i.e. the goal is the shortest path to any vertex in comms range (calc'd outside loop)
 			if v_current in self.world.vertices_in_comms_range:
+				if debug:
+					print('vertex in comms',v_current,self.world.vertices[v_current].position)
+
 				break
 
 			# remove it from the open set
@@ -258,7 +265,11 @@ class PlannerCommsRange(PlannerShortestPath):
 		v = v_current
 		d = dist_to_go[v]
 		if debug:
+			print('distance to go',d)
+		if debug:
 			print "dijkstra goal: " + str(v_current)
+			print(v,self.vertex_start_idx)
+			print('prev',prev[v])
 		if prev[v] >= 0 or v == self.vertex_start_idx:
 			while v >= 0:
 				path.insert(0, v)

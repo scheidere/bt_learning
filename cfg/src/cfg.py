@@ -434,7 +434,7 @@ class CFG():
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
         
-
+        #NEED TO ADAPT THESE RULES TO TAKE SPECIFIC ACTIONS AND CONDITIONS FROM bt_list.yaml
 
         return production_rule_list
 

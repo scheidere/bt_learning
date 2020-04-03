@@ -20,7 +20,7 @@ class SensorModel():
                 if z == y:
                     p = 0.95 - (0.95/self.sensor_range)*d #f 
                 else:
-                    p = 0.2 #g
+                    p = 0.01 #g
                 #p_none = 1 - p_correct #1-f
             else:
                 p = 0

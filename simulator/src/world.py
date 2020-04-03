@@ -13,7 +13,7 @@ from geometry_msgs.msg import Point
 
 #from simulator.msg import EdgeObservation
 
-
+#from robot import TargetBelief
 
 import matplotlib.pyplot as plt
 
@@ -190,7 +190,7 @@ class World():
     def get_edges_out(self,vertex_idx):
         return self.edge_matrix[vertex_idx]
 
-    def plot_world(self, ax):
+    def plot_world(self, ax, target_belief):
         rospy.loginfo("plotting world")        
         num_nodes = len(self.vertices)
 
@@ -213,10 +213,21 @@ class World():
         # plot vertices
         xs = []
         ys = []
+        size_list = []
         for vertex_idx in xrange(num_nodes):
             xs.append(self.vertices[vertex_idx].position.x)
             ys.append(self.vertices[vertex_idx].position.y)
-        ax.scatter(xs, ys, s=5, zorder=20)
+            p = target_belief.prob_dist[vertex_idx]
+            sp = 5*(1 + p)
+            size_list.append(sp)
+        #ax.scatter(xs, ys, s=5, zorder=20)
+
+        ax.scatter(xs, ys, s=size_list, zorder=20)
+
+        # Plot goal location as blue star
+        pos_target = self.vertices[self.vertex_target_idx].position
+        ax.plot(pos_target.x, pos_target.y, 'b*', markersize=20, zorder=100)
+        
 
         # labels, axis etc
         ax.set_xlabel('x')
