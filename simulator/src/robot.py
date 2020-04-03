@@ -483,6 +483,8 @@ class Robot():
 
         if not self.h_state: #don't redraw if already drawn
             self.known_world.plot_world(ax,self.target_belief)
+        else:
+            self.known_world.plot_world_update(ax,self.target_belief)
 
 
         if self.h_state != None:

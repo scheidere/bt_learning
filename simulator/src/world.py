@@ -211,6 +211,7 @@ class World():
                     ax.plot([vertex_start.position.x, vertex_end.position.x],[vertex_start.position.y, vertex_end.position.y],'-r', zorder=10)
 
         # plot vertices
+        
         xs = []
         ys = []
         size_list = []
@@ -218,15 +219,16 @@ class World():
             xs.append(self.vertices[vertex_idx].position.x)
             ys.append(self.vertices[vertex_idx].position.y)
             p = target_belief.prob_dist[vertex_idx]
-            sp = 5*(1 + p)
+            sp = 2+10*p
             size_list.append(sp)
         #ax.scatter(xs, ys, s=5, zorder=20)
 
-        ax.scatter(xs, ys, s=size_list, zorder=20)
+        print(size_list)
+        self.h_scatter_plot = ax.scatter(xs, ys, s=size_list, zorder=20)
 
         # Plot goal location as blue star
         pos_target = self.vertices[self.vertex_target_idx].position
-        ax.plot(pos_target.x, pos_target.y, 'b*', markersize=20, zorder=100)
+        ax.plot(pos_target.x, pos_target.y, 'b*', markersize=20, zorder=10)
         
 
         # labels, axis etc
@@ -236,3 +238,29 @@ class World():
         ax.set_ylim(0,self.config["environment_size"][1])
         ax.grid(True)
         ax.set_aspect('equal', 'box')
+
+    def plot_world_update(self, ax, target_belief):
+
+        num_nodes = len(self.vertices)
+        size_list = []
+        colors_list = []
+        max_p = 0
+        for vertex_idx in xrange(num_nodes):
+            p = target_belief.prob_dist[vertex_idx]
+            if p >= max_p:
+                max_p = p
+
+        for vertex_idx in xrange(num_nodes):
+            p = target_belief.prob_dist[vertex_idx]
+            sp = 1+100*(p/max_p)
+            size_list.append(sp)
+
+            p /= max_p
+            c = [0,p,1-p]
+            colors_list.append(c)
+
+        size_list_round = [round(p, 1) for p in size_list]
+        print(size_list_round)
+        self.h_scatter_plot.set_sizes(size_list)
+        self.h_scatter_plot.set_color(colors_list)
+

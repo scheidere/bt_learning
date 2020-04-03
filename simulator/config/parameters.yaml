@@ -3,9 +3,9 @@ iteration_rate: 10 #0.5 #Hz
 scoring_statistics_frequency: 1 #Hz
 
 environment_size: [1000, 1000]
-num_nodes: 75 #300
-connection_radius: 200 #100
+num_nodes: 50 #300
+connection_radius: 250 #100
 exists_probability: 0.25
 robot_speed: 50 # units of distance travelled between iterations
-sensor_range: 200 # distance robot is capable of sensing a target
+sensor_range: 400 # distance robot is capable of sensing a target
 comms_range: 400 # distance beyond which the robot is unable to contact basestation
