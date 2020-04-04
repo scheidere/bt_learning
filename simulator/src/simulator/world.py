@@ -84,8 +84,9 @@ class World():
 
         # edges, stored as a matrix indexed as [vertex_start, vertex_end]
         num_nodes = len(self.vertices) #doubled the input num_nodes in creating two layers of vertices instead of one
-        self.edge_matrix = [[None] * num_nodes] * num_nodes        
+        self.edge_matrix = [None] * num_nodes        
         for vertex_start_idx in xrange(num_nodes):
+            self.edge_matrix[vertex_start_idx] = [None] * num_nodes
             for vertex_end_idx in xrange(num_nodes):
 
                 cost = distance(self.vertices[vertex_start_idx], self.vertices[vertex_end_idx])

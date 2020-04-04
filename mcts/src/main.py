@@ -42,8 +42,8 @@ def run():
 
     # Solve it with MCTS
     exploration_exploitation_parameter = 1.0 # =1.0 is recommended. <1.0 more exploitation. >1.0 more exploration. 
-    max_iterations = 20
-    max_sim_iterations = 100
+    max_iterations = 10000
+    max_sim_iterations = 500
     [solution, best_rollout, root, list_of_all_nodes, winner] = mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations )
 
     # Display the tree
@@ -81,7 +81,7 @@ def run_profiler():
     p.sort_stats("cumulative").print_stats(50)
 
 if __name__ == "__main__":
-    # run()
-    run_profiler()
+    run()
+    # run_profiler()
     
     
