@@ -36,13 +36,13 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
             break
 
 
-        print(iter)
+        print("MCTS iteration: " + str(iter))
 
         ################################
         # Selection and Expansion
         # move recursively down the tree from root
         # then add a new leaf node
-        print("MCTS selection " + str(iter))
+        # print("MCTS selection " + str(iter))
         current = root
         while True: 
 
@@ -129,19 +129,19 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
 
         ################################
         # Rollout
-        print("MCTS rollout " + str(iter))
+        # print("MCTS rollout " + str(iter))
         #rollout_sequence = rollout(subsequence=current.sequence, action_set=action_set, budget=budget)
         #rollout_reward = reward(action_sequence=rollout_sequence)
         rollout_word = rollout(partial_word=current.sequence[-1], cfg=cfg, budget=budget)
 
-        print("MCTS reward " + str(iter))
+        # print("MCTS reward " + str(iter))
         is_valid, rollout_reward = reward(word = rollout_word, max_iterations=max_sim_iterations)
 
         ################################
         # Back-propagation
         # update stats of all nodes from current back to root node
         if is_valid:
-            print("MCTS backprop " + str(iter))
+            # print("MCTS backprop " + str(iter))
             parent = current
             while parent: # is not None
 

@@ -123,7 +123,7 @@ def reward(word, max_iterations):
 
     word.printWord()
 
-    num_simulations = 10
+    num_simulations = 1
 
     if word.list:
         is_valid = True

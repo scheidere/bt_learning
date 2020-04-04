@@ -208,16 +208,17 @@ class Robot():
 
         # Setup navigation roadmap graph
         # rospy.loginfo("robot getting base world from ground truth")
-        print("Setup navigation roadmap")
+        # print("Setup navigation roadmap")
         self.known_world = World(config)
-        self.known_world.init_world(seed)
+        do_test = False # don't error check graph
+        self.known_world.init_world(seed, do_test)
 
         # Setup a set of random numbers
-        print("Setup set of random numbers")
+        # print("Setup set of random numbers")
         self.setup_random_numbers(seed)
 
         # Setup state belief
-        print("Setup state belief")
+        # print("Setup state belief")
         self.state = []
         random_start_vertex = self.get_next_random_number()
         current_state = State(random_start_vertex) # start at a random vertex
@@ -248,14 +249,14 @@ class Robot():
         self.basestation_scorer = Scorer(self.known_world, max_iterations)
 
         # plot
-        print("plot")
+        # print("plot")
         self.h_state = None
         if config["robot_plot"]:
             rospy.loginfo("plotting robot world")
             self.plot_robot()
 
 
-        print("finished init")
+        # print("finished init")
 
     def setup_random_numbers(self, seed):
         # sets up a persistent set of numbers
@@ -391,7 +392,7 @@ class Robot():
             self.planner_type = Robot.PLANNER_TYPE_SHORTEST
         else:
             self.planner_type = Robot.PLANNER_TYPE_STOP
-            print("get_planner_type: No planner was picked")
+            # print("get_planner_type: No planner was picked")
 
         #print('planner type',self.planner_type)
 
@@ -601,7 +602,7 @@ class RobotController():
 
     def run(self):
         # Give an initial observation
-        print("Give an initial observation")
+        # print("Give an initial observation")
         x = self.robot.state.vertex_from_idx
         z = self.robot.observe(x)
         self.robot.target_belief.bayes_update(x,z)
@@ -612,7 +613,7 @@ class RobotController():
         # Continue indefinitely
         while not rospy.is_shutdown():   
 
-            print("iteration: " + str(num_iterations))
+            # print("iteration: " + str(num_iterations))
             self.robot.do_iteration(num_iterations)       
             num_iterations += 1
 

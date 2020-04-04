@@ -52,7 +52,7 @@ class World():
         self.config = config
         self.surface_level = 0
 
-    def init_world(self, seed1):
+    def init_world(self, seed1, do_test=True):
         # create a blank world, PRM style
         random.seed(seed1) # for repeatable trials
         num_nodes = self.config["num_nodes"]
@@ -91,7 +91,8 @@ class World():
                 edge = Edge(vertex_start_idx, vertex_end_idx, cost, exists)
                 self.edge_matrix[vertex_start_idx].append(edge)
 
-        self.test_indices()
+        if do_test:
+            self.test_indices()
 
         self.vertex_target_idx = self.create_target_idx()
 

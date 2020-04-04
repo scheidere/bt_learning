@@ -36,11 +36,11 @@ class BT_Interface():
         self.defineConditionNodes()
 
     def init_bt(self):
-        print("BT_Interface initialising BT...")
+        # print("BT_Interface initialising BT...")
         for node in self.bt.nodes:
             node.init_ros()
-            print(node.label)
-        print("BT finished init")
+            # print(node.label)
+        # print("BT finished init")
 
     def tick_bt(self):
         self.bt.tick()#root.tick(True)

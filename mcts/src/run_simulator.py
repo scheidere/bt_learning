@@ -30,7 +30,7 @@ class UnderwaterSimulator():
         robot_id = rospy.get_param('~robot_id')
         num_robots = rospy.get_param('~num_robots')
         # seed = rospy.get_param('~seed')
-        seed = random.randint(0,100) # random environment
+        seed = 0 #random.randint(0,20) # random environment
 
         try:
 
