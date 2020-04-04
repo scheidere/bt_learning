@@ -14,7 +14,11 @@ from plot_cfg_tree import plot_cfg_tree
 import time, sys
 from cfg import Word, Character, CFG
 
+import rospy
+
 def run():
+
+    rospy.init_node('mcts')
 
     # Create CFG object
     cfg = CFG()

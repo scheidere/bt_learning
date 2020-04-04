@@ -5,6 +5,11 @@ Emily Scheide
 Oregon State University
 March 2020
 '''
+
+import rospy
+import rospkg
+import yaml
+
 from cfg import Word, Character
 #from simulator.robot import init_bt, tick_bt, Robot, RobotController
 import simulator
