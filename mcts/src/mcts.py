@@ -15,7 +15,7 @@ import random
 import math
 from cfg import CFG, Word, Character
 
-def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter ):
+def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations ):
 
     ################################
     # Setup
@@ -35,6 +35,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter ):
         # Selection and Expansion
         # move recursively down the tree from root
         # then add a new leaf node
+        print("MCTS selection " + str(iter))
         current = root
         while True: 
 
@@ -101,6 +102,8 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter ):
 
                     # Define the UCB
                     def ucb(average, n_parent, n_child):
+                        if n_child == 0:
+                            return 999999999.0
                         return average + exploration_exploitation_parameter * math.sqrt( (2*math.log(n_parent)) / float(n_child) )
 
                     # Pick the child that maximises the UCB
@@ -119,22 +122,29 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter ):
 
         ################################
         # Rollout
+        print("MCTS rollout " + str(iter))
         #rollout_sequence = rollout(subsequence=current.sequence, action_set=action_set, budget=budget)
         #rollout_reward = reward(action_sequence=rollout_sequence)
         rollout_word = rollout(partial_word=current.sequence[-1], cfg=cfg, budget=budget)
-        rollout_reward = reward(word = rollout_word)
+
+        print("MCTS reward " + str(iter))
+        is_valid, rollout_reward = reward(word = rollout_word, max_iterations=max_sim_iterations)
 
         ################################
         # Back-propagation
         # update stats of all nodes from current back to root node
-        parent = current
-        while parent: # is not None
+        if is_valid:
+            print("MCTS backprop " + str(iter))
+            parent = current
+            while parent: # is not None
 
-            # Update the average
-            parent.updateAverage(rollout_reward)
+                # Update the average
+                parent.updateAverage(rollout_reward)
 
-            # Recurse up the tree
-            parent = parent.parent
+                # Recurse up the tree
+                parent = parent.parent
+        else:
+            print("invalid rollout (empty?)")
 
     ################################
     # Extract solution

@@ -38,7 +38,8 @@ def run():
     # Solve it with MCTS
     exploration_exploitation_parameter = 5.0 # =1.0 is recommended. <1.0 more exploitation. >1.0 more exploration. 
     max_iterations = 10000
-    [solution, root, list_of_all_nodes, winner] = mcts( cfg, budget, max_iterations, exploration_exploitation_parameter )
+    max_sim_iterations = 100
+    [solution, root, list_of_all_nodes, winner] = mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations )
 
     # Display the tree
     ###printActionSequence(solution) #this is not set up for words instead of sequences for actions

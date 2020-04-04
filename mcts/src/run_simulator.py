@@ -19,7 +19,7 @@ class UnderwaterSimulator():
     def __init__(self,word):
         self.word = word
 
-    def generateReward(self):
+    def generateReward(self, max_iterations):
         # Get the config file etc
         rospack = rospkg.RosPack()
         filepath = rospack.get_path('simulator') + "/config/" + rospy.get_param('~config')
@@ -34,7 +34,7 @@ class UnderwaterSimulator():
             # Create BT object from terminal BT CFG
             bt_root, bt = self.word.createBT()
 
-            robot = Robot(config, robot_id, num_robots, seed, bt)
+            robot = Robot(config, robot_id, num_robots, seed, bt, max_iterations)
             # cProfile.run('RobotController(config, robot)')
             robot_controller = RobotController(config, robot)
             score = robot_controller.run()

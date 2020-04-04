@@ -115,15 +115,26 @@ def reward(word):
 
 
 ###RUN SIMULATOR (which returns reward)
-def reward(word):
+def reward(word, max_iterations):
 
-    #reward = TempSimulator(word).simReward()
-    reward = UnderwaterSimulator(word).generateReward()
+    # roughly...
+    min_reward = -max_iterations
+    max_reward = 0
 
     word.printWord()
-    print(reward)
 
-    return reward
+    if word.list:
+        is_valid = True
+        reward = UnderwaterSimulator(word).generateReward(max_iterations)
+        print(reward)
+    else:
+        is_valid = False
+        reward = min_reward
+
+    # Normalisation
+    reward = float(reward + min_reward)/float(max_reward - min_reward)
+
+    return is_valid, reward
 
 '''
 if __name__ == "__main__":

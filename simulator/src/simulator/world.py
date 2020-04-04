@@ -223,7 +223,7 @@ class World():
             size_list.append(sp)
         #ax.scatter(xs, ys, s=5, zorder=20)
 
-        print(size_list)
+        # print(size_list)
         self.h_scatter_plot = ax.scatter(xs, ys, s=size_list, zorder=20)
 
         # Plot goal location as blue star
@@ -259,8 +259,8 @@ class World():
             c = [0,p,1-p]
             colors_list.append(c)
 
-        size_list_round = [round(p, 1) for p in size_list]
-        print(size_list_round)
+        # size_list_round = [round(p, 1) for p in size_list]
+        # print(size_list_round)
         self.h_scatter_plot.set_sizes(size_list)
         self.h_scatter_plot.set_color(colors_list)
 

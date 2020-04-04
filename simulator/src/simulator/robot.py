@@ -176,14 +176,15 @@ class TargetBelief():
 
 class Robot():
 
+    PLANNER_TYPE_STOP = 0 # only used if the BT says to do nothing
     PLANNER_TYPE_RANDOM = 1
     PLANNER_TYPE_SHORTEST = 2
     PLANNER_TYPE_COMMSRANGE = 3  #need to use this below, want to test original shortest path planner first
 
-    def __init__(self, config, robot_id, num_robots, seed, bt):
+    def __init__(self, config, robot_id, num_robots, seed, bt, max_iterations):
 
         self.bt = bt
-
+        self.config = config
         self.robot_id = robot_id
         self.speed = config["robot_speed"]
         self.planner_type = Robot.PLANNER_TYPE_RANDOM
@@ -244,7 +245,7 @@ class Robot():
         self.target_belief = TargetBelief(num_vertices, self.sensor_model)
 
         # Set up Scorer
-        self.basestation_scorer = Scorer(self.known_world)
+        self.basestation_scorer = Scorer(self.known_world, max_iterations)
 
         # plot
         print("plot")
@@ -300,19 +301,15 @@ class Robot():
             #print("plan")
             action_sequence = None          
             if self.state.at_vertex():
-                #print("plan statement")
-                action_sequence = robot.plan()
+                action_sequence = self.plan()
 
             # Move
             #print("move")
-            [new_vertex, distance_traveled] = self.move(action_sequence, distance_to_travel)
-            if distance_traveled == 0:
-                #print("move 1")
+            [new_vertex, distance_traveled, no_move] = self.move(action_sequence, distance_to_travel)
+            if no_move or distance_traveled == 0:
                 distance_to_travel = 0
             else:
-                #print("move 2")
                 distance_to_travel -= distance_traveled
-            #self.publish_position() # for plotting purposes
 
             # Observe
             if new_vertex:
@@ -350,7 +347,7 @@ class Robot():
             self.set_action_status()
 
         # plot
-        if config["robot_plot"]:
+        if self.config["robot_plot"]:
             #rospy.loginfo("plotting robot world")
             self.plot_robot()
 
@@ -393,6 +390,7 @@ class Robot():
         elif 'shortest_path' in active_actions:
             self.planner_type = Robot.PLANNER_TYPE_SHORTEST
         else:
+            self.planner_type = Robot.PLANNER_TYPE_STOP
             print("get_planner_type: No planner was picked")
 
         #print('planner type',self.planner_type)
@@ -498,6 +496,7 @@ class Robot():
     def move(self, action_sequence, distance_to_travel):
         current_state = self.state
         new_vertex = False # publish true if a new vertex is reached
+        no_move = False
         if not current_state.at_vertex():
             # move along edge
             edge_length = self.known_world.edge_matrix[current_state.vertex_from_idx][current_state.vertex_to_idx].cost
@@ -519,30 +518,34 @@ class Robot():
                 if len(action_sequence) >= 1:
                     action = action_sequence[1]
                 else:
+                    distance_traveled = 0
+                    no_move = True
                     rospy.logwarn("robot is idle since plan gives current index")
-            # start moving to next vertex
-            current_state.vertex_to_idx = action
-            edge_length = self.known_world.edge_matrix[current_state.vertex_from_idx][current_state.vertex_to_idx].cost
-            if edge_length == 0:
-                current_state.fraction_along_edge = 1
-                distance_traveled = 0
-            else:
-                current_state.fraction_along_edge = distance_to_travel/edge_length
-                if current_state.fraction_along_edge >= 1.0:
-                    # reached the next vertex
-                    current_state.fraction_along_edge = 0.0
-                    current_state.vertex_from_idx = current_state.vertex_to_idx
-                    #self.scoring_statistics.count_vertices += 1
-                    new_vertex = True
-                    distance_traveled = edge_length
+
+            if not no_move:
+                # start moving to next vertex
+                current_state.vertex_to_idx = action
+                edge_length = self.known_world.edge_matrix[current_state.vertex_from_idx][current_state.vertex_to_idx].cost
+                if edge_length == 0:
+                    current_state.fraction_along_edge = 1
+                    distance_traveled = 0
                 else:
-                    distance_traveled = distance_to_travel
+                    current_state.fraction_along_edge = distance_to_travel/edge_length
+                    if current_state.fraction_along_edge >= 1.0:
+                        # reached the next vertex
+                        current_state.fraction_along_edge = 0.0
+                        current_state.vertex_from_idx = current_state.vertex_to_idx
+                        #self.scoring_statistics.count_vertices += 1
+                        new_vertex = True
+                        distance_traveled = edge_length
+                    else:
+                        distance_traveled = distance_to_travel
         else:
             #rospy.logwarn("robot is idle since no plan given")
             distance_traveled = 0
-            pass
+            no_move = True
 
-        return [new_vertex, distance_traveled]
+        return [new_vertex, distance_traveled, no_move]
     '''
     def publish_position(self):
         
@@ -626,6 +629,7 @@ class RobotController():
             #print("num iterations", num_iterations)
             #print("exp num iterations", expected_num_iterations)
             if num_iterations <= expected_num_iterations:
+                print("iteration: " + str(num_iterations))
                 iteration_start_time = rospy.Time.now()
                 self.robot.do_iteration(num_iterations)       
                 num_iterations += 1   
@@ -636,10 +640,11 @@ class RobotController():
                     current_rate = num_iterations / ( current_time - start_time ).to_sec()
                     cpu_usage = work_time.to_sec() / (current_time - start_time).to_sec()
                     
-                    if num_iterations <= expected_num_iterations * 0.9:                    
-                        rospy.logerr("rate control lagging: num_iterations: " + str(num_iterations) + " expected: " + str(expected_num_iterations))
-                        rospy.logwarn("current rate: " + str(current_rate) + " cpu usage: " + str(cpu_usage)) 
+                    # if num_iterations <= expected_num_iterations * 0.9:                    
+                    #     rospy.logerr("rate control lagging: num_iterations: " + str(num_iterations) + " expected: " + str(expected_num_iterations))
+                    #     rospy.logwarn("current rate: " + str(current_rate) + " cpu usage: " + str(cpu_usage)) 
 
+                self.robot.basestation_scorer.update_scorer(num_iterations)
                 if self.robot.basestation_scorer.finished: #checks if answer is correct, and if so stops sim
                     break
 

@@ -21,11 +21,17 @@ class Scorer():
 	RESPONSE_FALSE = 2
 	RESPONSE_NONE = 3
 
-	def __init__(self, world):
+	def __init__(self, world, max_iterations):
 		self.world = world
 
 		self.score = 0
 		self.finished = False
+		self.max_iterations = max_iterations
+
+	def update_scorer(self, num_iterations):
+		if num_iterations > self.max_iterations:
+			self.finished = True
+			self.score = -num_iterations
 
 	def submit_target(self, robot_belief_idx, robot_location_idx, is_at_surface, is_in_comms, num_iterations):
 		# robot_belief_idx: location where the robot believes the target is (because it is above a certain prob?)
