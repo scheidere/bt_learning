@@ -16,6 +16,11 @@ from cfg import Word, Character, CFG
 
 import rospy
 
+import cProfile
+import pstats
+
+
+
 def run():
 
     rospy.init_node('mcts')
@@ -37,7 +42,7 @@ def run():
 
     # Solve it with MCTS
     exploration_exploitation_parameter = 1.0 # =1.0 is recommended. <1.0 more exploitation. >1.0 more exploration. 
-    max_iterations = 1000
+    max_iterations = 20
     max_sim_iterations = 100
     [solution, best_rollout, root, list_of_all_nodes, winner] = mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations )
 
@@ -55,6 +60,7 @@ def run():
     #plotTree(list_of_all_nodes, winner, action_set, False, budget, 1, exploration_exploitation_parameter)
     #plotTree(list_of_all_nodes, winner, action_set, True, budget, 2, exploration_exploitation_parameter)
 
+    '''
     # new plotting function
     use_uct = False # True case doesn't currently work
     max_height = 4
@@ -66,9 +72,16 @@ def run():
             time.sleep(.1)
         except KeyboardInterrupt:
             sys.exit()
+    '''
 
+
+def run_profiler():
+    cProfile.run('run()', 'profile_stats')
+    p = pstats.Stats('profile_stats')
+    p.sort_stats("cumulative").print_stats(50)
 
 if __name__ == "__main__":
-    run()
+    # run()
+    run_profiler()
     
     

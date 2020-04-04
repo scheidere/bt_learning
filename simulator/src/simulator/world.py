@@ -17,9 +17,15 @@ from geometry_msgs.msg import Point
 
 import matplotlib.pyplot as plt
 
+from math import sqrt
+
 def distance(vertex_start, vertex_end):
     # Euclidean distance, for now
-    return ( (vertex_start.position.x-vertex_end.position.x)**2 + (vertex_start.position.y-vertex_end.position.y)**2 + (vertex_start.position.z-vertex_end.position.z)**2)**0.5
+    #return ( (vertex_start.position.x-vertex_end.position.x)**2 + (vertex_start.position.y-vertex_end.position.y)**2 + (vertex_start.position.z-vertex_end.position.z)**2)**0.5
+    x = (vertex_start.position.x-vertex_end.position.x)
+    y = (vertex_start.position.y-vertex_end.position.y)
+    z = (vertex_start.position.z-vertex_end.position.z)
+    return sqrt( x*x + y*y + z*z )
 
 def distance_to_base(vertex):
     # Euclidean distance from basestation at 0,0,0 to vertex
@@ -77,10 +83,9 @@ class World():
 
 
         # edges, stored as a matrix indexed as [vertex_start, vertex_end]
-        self.edge_matrix = []
         num_nodes = len(self.vertices) #doubled the input num_nodes in creating two layers of vertices instead of one
+        self.edge_matrix = [[None] * num_nodes] * num_nodes        
         for vertex_start_idx in xrange(num_nodes):
-            self.edge_matrix.append([])
             for vertex_end_idx in xrange(num_nodes):
 
                 cost = distance(self.vertices[vertex_start_idx], self.vertices[vertex_end_idx])
@@ -89,7 +94,7 @@ class World():
                 else:
                     exists = False
                 edge = Edge(vertex_start_idx, vertex_end_idx, cost, exists)
-                self.edge_matrix[vertex_start_idx].append(edge)
+                self.edge_matrix[vertex_start_idx][vertex_end_idx] = edge
 
         if do_test:
             self.test_indices()

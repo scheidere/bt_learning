@@ -17,46 +17,50 @@ Need to extract how many iterations are taken at the "time" the robot reports an
 
 class Scorer():
 
-	RESPONSE_CORRECT = 1
-	RESPONSE_FALSE = 2
-	RESPONSE_NONE = 3
+    RESPONSE_CORRECT = 1
+    RESPONSE_FALSE = 2
+    RESPONSE_NONE = 3
 
-	def __init__(self, world, max_iterations):
-		self.world = world
+    def __init__(self, world, max_iterations):
+        self.world = world
 
-		self.score = 0
-		self.finished = False
-		self.max_iterations = max_iterations
+        self.score = 0
+        self.finished = False
+        self.max_iterations = max_iterations
 
-	def update_scorer(self, num_iterations):
-		if num_iterations > self.max_iterations:
-			self.finished = True
-			self.score = -num_iterations
+    def update_scorer(self, num_iterations):
+        if not self.finished:
+            self.score = -self.max_iterations
 
-	def submit_target(self, robot_belief_idx, robot_location_idx, is_at_surface, is_in_comms, num_iterations):
-		# robot_belief_idx: location where the robot believes the target is (because it is above a certain prob?)
-		# robot_location_idx: vertex idx where robot is
+        if num_iterations >= self.max_iterations:
+            self.finished = True
+            self.score = -self.max_iterations
+            
 
-		target_location_idx = self.world.vertex_target_idx
-		#vertices_in_comms_range = self.world.vertices_in_comms_range
+    def submit_target(self, robot_belief_idx, robot_location_idx, is_at_surface, is_in_comms, num_iterations):
+        # robot_belief_idx: location where the robot believes the target is (because it is above a certain prob?)
+        # robot_location_idx: vertex idx where robot is
 
-		# First, check if you are within comms range and at surface
-		if is_at_surface and is_in_comms:
-			if robot_belief_idx == target_location_idx:
-				self.finished = True
-				self.score = -num_iterations
-				response = Scorer.RESPONSE_CORRECT
-			else:
-				response = Scorer.RESPONSE_FALSE
-		else: # either not in comms range or not at surface so robot should receive nothing from basestation
-			response = Scorer.RESPONSE_NONE
+        target_location_idx = self.world.vertex_target_idx
+        #vertices_in_comms_range = self.world.vertices_in_comms_range
 
-		return response
+        # First, check if you are within comms range and at surface
+        if is_at_surface and is_in_comms:
+            if robot_belief_idx == target_location_idx:
+                self.finished = True
+                self.score = -num_iterations
+                response = Scorer.RESPONSE_CORRECT
+            else:
+                response = Scorer.RESPONSE_FALSE
+        else: # either not in comms range or not at surface so robot should receive nothing from basestation
+            response = Scorer.RESPONSE_NONE
+
+        return response
 
 
-		#need to call this in Robot class
+        #need to call this in Robot class
 
-		#where does the robot make the choice of what belief vertex to submit? need this as input
+        #where does the robot make the choice of what belief vertex to submit? need this as input
 
-		#what does the robot do given the output of the above function?	
+        #what does the robot do given the output of the above function? 
 

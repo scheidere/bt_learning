@@ -32,7 +32,7 @@ from bt_interface import *
 from behavior_tree.behavior_tree import *
 from cfg import CFG, Word, Character
 
-
+import numpy as np
 
 
 # import cProfile
@@ -102,10 +102,8 @@ class TargetBelief():
 
     def init_prior(self):
         ## P(Y)
-
-        self.prob_dist = []
-        for i in xrange(self.num_vertices):
-            self.prob_dist.append(1.0/self.num_vertices)
+        p = 1.0/self.num_vertices
+        self.prob_dist = np.full(self.num_vertices, p)
 
     def likelihood(self, x, y, z):
 
@@ -115,30 +113,29 @@ class TargetBelief():
     def bayes_update(self, x, z):
         ## P(Y|Z)
 
-        total = 0
-        for y in xrange(len(self.prob_dist)):
-            self.prob_dist[y] = self.likelihood(x, y, z)*self.prob_dist[y]
-            total += self.prob_dist[y]
+        for y in xrange(self.num_vertices):
+            self.prob_dist[y] *= self.likelihood(x, y, z)
+            
+        total = sum(self.prob_dist)
 
         # Normalize
-        for y in xrange(len(self.prob_dist)):
-            self.prob_dist[y] = self.prob_dist[y]/total
+        self.prob_dist /= total
 
     def found_false_update(self, vertex_false_idx):
         # You now know that the target is not where you chose, so prob = 0 there
+        old_p = self.prob_dist[vertex_false_idx]
         self.prob_dist[vertex_false_idx] = 0
 
         # Get new total
-        total = 0
-        for y in xrange(len(self.prob_dist)):
-            total += self.prob_dist[y]
+        # Assume was normalised before...
+        total = 1.0 - old_p
 
         # Normalize to accomodate change
-        for y in xrange(len(self.prob_dist)):
-            self.prob_dist[y] = self.prob_dist[y]/total
+        self.prob_dist /= total
 
     def generateRobotBeliefIdx(self):
         # Robot chooses best based on the probability that a vertex is the target's location
+        '''
         idx_with_max_p = None
         for i in xrange(len(self.prob_dist)):
             p = self.prob_dist[i]
@@ -150,6 +147,8 @@ class TargetBelief():
                 idx_with_max_p = i
 
         return idx_with_max_p
+        '''
+        return np.argmax(self.prob_dist)
 
     def target_found_50(self):
         for p in self.prob_dist:
@@ -251,7 +250,8 @@ class Robot():
         # plot
         # print("plot")
         self.h_state = None
-        if config["robot_plot"]:
+        self.robot_plot = config["robot_plot"]
+        if self.robot_plot:
             rospy.loginfo("plotting robot world")
             self.plot_robot()
 
@@ -261,19 +261,20 @@ class Robot():
     def setup_random_numbers(self, seed):
         # sets up a persistent set of numbers
         # for repeatable tests
-        self.random_number_list = []
+        n = 10000
+        self.random_number_list = np.zeros(n, dtype=np.int32)
 
         random.seed(seed)
         
-        for i in xrange(10000):
+        for i in xrange(n):
             random_number = random.randint(0,len(self.known_world.vertices)-1)
-            self.random_number_list.append(random_number)
+            self.random_number_list[i] = random_number
 
         self.random_number_list_index = 0
 
     def get_next_random_number(self):
         number = self.random_number_list[self.random_number_list_index]
-        self.random_number_list_index = self.random_number_list_index + 1
+        self.random_number_list_index += 1
         if self.random_number_list_index >= len(self.random_number_list):
             self.random_number_list_index = 0
         return number
@@ -292,6 +293,8 @@ class Robot():
         #position_goal = self.known_world.vertices[self.known_world.vertex_target_idx].position
         #print('position of goal:', position_goal.x,position_goal.y)
         #print('prob at goal:',r_prob_dist[self.known_world.vertex_target_idx])
+
+        no_move = False
 
         distance_to_travel = self.speed
         #print("dist to travel", distance_to_travel)
@@ -348,9 +351,11 @@ class Robot():
             self.set_action_status()
 
         # plot
-        if self.config["robot_plot"]:
+        if self.robot_plot:
             #rospy.loginfo("plotting robot world")
             self.plot_robot()
+
+        return no_move
 
     def condition_updates(self):
 
@@ -450,6 +455,8 @@ class Robot():
 
             except AttributeError:
                 self.current_goal_vertex = self.get_next_random_number()
+                while self.known_world.vertices[self.current_goal_vertex].position.z > self.known_world.surface_level - 0.0001:
+                    self.current_goal_vertex = self.get_next_random_number()
 
             # plan shortest path to goal
             planner.set_parameters(self.state.vertex_from_idx, self.current_goal_vertex, use_known_world)
@@ -465,6 +472,8 @@ class Robot():
                     self.scoring_statistics.goals_skipped += 1
                 '''
                 self.current_goal_vertex = self.get_next_random_number()
+                while self.known_world.vertices[self.current_goal_vertex].position.z > self.known_world.surface_level - 0.0001:
+                    self.current_goal_vertex = self.get_next_random_number()
                 
                 return None
             else:
@@ -614,11 +623,14 @@ class RobotController():
         while not rospy.is_shutdown():   
 
             # print("iteration: " + str(num_iterations))
-            self.robot.do_iteration(num_iterations)       
+            no_move = self.robot.do_iteration(num_iterations)       
             num_iterations += 1
 
             self.robot.basestation_scorer.update_scorer(num_iterations)
             if self.robot.basestation_scorer.finished: #checks if answer is correct, and if so stops sim
+                break
+
+            if no_move and num_iterations >= 5:
                 break
 
         return self.robot.basestation_scorer.score
