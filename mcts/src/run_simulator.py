@@ -9,10 +9,11 @@ March 2020
 import rospy
 import rospkg
 import yaml
+from std_msgs.msg import String
 
 from cfg import Word, Character
-#from simulator.robot import init_bt, tick_bt, Robot, RobotController
-import simulator
+from simulator.robot import Robot, RobotController
+
 
 class UnderwaterSimulator():
     def __init__(self,word):
@@ -32,12 +33,6 @@ class UnderwaterSimulator():
 
             # Create BT object from terminal BT CFG
             bt_root, bt = self.word.createBT()
-            init_bt(bt)
-
-            graphviz_pub = rospy.Publisher('behavior_tree_graphviz', String, queue_size=1)
-            compressed_pub = rospy.Publisher('behavior_tree_graphviz_compressed', String, queue_size=1)
-
-            tick_bt(bt)
 
             robot = Robot(config, robot_id, num_robots, seed, bt)
             # cProfile.run('RobotController(config, robot)')

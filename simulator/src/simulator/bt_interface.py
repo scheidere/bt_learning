@@ -5,6 +5,9 @@ import rospy
 from behavior_tree.behavior_tree import *
 from behavior_tree_msgs.msg import Status, Active
 
+import behavior_tree.behavior_tree_graphviz as gv
+import zlib
+
 def getActionsConditions():
     # Read in the list of actions and conditions from the bt_list file
     rospack = rospkg.RosPack()
@@ -19,6 +22,11 @@ class BT_Interface():
 
         self.bt = bt
 
+        self.graphviz_pub = rospy.Publisher('behavior_tree_graphviz', String, queue_size=1)
+        self.compressed_pub = rospy.Publisher('behavior_tree_graphviz_compressed', String, queue_size=1)
+
+        self.init_bt()
+
         # Get my actions and conditions
         self.actions, self.conditions = getActionsConditions()
 
@@ -26,6 +34,22 @@ class BT_Interface():
         # Each label (key) contains a list of nodes (value)
         self.defineActionNodes()        
         self.defineConditionNodes()
+
+    def init_bt(self):
+        for node in self.bt.nodes:
+            node.init_ros()
+
+    def tick_bt(self):
+        self.bt.tick()#root.tick(True)
+
+        source = gv.get_graphviz(self.bt)
+        source_msg = String()
+        source_msg.data = source
+        self.graphviz_pub.publish(source_msg)
+
+        compressed = String()
+        compressed.data = zlib.compress(source)
+        self.compressed_pub.publish(compressed)
 
     def defineActionNodes(self):
 

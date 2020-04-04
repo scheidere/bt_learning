@@ -32,8 +32,7 @@ from bt_interface import *
 from behavior_tree.behavior_tree import *
 from cfg import CFG, Word, Character
 
-import behavior_tree.behavior_tree_graphviz as gv
-import zlib
+
 
 
 # import cProfile
@@ -283,7 +282,6 @@ class Robot():
 
         #self.scoring_statistics.count_iterations += 1
 
-        tick_bt(self.bt)
 
         # Printing for debugging
         #r_prob_dist = [round(p, 3) for p in self.target_belief.prob_dist]
@@ -296,7 +294,7 @@ class Robot():
         distance_to_travel = self.speed
         #print("dist to travel", distance_to_travel)
         while distance_to_travel > 0:
-            tick_bt(self.bt)
+            self.bt_interface.tick_bt()
             
             # Plan
             #print("plan")
@@ -648,21 +646,7 @@ class RobotController():
         return self.robot.basestation_scorer.score
     
 
-def init_bt(bt):
-    for node in bt.nodes:
-        node.init_ros()
 
-def tick_bt(bt):
-    bt.tick()#root.tick(True)
-
-    source = gv.get_graphviz(bt)
-    source_msg = String()
-    source_msg.data = source
-    graphviz_pub.publish(source_msg)
-
-    compressed = String()
-    compressed.data = zlib.compress(source)
-    compressed_pub.publish(compressed)
 
 
 # Main function.
@@ -688,12 +672,6 @@ if __name__ == '__main__':
         #character_list = [Character('->'),Character('('),Character('[go_to_comms]'),Character(')')]
         cfg_word = Word(character_list) 
         bt_root, bt = cfg_word.createBT()
-        init_bt(bt)
-
-        graphviz_pub = rospy.Publisher('behavior_tree_graphviz', String, queue_size=1)
-        compressed_pub = rospy.Publisher('behavior_tree_graphviz_compressed', String, queue_size=1)
-
-        tick_bt(bt)
 
         robot = Robot(config, robot_id, num_robots, seed, bt)
         # cProfile.run('RobotController(config, robot)')
