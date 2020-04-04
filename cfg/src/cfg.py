@@ -4,6 +4,8 @@
 #import behavior_tree
 from behavior_tree.behavior_tree import Sequence, Fallback, Condition, Action, BehaviorTree, Node
 import rospy
+import rospkg
+import yaml
 
 # from behavior_tree_node
 import rospy
@@ -13,6 +15,15 @@ import behavior_tree.behavior_tree_graphviz as gv
 import cv2
 import zlib
 
+
+def getActionsConditions():
+    # Read in the list of actions and conditions from the bt_list file
+    rospack = rospkg.RosPack()
+    filepath = rospack.get_path('simulator') + "/config/bt_list.yaml" 
+    with open(filepath, 'r') as stream:
+        bt_list = yaml.safe_load(stream)
+
+    return bt_list["actions"], bt_list["conditions"]
 
 class Character():
     def __init__(self, label):
@@ -234,17 +245,23 @@ class CFG():
 
         # Generate a grammar
         self.grammar = self.generateGrammar()
+        self.printAllProdRules()
 
         # Print word
         #self.printWord()
 
         # Print all words
-        self.printAllTerminalWords(4)
+        #self.printAllTerminalWords(4)
+
+    def printAllProdRules(self):
+        for rule in self.grammar:
+            rule.printProductionRule()
     
     def generateGrammar(self):
 
         # Create empty production rule list
         production_rule_list = []
+        list_actions,list_conditions = getActionsConditions()
 
         # Define input and output words to define a production rule, and add the list
         '''
@@ -419,15 +436,19 @@ class CFG():
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
-        input_word = Word([Character("A")])
-        output_word = Word([Character("[]")])
-        production_rule = ProductionRule(input_word, output_word)
-        production_rule_list.append(production_rule)
+        for action in list_actions:
+            action_string = '[' + action + ']'
+            input_word = Word([Character("A")])
+            output_word = Word([Character(action_string)]) #'[]'
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
 
-        input_word = Word([Character("A")])
-        output_word = Word([Character("()")])
-        production_rule = ProductionRule(input_word, output_word)
-        production_rule_list.append(production_rule)
+        for condition in list_conditions:
+            condition_string = '(' + condition + ')'
+            input_word = Word([Character("A")])
+            output_word = Word([Character(condition_string)]) #'()'
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
 
         input_word = Word([Character("A")])
         output_word = Word([Character("tree")])
@@ -633,24 +654,27 @@ if __name__ == "__main__":
 
     # Execute only if run as a script
     
-    #cfg = CFG()
+    cfg = CFG()
+
 
     #rospy.init_node('behavior_tree_node')
+    list_actions,list_conditions = getActionsConditions()
+    print(list_actions,list_conditions)
 
-    test = Word([Character("->"),Character("("),Character("[]"),Character("?"),Character("("),Character("[]"),Character("()"),Character(")"),Character(")")])
+    #test = Word([Character("->"),Character("("),Character("[]"),Character("?"),Character("("),Character("[]"),Character("()"),Character(")"),Character(")")])
 
-    bt1root,bt1 = test.createBT()
+    #bt1root,bt1 = test.createBT()
 
     #rospy.spin()
 
-    rospy.init_node('behavior_tree_node')
+    #rospy.init_node('behavior_tree_node')
     
     #config_filename = rospy.get_param('~config', '')
     
-    node = BehaviorTreeNode(bt1)
+    #node = BehaviorTreeNode(bt1)
 
-    graphviz_pub = rospy.Publisher('behavior_tree_graphviz', String, queue_size=1)
-    compressed_pub = rospy.Publisher('behavior_tree_graphviz_compressed', String, queue_size=1)
-    timer = rospy.Timer(rospy.Duration(0.05), timer_callback)
+    #graphviz_pub = rospy.Publisher('behavior_tree_graphviz', String, queue_size=1)
+    #compressed_pub = rospy.Publisher('behavior_tree_graphviz_compressed', String, queue_size=1)
+    #timer = rospy.Timer(rospy.Duration(0.05), timer_callback)
 
-    rospy.spin()
+    #rospy.spin()

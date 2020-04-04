@@ -7,7 +7,7 @@ Jan 2020
 
 from action import Action #, printActionSequence
 from cfg import Word, Character
-from simulator import TempSimulator
+from run_simulator import UnderwaterSimulator
 '''
 def reward(action_sequence):
     
@@ -117,7 +117,8 @@ def reward(word):
 ###RUN SIMULATOR (which returns reward)
 def reward(word):
 
-    reward = TempSimulator(word).simReward()
+    #reward = TempSimulator(word).simReward()
+    reward = UnderwaterSimulator(word).generateReward()
 
     word.printWord()
     print(reward)
