@@ -17,7 +17,7 @@ from cfg import CFG, Word, Character
 
 import rospy
 
-def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations ):
+def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator ):
 
     ################################
     # Setup
@@ -135,7 +135,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
         rollout_word = rollout(partial_word=current.sequence[-1], cfg=cfg, budget=budget)
 
         # print("MCTS reward " + str(iter))
-        is_valid, rollout_reward = reward(word = rollout_word, max_iterations=max_sim_iterations)
+        is_valid, rollout_reward = reward(word = rollout_word, max_iterations=max_sim_iterations, underwater_simulator=underwater_simulator)
 
         ################################
         # Back-propagation

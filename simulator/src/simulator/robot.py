@@ -18,7 +18,7 @@ import world
 from world import World
 from world import distance
 
-from sensor_model import SensorModel
+
 from scorer import Scorer
 
 import copy
@@ -34,8 +34,6 @@ from cfg import CFG, Word, Character
 
 import numpy as np
 
-
-# import cProfile
 
 
 class State():
@@ -180,7 +178,7 @@ class Robot():
     PLANNER_TYPE_SHORTEST = 2
     PLANNER_TYPE_COMMSRANGE = 3  #need to use this below, want to test original shortest path planner first
 
-    def __init__(self, config, robot_id, num_robots, seed, bt, max_iterations):
+    def __init__(self, config, robot_id, num_robots, seed, bt, max_iterations, world):
 
         self.bt = bt
         self.config = config
@@ -208,9 +206,10 @@ class Robot():
         # Setup navigation roadmap graph
         # rospy.loginfo("robot getting base world from ground truth")
         # print("Setup navigation roadmap")
-        self.known_world = World(config)
-        do_test = False # don't error check graph
-        self.known_world.init_world(seed, do_test)
+        # self.known_world = World(config)
+        # do_test = False # don't error check graph
+        # self.known_world.init_world(seed, do_test)
+        self.known_world = world
 
         # Setup a set of random numbers
         # print("Setup set of random numbers")
@@ -237,12 +236,13 @@ class Robot():
         num_vertices = len(self.known_world.vertices)
 
         # create sensor model
-        self.sensor_model = SensorModel(config,num_vertices,self.known_world)
+        # moved within world instead
+        # self.sensor_model = SensorModel(config,num_vertices,self.known_world)
 
-        self.known_world.set_sensor_model(self.sensor_model)
+        # self.known_world.set_sensor_model(self.sensor_model)
 
         # Generate belief of where target could be
-        self.target_belief = TargetBelief(num_vertices, self.sensor_model)
+        self.target_belief = TargetBelief(num_vertices, self.known_world.sensor_model)
 
         # Set up Scorer
         self.basestation_scorer = Scorer(self.known_world, max_iterations)
@@ -259,6 +259,7 @@ class Robot():
         # print("finished init")
 
     def setup_random_numbers(self, seed):
+        '''
         # sets up a persistent set of numbers
         # for repeatable tests
         n = 10000
@@ -271,13 +272,18 @@ class Robot():
             self.random_number_list[i] = random_number
 
         self.random_number_list_index = 0
+        '''
+        pass
 
     def get_next_random_number(self):
+        '''
         number = self.random_number_list[self.random_number_list_index]
         self.random_number_list_index += 1
         if self.random_number_list_index >= len(self.random_number_list):
             self.random_number_list_index = 0
         return number
+        '''
+        return random.randint(0,len(self.known_world.vertices)-1)
 
 
     def do_iteration(self, num_iterations):
@@ -294,22 +300,28 @@ class Robot():
         #print('position of goal:', position_goal.x,position_goal.y)
         #print('prob at goal:',r_prob_dist[self.known_world.vertex_target_idx])
 
-        no_move = False
+        moved = False
 
         distance_to_travel = self.speed
-        #print("dist to travel", distance_to_travel)
+        # print("dist to travel", distance_to_travel)
         while distance_to_travel > 0:
             self.bt_interface.tick_bt()
+
+            # print("position: ")
+            # pos = self.state.get_position(self.known_world)
+            # print(pos.x, pos.y, pos.z)
             
             # Plan
-            #print("plan")
+            # print("plan")
             action_sequence = None          
             if self.state.at_vertex():
                 action_sequence = self.plan()
 
             # Move
-            #print("move")
+            # print("move")
             [new_vertex, distance_traveled, no_move] = self.move(action_sequence, distance_to_travel)
+            if not no_move:
+                moved = True
             if no_move or distance_traveled == 0:
                 distance_to_travel = 0
             else:
@@ -317,7 +329,7 @@ class Robot():
 
             # Observe
             if new_vertex:
-                #print("observe")
+                # print("observe")
 
                 x = self.state.vertex_from_idx
                 z = self.observe(x)
@@ -355,7 +367,7 @@ class Robot():
             #rospy.loginfo("plotting robot world")
             self.plot_robot()
 
-        return no_move
+        return not moved
 
     def condition_updates(self):
 
@@ -433,7 +445,7 @@ class Robot():
 
         if self.planner_type == Robot.PLANNER_TYPE_RANDOM:
             planner = planners.PlannerRandomWalk(self, self.known_world)
-            action_sequence = planner.plan()
+            action_sequence = planner.plan(debug)
             return action_sequence
 
         elif self.planner_type == Robot.PLANNER_TYPE_COMMSRANGE:
@@ -619,19 +631,29 @@ class RobotController():
         start_time = rospy.Time.now()
         num_iterations = 0
 
+        no_move_count = 0
+
         # Continue indefinitely
         while not rospy.is_shutdown():   
 
             # print("iteration: " + str(num_iterations))
             no_move = self.robot.do_iteration(num_iterations)       
             num_iterations += 1
+            # print(num_iterations)
 
             self.robot.basestation_scorer.update_scorer(num_iterations)
             if self.robot.basestation_scorer.finished: #checks if answer is correct, and if so stops sim
                 break
 
-            if no_move and num_iterations >= 5:
-                break
+            # Exit early if the robot hasn't moved in a while
+            if no_move and num_iterations >= 3:
+                no_move_count += 1
+                # print("no_move_count", no_move_count)
+                if no_move_count >= 3:
+                    # print("exiting due to robot not moving")
+                    break
+            else:
+                no_move_count = 0
 
         return self.robot.basestation_scorer.score
 

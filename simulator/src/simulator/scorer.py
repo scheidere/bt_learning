@@ -44,15 +44,20 @@ class Scorer():
         target_location_idx = self.world.vertex_target_idx
         #vertices_in_comms_range = self.world.vertices_in_comms_range
 
-        # First, check if you are within comms range and at surface
-        if is_at_surface and is_in_comms:
-            if robot_belief_idx == target_location_idx:
-                self.finished = True
-                self.score = -num_iterations
-                response = Scorer.RESPONSE_CORRECT
-            else:
-                response = Scorer.RESPONSE_FALSE
-        else: # either not in comms range or not at surface so robot should receive nothing from basestation
+        if not self.finished:
+
+            # First, check if you are within comms range and at surface
+            if is_at_surface and is_in_comms:
+                if robot_belief_idx == target_location_idx:
+                    self.finished = True
+                    self.score = -num_iterations
+                    response = Scorer.RESPONSE_CORRECT
+                else:
+                    response = Scorer.RESPONSE_FALSE
+            else: # either not in comms range or not at surface so robot should receive nothing from basestation
+                response = Scorer.RESPONSE_NONE
+
+        else:
             response = Scorer.RESPONSE_NONE
 
         return response

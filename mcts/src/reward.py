@@ -7,7 +7,9 @@ Jan 2020
 
 from action import Action #, printActionSequence
 from cfg import Word, Character
-from run_simulator import UnderwaterSimulator
+# from run_simulator import UnderwaterSimulator
+
+
 '''
 def reward(action_sequence):
     
@@ -115,7 +117,7 @@ def reward(word):
 
 
 ###RUN SIMULATOR (which returns reward)
-def reward(word, max_iterations):
+def reward(word, max_iterations, underwater_simulator):
 
     # roughly...
     min_reward = -max_iterations
@@ -129,7 +131,8 @@ def reward(word, max_iterations):
         is_valid = True
         reward_sum = 0
         for i in xrange(num_simulations):
-            reward_sum += UnderwaterSimulator(word).generateReward(max_iterations)
+            #reward_sum += UnderwaterSimulator(word).generateReward(max_iterations)
+            reward_sum += underwater_simulator.generateReward(word, max_iterations)
         reward = reward_sum / num_simulations
         print(reward)
     else:

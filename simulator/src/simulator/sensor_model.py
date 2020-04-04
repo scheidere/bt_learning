@@ -1,5 +1,5 @@
 
-from world import distance
+from distance import distance
 import numpy as np
 
 class SensorModel():

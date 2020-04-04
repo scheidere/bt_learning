@@ -17,8 +17,13 @@ from geometry_msgs.msg import Point
 
 import matplotlib.pyplot as plt
 
-from math import sqrt
 
+
+from sensor_model import SensorModel
+from distance import distance
+
+'''
+moved to separate file
 def distance(vertex_start, vertex_end):
     # Euclidean distance, for now
     #return ( (vertex_start.position.x-vertex_end.position.x)**2 + (vertex_start.position.y-vertex_end.position.y)**2 + (vertex_start.position.z-vertex_end.position.z)**2)**0.5
@@ -26,6 +31,7 @@ def distance(vertex_start, vertex_end):
     y = (vertex_start.position.y-vertex_end.position.y)
     z = (vertex_start.position.z-vertex_end.position.z)
     return sqrt( x*x + y*y + z*z )
+'''
 
 def distance_to_base(vertex):
     # Euclidean distance from basestation at 0,0,0 to vertex
@@ -84,9 +90,13 @@ class World():
 
         # edges, stored as a matrix indexed as [vertex_start, vertex_end]
         num_nodes = len(self.vertices) #doubled the input num_nodes in creating two layers of vertices instead of one
-        self.edge_matrix = [None] * num_nodes        
+        self.edge_matrix = [None] * num_nodes   
+        self.edge_adjacency_idx_lists = [None] * num_nodes  
+        self.edge_adjacency_edge_lists = [None] * num_nodes   
         for vertex_start_idx in xrange(num_nodes):
             self.edge_matrix[vertex_start_idx] = [None] * num_nodes
+            self.edge_adjacency_idx_lists[vertex_start_idx] = []
+            self.edge_adjacency_edge_lists[vertex_start_idx] = []
             for vertex_end_idx in xrange(num_nodes):
 
                 cost = distance(self.vertices[vertex_start_idx], self.vertices[vertex_end_idx])
@@ -97,6 +107,10 @@ class World():
                 edge = Edge(vertex_start_idx, vertex_end_idx, cost, exists)
                 self.edge_matrix[vertex_start_idx][vertex_end_idx] = edge
 
+                if exists:
+                    self.edge_adjacency_idx_lists[vertex_start_idx].append( vertex_end_idx )
+                    self.edge_adjacency_edge_lists[vertex_start_idx].append( edge )
+
         if do_test:
             self.test_indices()
 
@@ -105,6 +119,10 @@ class World():
         self.comms_range = self.config["comms_range"]
 
         self.vertices_in_comms_range = self.generateCommsRangeVertices()
+
+        # Setup sensor model
+        self.sensor_model = SensorModel(self.config,num_nodes,self)
+
     '''
     #old likelihood function we have replaced
     # it did not account for beyond sensor range -> 0
@@ -158,11 +176,6 @@ class World():
         #return a single observation, z based on the probability distribution
         return np.random.choice(a=len(self.vertices)+1, p=likelihoods)
 
-    def set_sensor_model(self, sensor_model):
-        # normally do this is __init__, but in this context the sensor model gets created after init
-
-        self.sensor_model = sensor_model
-
     def create_target_idx(self):
         #pick random vertex
         random_vertex_idx = random.randrange(len(self.vertices))
@@ -193,6 +206,10 @@ class World():
                     rospy.logerr("edge index start test failed")        
                 if self.edge_matrix[vertex_start_idx][vertex_end_idx].vertex_end_idx != vertex_end_idx:
                     rospy.logerr("edge index end test failed")  
+
+                if self.edge_matrix[vertex_start_idx][vertex_end_idx].exists:
+                    if vertex_end_idx not in self.edge_adjacency_idx_lists[vertex_start_idx]:
+                        rospy.logerr("edge_adjacency_idx_lists test failed")
 
     def get_edges_out(self,vertex_idx):
         return self.edge_matrix[vertex_idx]

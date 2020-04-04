@@ -40,7 +40,7 @@ class GoToKnownTarget(Planner):
 
 
 class PlannerRandomWalk(Planner):
-    def plan(self):
+    def plan(self, debug=False):
         vertex_start_idx = self.robot.state.vertex_from_idx
 
         v_current = vertex_start_idx
@@ -50,6 +50,7 @@ class PlannerRandomWalk(Planner):
         at_surface = self.world.vertices[vertex_start_idx].position.z > self.world.surface_level - 0.0001
 
         for i in range(plan_length):
+            '''
             edges_out = self.world.edge_matrix[v_current]
             valid_vertices = []
             for v in xrange(len(edges_out)):
@@ -62,12 +63,32 @@ class PlannerRandomWalk(Planner):
                             allowed = False
                     if allowed:
                         valid_vertices.append(v)
+            '''
+            edges_idx_out = self.world.edge_adjacency_idx_lists[v_current]
+            if debug:
+                print('edges_idx_out',edges_idx_out)
+            valid_vertices = []
+            for v_idx in edges_idx_out:
+                allowed = True
+                if not at_surface:
+                    edge_at_surface = self.world.vertices[v_idx].position.z > self.world.surface_level - 0.0001
+                    if edge_at_surface:
+                        allowed = False
+                if allowed:
+                    valid_vertices.append(v_idx)
+
+            if debug:
+                print('valid_vertices',valid_vertices)
 
             if not valid_vertices:
                 v_next = v_current
+                if debug:
+                    print('v_next is stationary')
             else:
                 r = random.randint(0,len(valid_vertices)-1)
                 v_next = valid_vertices[r]
+                if debug:
+                    print('v_next',v_next)
             action_sequence.append(v_next)
             v_current = v_next
         return action_sequence
@@ -151,6 +172,7 @@ class PlannerShortestPath(Planner):
         return True
 
     def get_neighbours(self, vertex_idx):
+        '''
         edges_out = self.world.get_edges_out(vertex_idx)
 
         # filter out the non-existent edges
@@ -159,6 +181,8 @@ class PlannerShortestPath(Planner):
             if e.exists:
                 edges_out_keep.append(e)
         return edges_out_keep
+        '''
+        return self.world.edge_adjacency_edge_lists[vertex_idx]
 
 
     def find_min_vertex(self, dist_to_go, open_set):
@@ -286,38 +310,3 @@ class PlannerCommsRange(PlannerShortestPath):
         if debug:
             print path
         return [d, path] 
-
-    '''
-    def is_open_set_empty(self, open_set):
-        for i in open_set:
-            if i == True:
-                return False
-        return True
-
-    def get_neighbours(self, vertex_idx):
-        edges_out = self.world.get_edges_out(vertex_idx)
-
-        # filter out the non-existent edges
-        edges_out_keep = []
-        for e in edges_out:
-            if e.exists:
-                edges_out_keep.append(e)
-        return edges_out_keep
-
-
-    def find_min_vertex(self, dist_to_go, open_set):
-        
-        min_idx = -1
-        min_value = sys.maxint
-
-        for i in xrange(len(dist_to_go)):
-            
-            value = dist_to_go[i]
-            if open_set[i] == True:
-                if value <= min_value:
-
-                    min_value = value
-                    min_idx = i
-        return min_idx
-
-    '''

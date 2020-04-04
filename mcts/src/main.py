@@ -19,6 +19,7 @@ import rospy
 import cProfile
 import pstats
 
+from run_simulator import UnderwaterSimulator
 
 
 def run():
@@ -36,15 +37,18 @@ def run():
         id = i
         action_set.append(Action(id,i))
     '''
+
+    # Create a simulator
+    underwater_simulator = UnderwaterSimulator()
     
     budget = 8
     
 
     # Solve it with MCTS
     exploration_exploitation_parameter = 1.0 # =1.0 is recommended. <1.0 more exploitation. >1.0 more exploration. 
-    max_iterations = 1000
+    max_iterations = 10000
     max_sim_iterations = 100
-    [solution, best_rollout, root, list_of_all_nodes, winner] = mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations )
+    [solution, best_rollout, root, list_of_all_nodes, winner] = mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator )
 
     # Display the tree
     ###printActionSequence(solution) #this is not set up for words instead of sequences for actions
