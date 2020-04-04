@@ -15,6 +15,8 @@ import random
 import math
 from cfg import CFG, Word, Character
 
+import rospy
+
 def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations ):
 
     ################################
@@ -28,6 +30,11 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
     ################################
     # Main loop
     for iter in range(max_iterations):
+
+        if rospy.is_shutdown(): 
+            # Return solution before closing
+            break
+
 
         print(iter)
 
@@ -140,6 +147,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
 
                 # Update the average
                 parent.updateAverage(rollout_reward)
+                parent.updateBestRollout(rollout_word, rollout_reward)
 
                 # Recurse up the tree
                 parent = parent.parent
@@ -181,6 +189,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
             best_node = node
 
     solution = best_node.sequence
+    best_rollout = best_node.best_rollout
     winner = best_node
 
-    return [solution, root, list_of_all_nodes, winner]
+    return [solution, best_rollout, root, list_of_all_nodes, winner]

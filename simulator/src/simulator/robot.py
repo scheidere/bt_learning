@@ -606,7 +606,27 @@ class RobotController():
         z = self.robot.observe(x)
         self.robot.target_belief.bayes_update(x,z)
 
+        start_time = rospy.Time.now()
+        num_iterations = 0
 
+        # Continue indefinitely
+        while not rospy.is_shutdown():   
+
+            print("iteration: " + str(num_iterations))
+            self.robot.do_iteration(num_iterations)       
+            num_iterations += 1
+
+            self.robot.basestation_scorer.update_scorer(num_iterations)
+            if self.robot.basestation_scorer.finished: #checks if answer is correct, and if so stops sim
+                break
+
+        return self.robot.basestation_scorer.score
+
+
+
+
+
+        '''
         # periodically publish statistics/scores etc
         #rospy.Timer(rospy.Duration(0.1), robot.publish_statistics_event, oneshot=False)
 
@@ -649,6 +669,7 @@ class RobotController():
                     break
 
         return self.robot.basestation_scorer.score
+        '''
     
 
 

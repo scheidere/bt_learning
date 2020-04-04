@@ -27,7 +27,7 @@ def get_graphviz(tree):
             if node.status == bt.ReturnStatus.SUCCESS:
                 style += 'fillcolor=green'
             elif node.status == bt.ReturnStatus.RUNNING:
-                style += 'fillcolor=blue'
+                style += 'fillcolor=lightblue'
             elif node.status == bt.ReturnStatus.FAILURE:
                 style += 'fillcolor=red'
         else:
@@ -35,7 +35,7 @@ def get_graphviz(tree):
             if node.status == bt.ReturnStatus.SUCCESS:
                 style += 'color=green'
             elif node.status == bt.ReturnStatus.RUNNING:
-                style += 'color=blue'
+                style += 'color=lightblue'
             elif node.status == bt.ReturnStatus.FAILURE:
                 style += 'color=red'
         

@@ -32,19 +32,24 @@ def run():
         action_set.append(Action(id,i))
     '''
     
-    budget = 6
+    budget = 10
     
 
     # Solve it with MCTS
-    exploration_exploitation_parameter = 5.0 # =1.0 is recommended. <1.0 more exploitation. >1.0 more exploration. 
+    exploration_exploitation_parameter = 3.0 # =1.0 is recommended. <1.0 more exploitation. >1.0 more exploration. 
     max_iterations = 10000
     max_sim_iterations = 100
-    [solution, root, list_of_all_nodes, winner] = mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations )
+    [solution, best_rollout, root, list_of_all_nodes, winner] = mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations )
 
     # Display the tree
     ###printActionSequence(solution) #this is not set up for words instead of sequences for actions
+    
+    print('sequence at best node:')
     for soln in solution:
         soln.printWord()
+    
+    print('best_rollout at best node:')
+    best_rollout.printWord()
 
     # OLD plotting function -- does not work for these cfg trees
     #plotTree(list_of_all_nodes, winner, action_set, False, budget, 1, exploration_exploitation_parameter)
@@ -52,7 +57,7 @@ def run():
 
     # new plotting function
     use_uct = False # True case doesn't currently work
-    max_height = 5
+    max_height = 4
     plot_cfg_tree(list_of_all_nodes, winner, use_uct, max_height, exploration_exploitation_parameter)
 
     # Wait for Ctrl+C

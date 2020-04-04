@@ -14,6 +14,8 @@ from std_msgs.msg import String
 from cfg import Word, Character
 from simulator.robot import Robot, RobotController
 
+import random
+
 
 class UnderwaterSimulator():
     def __init__(self,word):
@@ -27,7 +29,8 @@ class UnderwaterSimulator():
             config = yaml.safe_load(stream)
         robot_id = rospy.get_param('~robot_id')
         num_robots = rospy.get_param('~num_robots')
-        seed = rospy.get_param('~seed')
+        # seed = rospy.get_param('~seed')
+        seed = random.randint(0,100) # random environment
 
         try:
 

@@ -123,16 +123,21 @@ def reward(word, max_iterations):
 
     word.printWord()
 
+    num_simulations = 10
+
     if word.list:
         is_valid = True
-        reward = UnderwaterSimulator(word).generateReward(max_iterations)
+        reward_sum = 0
+        for i in xrange(num_simulations):
+            reward_sum += UnderwaterSimulator(word).generateReward(max_iterations)
+        reward = reward_sum / num_simulations
         print(reward)
     else:
         is_valid = False
         reward = min_reward
 
     # Normalisation
-    reward = float(reward + min_reward)/float(max_reward - min_reward)
+    reward = float(reward - min_reward)/float(max_reward - min_reward)
 
     return is_valid, reward
 

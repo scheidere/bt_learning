@@ -20,6 +20,15 @@ class TreeNode():
         self.average_evaluation_score = 0
         self.num_updates = 0
 
+        # rollout solutions
+        self.best_rollout = None
+        self.best_rollout_evaluation_score = 0
+
+    def updateBestRollout(self, rollout, rollout_evaluation_score):
+        if (self.best_rollout == None) or (rollout_evaluation_score >= self.best_rollout_evaluation_score):
+            self.best_rollout = rollout
+            self.best_rollout_evaluation_score = rollout_evaluation_score
+
     def updateAverage(self, evaluation_score):
         # Incremental update to the average
         self.average_evaluation_score = float(self.average_evaluation_score * self.num_updates + evaluation_score) / float(self.num_updates + 1)
