@@ -200,6 +200,14 @@ class PlannerShortestPath(Planner):
                     min_idx = i
         return min_idx
 
+class PlannerPeakBelief(PlannerShortestPath):
+    # find shortest path from robot current location to vertex with highest probability of being target
+    pass
+
+    # has a goal, unlike comms range (which has a list of possible goals)
+    # goal is updated every iteration (since prob_dist also updated)
+    # need to change things in robot.py to implement correctly (also bt_list.yaml) 
+
 class PlannerCommsRange(PlannerShortestPath):
     #this inherently only goes to vertices within comms range on the surface
     #world.vertices_in_comms_range is a list that only contains vertices in comms range on surface
