@@ -177,6 +177,7 @@ class Robot():
     PLANNER_TYPE_RANDOM = 1
     PLANNER_TYPE_SHORTEST = 2
     PLANNER_TYPE_COMMSRANGE = 3  #need to use this below, want to test original shortest path planner first
+    PLANNER_TYPE_PEAKBELIEF = 4
 
     def __init__(self, config, robot_id, num_robots, seed, bt, max_iterations, world):
 
@@ -402,6 +403,9 @@ class Robot():
         if 'go_to_comms' in active_actions:
             self.planner_type = Robot.PLANNER_TYPE_COMMSRANGE
 
+        elif 'go_to_belief' in active_actions:
+            self.planner_type = Robot.PLANNER_TYPE_PEAKBELIEF
+
         elif 'random_walk' in active_actions:
             self.planner_type = Robot.PLANNER_TYPE_RANDOM
 
@@ -421,6 +425,11 @@ class Robot():
         for action in active_actions:
             if action == 'go_to_comms':
                 if self.planner_type == Robot.PLANNER_TYPE_COMMSRANGE:
+                    self.bt_interface.setActionStatusRunning(action)
+                else:
+                    self.bt_interface.setActionStatusSuccess(action)
+            elif action == 'go_to_belief':
+                if self.planner_type == Robot.PLANNER_TYPE_PEAKBELIEF:
                     self.bt_interface.setActionStatusRunning(action)
                 else:
                     self.bt_interface.setActionStatusSuccess(action)
@@ -448,6 +457,11 @@ class Robot():
             action_sequence = planner.plan(debug)
             return action_sequence
 
+        elif self.planner_type == Robot.PLANNER_TYPE_PEAKBELIEF:
+            planner = planners.PlannerPeakBelief(self, self.known_world)
+
+            planner.set_parameters(self.state.vertex_from_idx, self.target_belief)
+
         elif self.planner_type == Robot.PLANNER_TYPE_COMMSRANGE:
             planner = planners.PlannerCommsRange(self, self.known_world)
 
@@ -455,7 +469,6 @@ class Robot():
 
             action_sequence = planner.plan(debug)
             return action_sequence
-
 
         elif self.planner_type == Robot.PLANNER_TYPE_SHORTEST:
             planner = planners.PlannerShortestPath(self, self.known_world)

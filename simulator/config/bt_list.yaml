@@ -2,6 +2,7 @@ actions:
   - go_to_comms #version of shortest path planner that is done when it reaches any vertex in comms range
   # go to comms should include surface now???
   #- go_to_surface #version of shortest path planner that is done when position.z == surface level
+  - go_to_belief #shortest path to vertex with peak belief
   - random_walk
   - shortest_path
 
