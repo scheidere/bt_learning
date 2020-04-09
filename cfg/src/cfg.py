@@ -2,7 +2,7 @@
 #import bla
 
 #import behavior_tree
-from behavior_tree.behavior_tree import Sequence, Fallback, Condition, Action, BehaviorTree, Node
+from behavior_tree.behavior_tree import Sequence, Fallback, Condition, Action, BehaviorTree, Node, get_decorator
 import rospy
 import rospkg
 import yaml
@@ -104,6 +104,10 @@ class Word():
                     node = Parallel(int(arguments[0]))
                     self.num_child = int(arguments[0])
                 '''
+            elif char.label[0] == '<':
+                node_label = '!'
+                node = get_decorator(node_label)
+
             elif char.label[0] == '(' and not char.equal(Character("(")):
                 node_label = char.label.replace('(', '').replace(')', '')
                 node = Condition(node_label)
@@ -257,20 +261,65 @@ class CFG():
         for rule in self.grammar:
             rule.printProductionRule()
     
-    def generateGrammar(self):
+    def generateGrammar(self): 
+        
+        return self.generateGrammar_lr()
+
+    def generateGrammar_treeTest(self):
 
         # Create empty production rule list
         production_rule_list = []
-        list_actions,list_conditions = getActionsConditions()
 
+        # Word = entire tree
+
+        input_word = Word([Character("S")])
+        output_word = Word([Character("tree")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("tree")])
+        output_word = Word([Character("A"),Character("("),Character("children"),Character(")")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        return production_rule_list
+
+    def generateGrammar_parenthesisTest(self):
+
+        # Create empty production rule list
+        production_rule_list = []
+        
+        input_word = Word([Character("S")])
+        output_word = Word([Character("("), Character("S"), Character(")")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+
+        input_word = Word([Character("S")])
+        output_word = Word([Character("S"), Character("S")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+
+        input_word = Word([Character("S")])
+        output_word = Word([Character("("), Character(")")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        return production_rule_list
+        
+
+    def generateGrammar_readingGroupPaper(self):
         # Define input and output words to define a production rule, and add the list
-        '''
+
+        # Create empty production rule list
+        production_rule_list = []
+        
         input_word = Word([Character("S")])
         output_word = Word([Character("a"), Character("b"), Character("c")])
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
-        '''
-        '''
+       
         input_word = Word([Character("A")])
         output_word = Word([Character("a")])
         production_rule = ProductionRule(input_word, output_word)
@@ -299,111 +348,15 @@ class CFG():
         output_word = Word([Character("b"), Character("c")])
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
-        '''
-        '''
-        input_word = Word([Character("S")])
-        output_word = Word([Character("("), Character("S"), Character(")")])
-        production_rule = ProductionRule(input_word, output_word)
-        production_rule_list.append(production_rule)
+        
+        return production_rule_list
 
+    def generateGrammar_nolr(self):
 
-        input_word = Word([Character("S")])
-        output_word = Word([Character("S"), Character("S")])
-        production_rule = ProductionRule(input_word, output_word)
-        production_rule_list.append(production_rule)
-
-
-        input_word = Word([Character("S")])
-        output_word = Word([Character("("), Character(")")])
-        production_rule = ProductionRule(input_word, output_word)
-        production_rule_list.append(production_rule)
-        '''
-        '''
-        # test
-        input_word = Word([Character("S")])
-        output_word = Word([Character("->")])
-        production_rule = ProductionRule(input_word, output_word)
-        production_rule_list.append(production_rule)
-
-
-        input_word = Word([Character("S")])
-        output_word = Word([Character("?")])
-        production_rule = ProductionRule(input_word, output_word)
-        production_rule_list.append(production_rule)
-
-
-        input_word = Word([Character("->")])
-        output_word = Word([Character("execution")])
-        production_rule = ProductionRule(input_word, output_word)
-        production_rule_list.append(production_rule)
-
-        input_word = Word([Character("->")])
-        output_word = Word([Character("S"), Character("S")])
-        production_rule = ProductionRule(input_word, output_word)
-        production_rule_list.append(production_rule)
-
-
-        input_word = Word([Character("->")])
-        output_word = Word([Character("->"), Character("S")])
-        production_rule = ProductionRule(input_word, output_word)
-        production_rule_list.append(production_rule)
-
-        input_word = Word([Character("?")])
-        output_word = Word([Character("execution")])
-        production_rule = ProductionRule(input_word, output_word)
-        production_rule_list.append(production_rule)
-
-        input_word = Word([Character("?")])
-        output_word = Word([Character("S"), Character("S")])
-        production_rule = ProductionRule(input_word, output_word)
-        production_rule_list.append(production_rule)
-
-        input_word = Word([Character("?")])
-        output_word = Word([Character("?"), Character("S")])
-        production_rule = ProductionRule(input_word, output_word)
-        production_rule_list.append(production_rule)
-
-        input_word = Word([Character("execution")])
-        output_word = Word([Character("condition"), Character("action")])
-        production_rule = ProductionRule(input_word, output_word)
-        production_rule_list.append(production_rule)
-        #print(production_rule_list)
-        '''
-        '''
-        # Word = entire tree
-
-        input_word = Word([Character("S")])
-        output_word = Word([Character("tree")])
-        production_rule = ProductionRule(input_word, output_word)
-        production_rule_list.append(production_rule)
-
-        input_word = Word([Character("tree")])
-        output_word = Word([Character("A"),Character("("),Character("children"),Character(")")])
-        production_rule = ProductionRule(input_word, output_word)
-        production_rule_list.append(production_rule)
-
-        '''
-        #input_word = Word([Character("tree")])
-        #output_word = Word([Character("A")])
-        #production_rule = ProductionRule(input_word, output_word)
-        #production_rule_list.append(production_rule)
-        '''
-        input_word = Word([Character("children")])
-        output_word = Word([Character("A")])
-        production_rule = ProductionRule(input_word, output_word)
-        production_rule_list.append(production_rule)
-
-        input_word = Word([Character("children")])
-        output_word = Word([Character("A"),Character("children")])
-        production_rule = ProductionRule(input_word, output_word)
-        production_rule_list.append(production_rule)
-
-        input_word = Word([Character("children")])
-        output_word = Word([Character("tree")])
-        production_rule = ProductionRule(input_word, output_word)
-        production_rule_list.append(production_rule)
-        '''
-        '''
+        # Create empty production rule list
+        production_rule_list = []
+        list_actions,list_conditions = getActionsConditions()  
+        
         # Behavior Tree Production Rules
         input_word = Word([Character("S")])
         output_word = Word([Character("tree")])
@@ -420,12 +373,6 @@ class CFG():
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
-        '''
-        #input_word = Word([Character("tree")])
-        #output_word = Word([Character("||"),Character("("),Character("A"),Character("children"),Character(")")])
-        #production_rule = ProductionRule(input_word, output_word)
-        #production_rule_list.append(production_rule)
-        '''
         input_word = Word([Character("children")])
         output_word = Word([Character("A"),Character("children")])
         production_rule = ProductionRule(input_word, output_word)
@@ -455,8 +402,165 @@ class CFG():
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
         
+        return production_rule_list
+
+    def generateGrammar_lr(self):    
+        # Behavior Tree Production Rules
+        
+        # Needed this rule before we changed the following four to tree = S (anywhere there is an S, it was tree)
+
+        # Create empty production rule list
+        production_rule_list = []
+        list_actions,list_conditions = getActionsConditions()  
+
+        input_word = Word([Character("S")])
+        output_word = Word([Character("SorTree")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("tree")])
+        output_word = Word([Character("SorTree")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("SorTree")])
+        output_word = Word([Character("?"),Character("("),Character("A"),Character("children_r"),Character(")")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("SorTree")])
+        output_word = Word([Character("->"),Character("("),Character("A"),Character("children_r"),Character(")")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+        
+        input_word = Word([Character("SorTree")])
+        output_word = Word([Character("?"),Character("("),Character("children_l"),Character("A"),Character(")")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("SorTree")])
+        output_word = Word([Character("->"),Character("("),Character("children_l"),Character("A"),Character(")")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        # Potential new rule to allow fallback nodes to only have conditions as children (no actions)
+        input_word = Word([Character("tree")])
+        output_word = Word([Character("?"),Character("("),Character("children_l"),Character("CorD"),Character(")")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("tree")])
+        output_word = Word([Character("->"),Character("("),Character("children_l"),Character("CorD"),Character(")")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("CorD")])
+        output_word = Word([Character("<!>"),Character("("),Character("C"),Character(")")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("CorD")])
+        output_word = Word([Character("C")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        '''
+        # This allows actions to be alone under parent node
+        input_word = Word([Character("tree")])
+        output_word = Word([Character("?"),Character("("),Character("A"),Character(")")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("tree")])
+        output_word = Word([Character("->"),Character("("),Character("A"),Character(")")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
         '''
 
+        # Note: there are more ways than just the following two, but I chose this method for simplicity
+        # ex. you could add children_r to the right of A under a children_l input word... Too complicated
+        input_word = Word([Character("children_l")])
+        output_word = Word([Character("children_l"),Character("CorD")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("children_r")])
+        output_word = Word([Character("A"),Character("children_r")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        # Prevent tree by itself (Don't want 1-wide tree)
+        input_word = Word([Character("children_l")])
+        output_word = Word([Character("children_l"),Character("tree")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("children_r")])
+        output_word = Word([Character("S"),Character("children_r")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        # A A A
+        input_word = Word([Character("children_r")])
+        output_word = Word([Character("A")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        # C C A
+        input_word = Word([Character("children_l")])
+        output_word = Word([Character("CorD")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+        
+        input_word = Word([Character("children_r")])
+        output_word = Word([Character("S")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("children_l")])
+        output_word = Word([Character("tree")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+
+        for action in list_actions:
+            action_string = '[' + action + ']'
+            input_word = Word([Character("A")])
+            output_word = Word([Character(action_string)]) #'[]'
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+        for condition in list_conditions:
+            condition_string = '(' + condition + ')'
+            input_word = Word([Character("C")])
+            output_word = Word([Character(condition_string)]) #'()'
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+        '''
+        # These we dont want because they allow 1-wide search tree
+        input_word = Word([Character("A")])
+        output_word = Word([Character("tree")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("C")])
+        output_word = Word([Character("tree")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+        '''
+        
+        # Might need to generalize to using N for a general node instead of using A for general and specifically action
+        # Note for Graeme: I looked at the output but I am not confident these will work the way we need them to
+        
+        return production_rule_list
+
+    def generateGrammar_testing(self):
+
+        # Create empty production rule list
+        production_rule_list = []
+        list_actions,list_conditions = getActionsConditions()  
+        
         # Behavior Tree Production Rules
         input_word = Word([Character("S")])
         output_word = Word([Character("tree")])
@@ -483,43 +587,35 @@ class CFG():
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
-        '''
-        #input_word = Word([Character("tree")])
-        #output_word = Word([Character("||"),Character("("),Character("A"),Character("children"),Character(")")])
-        #production_rule = ProductionRule(input_word, output_word)
-        #production_rule_list.append(production_rule)
-        '''
-
-        # Note: there are more ways than just the following two, but I chose this method for simplicity
-        # ex. you could add children_r to the right of A under a children_l input word... Too complicated
-        input_word = Word([Character("children_l")])
-        output_word = Word([Character("children_l"),Character("A")])
-        production_rule = ProductionRule(input_word, output_word)
-        production_rule_list.append(production_rule)
-
         input_word = Word([Character("children_r")])
         output_word = Word([Character("A"),Character("children_r")])
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
-
-        # A A
-        input_word = Word([Character("children_l")])
-        output_word = Word([Character("A")])
+        '''
+        input_word = Word([Character("children_r")])
+        output_word = Word([Character("tree"),Character("children_r")])
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
-
-        # A A
+        '''
         input_word = Word([Character("children_r")])
         output_word = Word([Character("A")])
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
-        # C A
+        input_word = Word([Character("children_l")])
+        output_word = Word([Character("children_l"), Character("C")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+        
+        input_word = Word([Character("children_l")])
+        output_word = Word([Character("children_l"), Character("tree")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+        
         input_word = Word([Character("children_l")])
         output_word = Word([Character("C")])
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
-
 
         for action in list_actions:
             action_string = '[' + action + ']'
@@ -535,15 +631,32 @@ class CFG():
             production_rule = ProductionRule(input_word, output_word)
             production_rule_list.append(production_rule)
 
+        '''
         input_word = Word([Character("A")])
         output_word = Word([Character("tree")])
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
-        # Might need to generalize to using N for a general node instead of using A for general and specifically action
-        # Note for Graeme: I looked at the output but I am not confident these will work the way we need them to
+        input_word = Word([Character("C")])
+        output_word = Word([Character("tree")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+        '''
+
+        #test children l or r -> tree
+        input_word = Word([Character("children_r")])
+        output_word = Word([Character("tree")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = Word([Character("children_l")])
+        output_word = Word([Character("tree")])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
         
         return production_rule_list
+
+
 
     def printWord(self):
 
@@ -742,10 +855,11 @@ if __name__ == "__main__":
     
     cfg = CFG()
 
+    cfg.printAllTerminalWords(7)
 
     #rospy.init_node('behavior_tree_node')
-    list_actions,list_conditions = getActionsConditions()
-    print(list_actions,list_conditions)
+    #list_actions,list_conditions = getActionsConditions()
+    #print(list_actions,list_conditions)
 
     #test = Word([Character("->"),Character("("),Character("[]"),Character("?"),Character("("),Character("[]"),Character("()"),Character(")"),Character(")")])
 

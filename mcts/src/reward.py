@@ -133,7 +133,7 @@ def reward(word, max_iterations, underwater_simulator):
         for i in xrange(num_simulations):
             #reward_sum += UnderwaterSimulator(word).generateReward(max_iterations)
             reward_sum += underwater_simulator.generateReward(word, max_iterations)
-        reward = reward_sum / num_simulations
+        reward = float(reward_sum) / float(num_simulations)
         print(reward)
     else:
         is_valid = False

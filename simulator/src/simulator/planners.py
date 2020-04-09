@@ -6,6 +6,7 @@ import world
 import random
 import sys
 import numpy as np
+import copy
 
 # base class... don't use directly
 class Planner():
@@ -207,14 +208,12 @@ class PlannerPeakBelief(PlannerShortestPath):
     def set_parameters(self,vertex_start_idx, target_belief):
         self.vertex_start_idx = vertex_start_idx
         self.target_belief = target_belief
+        self.vertex_goal_idx = self.target_belief.generateRobotBeliefIdx()
 
-        prob_dist = self.target_belief.prob_dist
-        max_p = max(prob_dist)
-        #print('size',np.shape(prob_dist))
-        where = np.where(prob_dist == max_p) #why is shape (bla,) and not (r,c)???
-        #print(where)
-        max_index = int(where[0]) #ISSUE: sometimes this is two things, sometimes one: ask Graeme
-        self.vertex_goal_idx = max_index
+        if self.vertex_start_idx == self.vertex_goal_idx:
+            temp_dist = copy.copy(self.target_belief.prob_dist)
+            temp_dist[self.vertex_goal_idx] = 0
+            self.vertex_goal_idx = np.argmax(temp_dist)
 
     # has a goal, unlike comms range (which has a list of possible goals)
     # goal is updated every iteration (since prob_dist also updated)

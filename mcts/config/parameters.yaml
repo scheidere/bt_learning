@@ -1,0 +1,17 @@
+
+#robot_plot: False #False
+#iteration_rate: 10 #0.5 #Hz
+#scoring_statistics_frequency: 1 #Hz
+
+#environment_size: [1000, 1000]
+#num_nodes: 75 #300
+#connection_radius: 200 #100
+#robot_speed: 500 # units of distance travelled between iterations #500
+#sensor_range: 400 # distance robot is capable of sensing a target
+#comms_range: 500 # distance beyond which the robot is unable to contact basestation
+
+budget: 8
+exploration_exploitation_parameter: 1.0 # =1.0 is recommended. <1.0 more exploitation. >1.0 more exploration. 
+max_mcts_iterations: 10000 #change name to max_mcts_iterations ##you change this to make it run longer
+max_sim_iterations: 100 #iterations robot allows to move for before it gives up
+plot_search_tree: False

@@ -15,6 +15,8 @@ import time, sys
 from cfg import Word, Character, CFG
 
 import rospy
+import rospkg
+import yaml
 
 import cProfile
 import pstats
@@ -41,14 +43,29 @@ def run():
     # Create a simulator
     underwater_simulator = UnderwaterSimulator()
     
+    # Get the config file etc
+    rospack = rospkg.RosPack()
+    filepath = rospack.get_path('mcts') + "/config/" + rospy.get_param('~config')
+    with open(filepath, 'r') as stream:
+        config = yaml.safe_load(stream)
+    #budget = rospy.get_param('~budget')???
+    budget = config["budget"]
+
+    exploration_exploitation_parameter = config["exploration_exploitation_parameter"]
+    max_mcts_iterations = config["max_mcts_iterations"]
+    max_sim_iterations = config["max_sim_iterations"]
+    
+    '''
     budget = 8
     
 
     # Solve it with MCTS
     exploration_exploitation_parameter = 1.0 # =1.0 is recommended. <1.0 more exploitation. >1.0 more exploration. 
-    max_iterations = 10000
-    max_sim_iterations = 100
-    [solution, best_rollout, root, list_of_all_nodes, winner] = mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator )
+    max_mcts_iterations = 10000 #change name to max_mcts_iterations ##you change this to make it run longer
+    max_sim_iterations = 100 #iterations robot allows to move for before it gives up
+    '''
+    [solution, best_rollout, root, list_of_all_nodes, winner] = mcts( cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator )
+    
 
     # Display the tree
     ###printActionSequence(solution) #this is not set up for words instead of sequences for actions
@@ -63,20 +80,21 @@ def run():
     # OLD plotting function -- does not work for these cfg trees
     #plotTree(list_of_all_nodes, winner, action_set, False, budget, 1, exploration_exploitation_parameter)
     #plotTree(list_of_all_nodes, winner, action_set, True, budget, 2, exploration_exploitation_parameter)
+    plot_search_tree = config["plot_search_tree"]
+    if plot_search_tree:
 
-    '''
-    # new plotting function
-    use_uct = False # True case doesn't currently work
-    max_height = 4
-    plot_cfg_tree(list_of_all_nodes, winner, use_uct, max_height, exploration_exploitation_parameter)
+        # new plotting function
+        use_uct = False # True case doesn't currently work
+        max_height = 4
+        plot_cfg_tree(list_of_all_nodes, winner, use_uct, max_height, exploration_exploitation_parameter)
 
-    # Wait for Ctrl+C
-    while True:
-        try:
-            time.sleep(.1)
-        except KeyboardInterrupt:
-            sys.exit()
-    '''
+        # Wait for Ctrl+C
+        while True:
+            try:
+                time.sleep(.1)
+            except KeyboardInterrupt:
+                sys.exit()
+    
 
 
 def run_profiler():

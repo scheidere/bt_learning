@@ -92,6 +92,8 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                 current.children.append(new_child_node)
                 current = new_child_node
                 list_of_all_nodes.append(new_child_node) # for debugging only
+                #print('new_child_node')
+                #new_child_node.sequence[-1].printWord()
 
                 break # don't go deeper in the tree...
 
@@ -119,13 +121,19 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     best_ucb_score = 0
                     for child_idx in range(len(current.children)):
                         child = current.children[child_idx]
+                        #print('child average_evaluation_score',child.average_evaluation_score)
                         ucb_score = ucb(child.average_evaluation_score, n_parent, child.num_updates)
+                        #print('ucb_score',ucb_score)
                         if best_child == -1 or (ucb_score > best_ucb_score):
                             best_child = child
                             best_ucb_score = ucb_score
 
+                    #print('best_ucb_score',best_ucb_score)
+                    #print('n_parent',n_parent)
                     # Recurse down the tree
                     current = best_child
+                    #print('best_child')
+                    #best_child.sequence[-1].printWord()
 
         ################################
         # Rollout
@@ -133,7 +141,8 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
         #rollout_sequence = rollout(subsequence=current.sequence, action_set=action_set, budget=budget)
         #rollout_reward = reward(action_sequence=rollout_sequence)
         rollout_word = rollout(partial_word=current.sequence[-1], cfg=cfg, budget=budget)
-
+        #print('rollout_word')
+        #rollout_word.printWord()
         # print("MCTS reward " + str(iter))
         is_valid, rollout_reward = reward(word = rollout_word, max_iterations=max_sim_iterations, underwater_simulator=underwater_simulator)
 
@@ -146,13 +155,29 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
             while parent: # is not None
 
                 # Update the average
+                #print('rollout_reward', rollout_reward)
+                #print('parent.average_evaluation_score before',parent.average_evaluation_score)
+                #print('parent.num_updates before',parent.num_updates)
                 parent.updateAverage(rollout_reward)
+                #print('parent.average_evaluation_score after',parent.average_evaluation_score)
+                #print('parent.num_updates after',parent.num_updates)
                 parent.updateBestRollout(rollout_word, rollout_reward)
 
                 # Recurse up the tree
                 parent = parent.parent
         else:
             print("invalid rollout (empty?)")
+            # print("MCTS backprop " + str(iter))
+            parent = current
+            rollout_reward = 0.0
+            while parent: # is not None
+
+                # Update the average
+                parent.updateAverage(rollout_reward)
+                #parent.updateBestRollout(rollout_word, rollout_reward)
+
+                # Recurse up the tree
+                parent = parent.parent
 
     ################################
     # Extract solution
@@ -179,6 +204,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
     '''
 
     # Extract best single node from search tree
+    # This allows for a solution to still be generated if the program is terminated before max_iterations reached
     best_node = None
     for node in list_of_all_nodes:
         if not best_node:

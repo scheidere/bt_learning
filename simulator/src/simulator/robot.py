@@ -367,6 +367,7 @@ class Robot():
         if self.robot_plot:
             #rospy.loginfo("plotting robot world")
             self.plot_robot()
+            rospy.sleep(0.1)
 
         return not moved
 
@@ -461,6 +462,9 @@ class Robot():
             planner = planners.PlannerPeakBelief(self, self.known_world)
 
             planner.set_parameters(self.state.vertex_from_idx, self.target_belief)
+
+            action_sequence = planner.plan(debug)
+            return action_sequence
 
         elif self.planner_type == Robot.PLANNER_TYPE_COMMSRANGE:
             planner = planners.PlannerCommsRange(self, self.known_world)
@@ -740,14 +744,23 @@ if __name__ == '__main__':
     try:
 
         # Setup a simple BT
-        character_list = [Character('?'),Character('('), Character('->'),Character('('),\
-            Character('(target_found_90)'),Character('?'),Character('('),Character('(in_comms)'),\
-            Character('[go_to_comms]'),Character(')'),Character(')'),Character('[random_walk]'),Character(')')]
-        #character_list = [Character('->'),Character('('),Character('[go_to_comms]'),Character(')')]
+        #character_list = [Character('?'),Character('('), Character('->'),Character('('),\
+        #    Character('(target_found_90)'),Character('?'),Character('('),Character('(in_comms)'),\
+        #    Character('[go_to_comms]'),Character(')'),Character(')'),Character('[random_walk]'),Character(')')]
+        
+        character_list = [Character('->'),Character('('),Character('[go_to_belief]'),Character(')')]
         cfg_word = Word(character_list) 
         bt_root, bt = cfg_word.createBT()
 
-        robot = Robot(config, robot_id, num_robots, seed, bt)
+        max_iterations = 1000
+
+        # Create the world
+        world = World(config)
+        do_test = True # don't error check graph
+
+        world.init_world(seed, do_test)
+
+        robot = Robot(config, robot_id, num_robots, seed, bt, max_iterations, world)
         # cProfile.run('RobotController(config, robot)')
         robot_controller = RobotController(config, robot)
         score = robot_controller.run()
