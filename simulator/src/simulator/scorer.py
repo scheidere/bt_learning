@@ -28,15 +28,17 @@ class Scorer():
         self.finished = False
         self.max_iterations = max_iterations
 
-    def update_scorer(self, num_iterations):
+    def update_scorer(self, num_iterations, robot_belief_idx):
         if not self.finished:
             self.score = -self.max_iterations
 
         if num_iterations >= self.max_iterations:
             self.finished = True
             self.score = -self.max_iterations
-            
 
+        if robot_belief_idx: #so this does not happen if robot_belief_idx = None i.e. doesn't really exist
+            self.belief_distance = self.distance_belief_to_target(robot_belief_idx)
+            
     def submit_target(self, robot_belief_idx, robot_location_idx, is_at_surface, is_in_comms, num_iterations):
         # robot_belief_idx: location where the robot believes the target is (because it is above a certain prob?)
         # robot_location_idx: vertex idx where robot is
@@ -61,6 +63,20 @@ class Scorer():
             response = Scorer.RESPONSE_NONE
 
         return response
+
+    def distance_belief_to_target(self, robot_belief_idx):
+        # this can be used to change the reward function further
+        # i.e. have it relate to distance incorrect guess is from actual target location
+        # reward for this: -distance ???
+        # I was going to call this is do_iteration in robot.py but should the robot really have this information?
+        # Is this too much cheating? I think it is okay in order to assist the learning
+
+        target_location_idx = self.world.vertex_target_idx
+        target_vertex = self.world.vertices[target_location_idx]
+
+        robot_belief_vertex = self.world.vertices[robot_belief_idx]
+
+        return ( (target_vertex.position.x-robot_belief_vertex.position.x)**2 + (target_vertex.position.y-robot_belief_vertex.position.y)**2 + (target_vertex.position.z-robot_belief_vertex.position.z)**2)**0.5
 
 
         #need to call this in Robot class

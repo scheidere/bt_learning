@@ -5,6 +5,7 @@ actions:
   - go_to_belief #shortest path to vertex with peak belief
   - random_walk
   - shortest_path
+  - report 
 
 conditions:
   - in_comms #need to write this check, similar to at_surface check except relates to vertices_in_comms_range

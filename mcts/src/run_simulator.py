@@ -58,9 +58,9 @@ class UnderwaterSimulator():
             robot = Robot(self.config, self.robot_id, self.num_robots, self.seed, bt, max_iterations, self.world)
             # cProfile.run('RobotController(config, robot)')
             robot_controller = RobotController(self.config, robot)
-            score = robot_controller.run()
+            score, target_reported, belief_distance = robot_controller.run()
             #print('Score: ', score)
-            return score
+            return score, target_reported, belief_distance
 
         except rospy.ROSInterruptException: pass
 

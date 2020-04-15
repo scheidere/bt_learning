@@ -414,42 +414,42 @@ class CFG():
         list_actions,list_conditions = getActionsConditions()  
 
         input_word = Word([Character("S")])
-        output_word = Word([Character("SorTree")])
+        output_word = Word([Character("SorSprime")])
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
-        input_word = Word([Character("tree")])
-        output_word = Word([Character("SorTree")])
+        input_word = Word([Character("Sprime")]) #was tree but we replaced tree with Sprime everywhere else
+        output_word = Word([Character("SorSprime")])
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
-        input_word = Word([Character("SorTree")])
+        input_word = Word([Character("SorSprime")])
         output_word = Word([Character("?"),Character("("),Character("A"),Character("children_r"),Character(")")])
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
-        input_word = Word([Character("SorTree")])
+        input_word = Word([Character("SorSprime")])
         output_word = Word([Character("->"),Character("("),Character("A"),Character("children_r"),Character(")")])
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
         
-        input_word = Word([Character("SorTree")])
+        input_word = Word([Character("SorSprime")])
         output_word = Word([Character("?"),Character("("),Character("children_l"),Character("A"),Character(")")])
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
-        input_word = Word([Character("SorTree")])
+        input_word = Word([Character("SorSprime")])
         output_word = Word([Character("->"),Character("("),Character("children_l"),Character("A"),Character(")")])
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
         # Potential new rule to allow fallback nodes to only have conditions as children (no actions)
-        input_word = Word([Character("tree")])
+        input_word = Word([Character("Sprime")])
         output_word = Word([Character("?"),Character("("),Character("children_l"),Character("CorD"),Character(")")])
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
-        input_word = Word([Character("tree")])
+        input_word = Word([Character("Sprime")])
         output_word = Word([Character("->"),Character("("),Character("children_l"),Character("CorD"),Character(")")])
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
@@ -491,7 +491,7 @@ class CFG():
 
         # Prevent tree by itself (Don't want 1-wide tree)
         input_word = Word([Character("children_l")])
-        output_word = Word([Character("children_l"),Character("tree")])
+        output_word = Word([Character("children_l"),Character("Sprime")])
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
@@ -518,7 +518,7 @@ class CFG():
         production_rule_list.append(production_rule)
 
         input_word = Word([Character("children_l")])
-        output_word = Word([Character("tree")])
+        output_word = Word([Character("Sprime")])
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 

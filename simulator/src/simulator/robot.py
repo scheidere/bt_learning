@@ -186,6 +186,9 @@ class Robot():
         self.robot_id = robot_id
         self.speed = config["robot_speed"]
         self.planner_type = Robot.PLANNER_TYPE_RANDOM
+        self.has_reported = False
+        self.belief_distance = 500
+        self.robot_belief_idx = None #issue solved: used before do_iteration called in robot controller
         #self.communicate_observations = communicate_observations
 
         '''
@@ -340,7 +343,7 @@ class Robot():
                 #robot_has_ans = False # maybe relates to BT, BT can learn this (report action node)
 
                 # Choose vertex idx to report as belief of target location based on prob dist
-                robot_belief_idx = self.target_belief.generateRobotBeliefIdx()
+                self.robot_belief_idx = self.target_belief.generateRobotBeliefIdx()
 
                 # Check if at surface, either True or False
                 is_at_surface = self.state.at_surface(self.known_world)
@@ -349,11 +352,16 @@ class Robot():
                 is_in_comms = self.state.in_comms(self.known_world)
 
                 # If the robot has reported something
-                response = self.basestation_scorer.submit_target(robot_belief_idx, x, is_at_surface, is_in_comms, num_iterations)
+                ## Before report was an action ## response = self.basestation_scorer.submit_target(robot_belief_idx, x, is_at_surface, is_in_comms, num_iterations)
+                response = self.report_target_belief(self.robot_belief_idx, x, is_at_surface, is_in_comms, num_iterations)
 
                 if response == self.basestation_scorer.RESPONSE_FALSE:
-                    self.target_belief.found_false_update(robot_belief_idx)
-
+                    self.target_belief.found_false_update(self.robot_belief_idx)
+                
+                if response != self.basestation_scorer.RESPONSE_NONE: 
+                    #robot reported (while in comms range) either correct or incorrect target
+                    self.has_reported = True
+                
             # if no response, nothing happens
 
             # Condition checks
@@ -395,6 +403,14 @@ class Robot():
         self.bt_interface.setConditionStatus('target_found_90', target_found_90)
 
         # ... more conditions
+
+    def report_target_belief(self,robot_belief_idx, x, is_at_surface, is_in_comms, num_iterations):
+        active_actions = self.bt_interface.getActiveActions()
+        #print(active_actions)
+
+        if 'report' in active_actions:
+            self.has_reported = True
+            return self.basestation_scorer.submit_target(robot_belief_idx, x, is_at_surface, is_in_comms, num_iterations)
 
 
     def get_planner_type(self):
@@ -444,6 +460,8 @@ class Robot():
                     self.bt_interface.setActionStatusRunning(action)
                 else:
                     self.bt_interface.setActionStatusSuccess(action)
+            elif action == 'report':
+                    self.bt_interface.setActionStatusSuccess(action) #Check with Graeme
             else:
                 print("set_action_status: Action does not exist")
 
@@ -658,7 +676,10 @@ class RobotController():
             num_iterations += 1
             # print(num_iterations)
 
-            self.robot.basestation_scorer.update_scorer(num_iterations)
+            belief_dist = self.robot.target_belief.generateRobotBeliefIdx()
+
+            self.robot.basestation_scorer.update_scorer(num_iterations, belief_dist)
+        
             if self.robot.basestation_scorer.finished: #checks if answer is correct, and if so stops sim
                 break
 
@@ -672,7 +693,9 @@ class RobotController():
             else:
                 no_move_count = 0
 
-        return self.robot.basestation_scorer.score
+
+        return self.robot.basestation_scorer.score, self.robot.has_reported, belief_dist
+
 
 
 
@@ -763,6 +786,7 @@ if __name__ == '__main__':
         robot = Robot(config, robot_id, num_robots, seed, bt, max_iterations, world)
         # cProfile.run('RobotController(config, robot)')
         robot_controller = RobotController(config, robot)
-        score = robot_controller.run()
+        score, target_reported = robot_controller.run()
         print('Score: ', score)
+        print('Has reported:', target_reported)
     except rospy.ROSInterruptException: pass
