@@ -676,9 +676,9 @@ class RobotController():
             num_iterations += 1
             # print(num_iterations)
 
-            belief_dist = self.robot.target_belief.generateRobotBeliefIdx()
+            belief_idx = self.robot.target_belief.generateRobotBeliefIdx()
 
-            self.robot.basestation_scorer.update_scorer(num_iterations, belief_dist)
+            self.robot.basestation_scorer.update_scorer(num_iterations, belief_idx)
         
             if self.robot.basestation_scorer.finished: #checks if answer is correct, and if so stops sim
                 break
@@ -694,7 +694,7 @@ class RobotController():
                 no_move_count = 0
 
 
-        return self.robot.basestation_scorer.score, self.robot.has_reported, belief_dist
+        return self.robot.basestation_scorer.score, self.robot.has_reported, self.robot.basestation_scorer.belief_distance
 
 
 
