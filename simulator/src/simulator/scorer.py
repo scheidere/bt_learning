@@ -27,6 +27,7 @@ class Scorer():
         self.score = 0
         self.finished = False
         self.max_iterations = max_iterations
+        self.belief_distance = self.world.config['environment_size'][0] + self.world.config['environment_size'][1]
 
     def update_scorer(self, num_iterations, robot_belief_idx):
         if not self.finished:

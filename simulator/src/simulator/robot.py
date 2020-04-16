@@ -358,10 +358,6 @@ class Robot():
                 if response == self.basestation_scorer.RESPONSE_FALSE:
                     self.target_belief.found_false_update(self.robot_belief_idx)
                 
-                if response != self.basestation_scorer.RESPONSE_NONE: 
-                    #robot reported (while in comms range) either correct or incorrect target
-                    self.has_reported = True
-                
             # if no response, nothing happens
 
             # Condition checks
@@ -409,8 +405,11 @@ class Robot():
         #print(active_actions)
 
         if 'report' in active_actions:
-            self.has_reported = True
-            return self.basestation_scorer.submit_target(robot_belief_idx, x, is_at_surface, is_in_comms, num_iterations)
+            response = self.basestation_scorer.submit_target(robot_belief_idx, x, is_at_surface, is_in_comms, num_iterations)
+            if response != self.basestation_scorer.RESPONSE_NONE:
+                self.has_reported = True
+            return response
+        return None
 
 
     def get_planner_type(self):

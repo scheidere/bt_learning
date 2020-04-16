@@ -119,8 +119,9 @@ def reward(word):
 ###RUN SIMULATOR (which returns reward)
 def reward(word, max_iterations, underwater_simulator):
 
+    distance_scale = 20.0
     # roughly...
-    min_reward = -max_iterations
+    min_reward = -max_iterations - (underwater_simulator.config['environment_size'][0] + underwater_simulator.config['environment_size'][1])/distance_scale
     max_reward = 0
 
     word.printWord()
@@ -133,11 +134,14 @@ def reward(word, max_iterations, underwater_simulator):
         for i in xrange(num_simulations):
             temp_reward, robot_reported, distance = underwater_simulator.generateReward(word, max_iterations)
             #if robot_reported: #but was wrong
+            print('robot_reported:', robot_reported)
+            print('temp_reward:', temp_reward)
+            print('distance:', distance)
             if robot_reported:
-                temp_reward = temp_reward/2.0 - distance
+                temp_reward = temp_reward/2.0 - distance/distance_scale
             else:
-                temp_reward = temp_reward - distance
-            #print('temp_reward', temp_reward)
+                temp_reward = temp_reward - distance/distance_scale
+            print('temp_reward', temp_reward)
             reward_sum += temp_reward
 
         reward = float(reward_sum) / float(num_simulations)
