@@ -17,30 +17,6 @@ class Planner():
     def plan(self):
         raise NotImplementedError()
 
-class CirclePlanner(Planner):
-    pass
-    # need to brainstorm/just will take more time
-
-    #go cw or ccw every vertex until to reach start vertex
-
-class ZigZagPlanner(Planner):
-    pass
-
-    # alternate left and right choices of next vertex
-
-class WallFollowPlanner(Planner):
-    pass
-
-    # less applicable to environment at hand
-
-class GoToKnownTarget(Planner):
-    pass
-    # need to brainstorm/just will take more time
-
-    # perhaps more helpful once we have multiple targets
-
-
-
 class PlannerRandomWalk(Planner):
     def plan(self, debug=False):
         vertex_start_idx = self.robot.state.vertex_from_idx
@@ -97,10 +73,13 @@ class PlannerRandomWalk(Planner):
 
 class PlannerShortestPath(Planner):
 
-    def set_parameters(self, vertex_start_idx, vertex_goal_idx, use_known_world):
+    def set_parameters(self, vertex_start_idx, vertex_goal_idx):
         self.vertex_start_idx = vertex_start_idx
         self.vertex_goal_idx = vertex_goal_idx
-        self.use_known_world = use_known_world
+
+        # if find_nearest_target returned None (doesn't think it knows where any targets are)
+        if self.vertex_goal_idx == None: 
+
 
     def plan(self, debug=False):
         #rospy.loginfo("PlannerShortestPath plan()")
@@ -205,19 +184,105 @@ class PlannerShortestPath(Planner):
 class PlannerPeakBelief(PlannerShortestPath):
     # find shortest path from robot current location to vertex with highest probability of being target
 
-    def set_parameters(self,vertex_start_idx, target_belief):
+    def set_parameters(self,vertex_start_idx, target_belief): # Check with Graeme: goal idx/y + rename
         self.vertex_start_idx = vertex_start_idx
         self.target_belief = target_belief
-        self.vertex_goal_idx = self.target_belief.generateRobotBeliefIdx()
+        self.vertex_goal_idx, self.vertex_goal_y = self.target_belief.generateTargetBeliefIdxClass()#self.target_belief.generateRobotBeliefIdx()
 
-        if self.vertex_start_idx == self.vertex_goal_idx:
-            temp_dist = copy.copy(self.target_belief.prob_dist)
-            temp_dist[self.vertex_goal_idx] = 0
-            self.vertex_goal_idx = np.argmax(temp_dist)
+        while self.vertex_start_idx == self.vertex_goal_idx: #if you get stuck at the peak, go to a random other location
+            self.vertex_goal_idx = random.randint(0,self.world.num_nodes - 1)
 
     # has a goal, unlike comms range (which has a list of possible goals)
     # goal is updated every iteration (since prob_dist also updated)
     # need to change things in robot.py to implement correctly (also bt_list.yaml) 
+
+
+class PlannerResurface(PlannerShortestPath):
+
+    def set_parameters(self, vertex_start_idx):
+        self.vertex_start_idx = vertex_start_idx
+
+    def plan(self, debug=False):
+        #rospy.loginfo("PlannerShortestPath plan()")
+        #debug = True
+        try: 
+            self.vertex_start_idx
+        except AttributeError:
+            rospy.logerr("set_parameters() for dijkstras needs to be called")
+            return None
+
+        # rospy.loginfo("Calling dijkstras")
+        [distance, path] = self.dijkstras(debug)
+        if len(path) > 1:
+            path = path[1:]
+            return path
+        else:
+            #rospy.logwarn("no path to goal, or goal has been reached")
+            return None
+
+    def dijkstras(self, debug=False):
+        num_vertices = len(self.world.vertices)
+        dist_to_go = [sys.maxint] * num_vertices
+        prev = [-1] * num_vertices
+        dist_to_go[self.vertex_start_idx] = 0
+
+        if debug:
+            print(self.vertex_start_idx)
+
+        open_set = [True] * num_vertices
+
+        #iteration_count = 0 # for debugging
+
+        while not self.is_open_set_empty(open_set):
+
+            #iteration_count = iteration_count + 1
+            #rospy.logwarn("dijkstra iteration_count: " + str(iteration_count))
+
+            # find the vertex in open_set that has minimum dist_to_go
+            v_current = self.find_min_vertex(dist_to_go, open_set)
+
+            # check if vertex is at surface, and if so that is the goal
+            # i.e. the goal is the shortest path to any vertex in comms range (calc'd outside loop)
+            if self.world.vertices[v_current].position.z == 0: # Check with Graeme DONE
+                if debug:
+                    print('vertex at surface',v_current,self.world.vertices[v_current].position)
+
+                break
+
+            # remove it from the open set
+            open_set[v_current] = False
+
+            # get the set of neighbours
+            neighbours = self.get_neighbours(v_current)
+
+            # expand neighbouring nodes
+            for e in neighbours:
+                v_next = e.vertex_end_idx
+                if open_set[v_next] == True:
+                    alternative_distance = dist_to_go[v_current] + e.cost
+                    if alternative_distance < dist_to_go[v_next]:
+                        dist_to_go[v_next] = alternative_distance
+                        prev[v_next] = v_current
+
+        # backtrack to find path and distance
+        path = []
+        v = v_current
+        d = dist_to_go[v]
+        if debug:
+            print('distance to go',d)
+        if debug:
+            print "dijkstra goal: " + str(v_current)
+            print(v,self.vertex_start_idx)
+            print('prev',prev[v])
+        if prev[v] >= 0 or v == self.vertex_start_idx:
+            while v >= 0:
+                path.insert(0, v)
+                v = prev[v]
+        if debug:
+            print path
+        return [d, path] 
+        
+
 
 class PlannerCommsRange(PlannerShortestPath):
     #this inherently only goes to vertices within comms range on the surface

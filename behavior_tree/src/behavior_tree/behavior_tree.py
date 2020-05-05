@@ -490,7 +490,9 @@ class BehaviorTree:
 
         # Open the output file
         f = open(output_filename,"w")
-
+        print(output_filename)
+        import os
+        print(os.path.abspath(os.getcwd()))
         # Setup a stack data structure (similar to nodes_worklist)
         # Do this for both keeping track of nodes and for number of tabs
         nodes_stack = []

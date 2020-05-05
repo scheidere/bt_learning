@@ -43,6 +43,7 @@ class State():
         self.vertex_from_idx = vertex_idx
         self.vertex_to_idx = vertex_idx
         self.fraction_along_edge = 0
+        self.battery_life_count = 0
 
     def get_position(self, world):
         vertex_start = world.vertices[self.vertex_from_idx]
@@ -86,28 +87,64 @@ class State():
         else:
             return False
 
+    def battery_life_update(self, world):
+        # Battery_low criteria (10 without resurface - dead; 5+ after Full - low battery)
+        if self.at_surface(world):
+            self.battery_life_count = 0
+        else:
+            self.battery_life_count += 1
+
+
+    def battery_low_check(self, config):
+        return self.battery_life_count >= config['battery_low_threshold']
+
+    def battery_dead_check(self, config):
+        return self.battery_life_count >= config['battery_dead_threshold']
+
+
+
+
 
 class TargetBelief():
     #prob distribution over the vertices
-    def __init__(self, num_vertices, sensor_model):
+    def __init__(self, num_vertices, sensor_model, world):
         #self.world = world # could do it this way too
 
         self.num_vertices = num_vertices
 
         self.sensor_model = sensor_model
 
-        self.init_prior()
+        self.world = world
 
+        self.config = self.world.config
+
+        self.confidence_threshold = self.config["confidence_threshold"]
+
+        self.init_prior(world)
+
+    '''
     def init_prior(self):
         ## P(Y)
         p = 1.0/self.num_vertices
         self.prob_dist = np.full(self.num_vertices, p)
+        # this is prob dist for y where y is vertices - we dont have this now
+        # we now have prob dist of classes at each vertex
+        # need to use prior defined in the paper, and world class, need to make multiple copies (num_vertices copies copy.copy)
+    '''
+
+    def init_prior(self, world):
+        #P(Y); one dist P(Y^v) each vertex v wrt all classes
+        self.prob_dist = np.zeros((self.num_vertices,self.world.num_classes))
+        for v in xrange(self.num_vertices):
+            self.prob_dist[v] = copy.copy(self.world.prior)
 
     def likelihood(self, x, y, z):
-
-        likelihoods = self.sensor_model.all_likelihoods(x, y)
+        '''
+        likelihoods = self.sensor_model.all_likelihoods(x, y) 
         return likelihoods[z]
-
+        '''
+        pass
+    '''
     def bayes_update(self, x, z):
         ## P(Y|Z)
 
@@ -118,6 +155,18 @@ class TargetBelief():
 
         # Normalize
         self.prob_dist /= total
+    '''
+    def bayes_update(self, x, z_array, v_in_range):
+        ## P(Y|Z)
+
+        for i in xrange(len(v_in_range)):
+            for y in xrange(self.world.num_classes):
+                self.prob_dist[v_in_range[i]][y] *= self.sensor_model.compute_single_likelihood(y,z_array[i]) 
+
+            # Normalize over y
+            total = sum(self.prob_dist[v_in_range[i]])
+            self.prob_dist[v_in_range[i]] /= total
+
 
     def found_false_update(self, vertex_false_idx):
         # You now know that the target is not where you chose, so prob = 0 there
@@ -131,7 +180,7 @@ class TargetBelief():
         # Normalize to accomodate change
         self.prob_dist /= total
 
-    def generateRobotBeliefIdx(self):
+    def generateTargetBeliefIdxClass(self): #generateRobotBeliefIdx(self):
         # Robot chooses best based on the probability that a vertex is the target's location
         '''
         idx_with_max_p = None
@@ -146,8 +195,32 @@ class TargetBelief():
 
         return idx_with_max_p
         '''
-        return np.argmax(self.prob_dist)
+        # This returns the location of first occurence of max_p
+        # We could do distance based - i.e. closest likely target
+        ## This method has an issue, would likely almost always choose non-target because class 0 starts with higher probability
+        ##max_p_row, max_p_col = np.unravel_index(self.prob_dist.argmax(),self.prob_dist.shape)  #row,col
+        ##return max_p_row, max_p_col
 
+
+        # Check with Graeme DONE
+        first = True
+        for v in xrange(self.num_vertices):
+            new_col = np.argmax(self.prob_dist[v][1:]) + 1 # Don't consider first prob, because that is class 0, non-target probability
+            temp_max = self.prob_dist[v][new_col] #np.max(self.prob_dist[v][1:])
+            if first:
+                row_with_max_p, col_with_max_p = v, new_col
+                max_p = temp_max
+                first = False
+            elif temp_max > max_p:
+                row_with_max_p, col_with_max_p = v, new_col
+                max_p = temp_max
+
+        return row_with_max_p, col_with_max_p #v,y; location, class
+
+        #return np.argmax(self.prob_dist) #this was all that was here for the single target implementation
+
+
+    '''
     def target_found_50(self):
         for p in self.prob_dist:
             if p > 0.5:
@@ -168,6 +241,67 @@ class TargetBelief():
                 return True
 
         return False
+    '''
+    def class_y_found(self, y):
+        for v in xrange(self.num_vertices):
+            if self.prob_dist[v][y] > self.confidence_threshold:
+                return True
+        return False
+
+    def class_y_current_vertex(self, x, y):
+        if self.prob_dist[x][y] > self.confidence_threshold:
+            return True
+        return False
+
+    def found_likely_target(self):
+        for y in xrange(1,self.world.num_classes):
+            if self.class_y_found(y):
+                return True
+        return False
+
+    def update_loc_class_0(self, vertex_idx):
+        self.prob_dist[vertex_idx][0] = 1
+        self.prob_dist[vertex_idx][1:] = 0
+
+    def update_loc_not_class_y(self, vertex_idx, y):
+        print('vertex_idx', vertex_idx)
+        print('y',y)
+        self.prob_dist[vertex_idx][y] = 0
+        total = sum(self.prob_dist[vertex_idx])
+        self.prob_dist[vertex_idx] /= total
+
+    def find_nearest_target(self, x, y): # Check with Graeme DONE
+        # Find nearest location where the robot believes there to be a target of class y, given the robot is at x
+        distance_to_nearest_target = None
+        found_new_target = False
+        nearest_target_idx = None
+        for v in xrange(self.num_vertices): #num_vertices
+            # Check if class y target is at v (with prob > 0.9)
+            if self.prob_dist[v][y] > self.confidence_threshold:
+                found_new_target = True
+                new_dist = self.sensor_model.distances[x][v] # Calc dist from robot to class y target found
+
+            if found_new_target:
+                if distance_to_nearest_target == None: # if this is first found target, save it
+                    distance_to_nearest_target = new_dist
+                    nearest_target_idx = v
+                elif distance_to_nearest_target > new_dist: # if you find another target that is closer, replace
+                    distance_to_nearest_target = new_dist
+                    nearest_target_idx = v
+                found_new_target = False # reset
+
+        return nearest_target_idx # returns None if a target of class y never found with prob > 0.9
+
+    def get_all_detections(self): # Check with Graeme DONE
+        detection_list = []
+        for v in xrange(self.num_vertices):
+            for y in xrange(1,self.world.num_classes):
+                if self.prob_dist[v][y] > self.confidence_threshold:
+                    detection_list.append([v,y])
+
+        return detection_list
+
+
 
 
 
@@ -178,8 +312,12 @@ class Robot():
     PLANNER_TYPE_SHORTEST = 2
     PLANNER_TYPE_COMMSRANGE = 3  #need to use this below, want to test original shortest path planner first
     PLANNER_TYPE_PEAKBELIEF = 4
+    PLANNER_TYPE_RESURFACE = 5
+    PLANNER_TYPE_DROPOFF = 6
+    PLANNER_TYPE_DISARM = 7
+    PLANNER_TYPE_PICKUP = 8
 
-    def __init__(self, config, robot_id, num_robots, seed, bt, max_iterations, world):
+    def __init__(self, config, robot_id, num_robots, seed, bt, max_iterations, world, TargetBelief):
 
         self.bt = bt
         self.config = config
@@ -215,6 +353,8 @@ class Robot():
         # self.known_world.init_world(seed, do_test)
         self.known_world = world
 
+        self.is_armed_array = np.ones(self.known_world.num_nodes, dtype=bool) # Check with Graeme DONE
+
         # Setup a set of random numbers
         # print("Setup set of random numbers")
         self.setup_random_numbers(seed)
@@ -246,10 +386,14 @@ class Robot():
         # self.known_world.set_sensor_model(self.sensor_model)
 
         # Generate belief of where target could be
-        self.target_belief = TargetBelief(num_vertices, self.known_world.sensor_model)
+        self.target_belief = TargetBelief(num_vertices, self.known_world.sensor_model, self.known_world)
 
         # Set up Scorer
         self.basestation_scorer = Scorer(self.known_world, max_iterations)
+
+        self.drop_off_idx = self.known_world.drop_off_idx
+
+
 
         # plot
         # print("plot")
@@ -311,6 +455,13 @@ class Robot():
         while distance_to_travel > 0:
             self.bt_interface.tick_bt()
 
+            # Stop episode if battery is dead
+            # Battery_low criteria (10 without resurface - dead; 5+ after Full - low battery)
+            if self.state.battery_dead_check(self.config):
+                self.condition_updates()
+                self.set_action_status()
+                break
+
             # print("position: ")
             # pos = self.state.get_position(self.known_world)
             # print(pos.x, pos.y, pos.z)
@@ -331,19 +482,22 @@ class Robot():
             else:
                 distance_to_travel -= distance_traveled
 
+            self.state.battery_life_update(self.known_world)
+
             # Observe
             if new_vertex:
                 # print("observe")
 
                 x = self.state.vertex_from_idx
-                z = self.observe(x)
-                self.target_belief.bayes_update(x,z)
+                z_array, v_in_range = self.observe(x)
+                self.target_belief.bayes_update(x,z_array,v_in_range)
 
                 # default is that robot does not know answer
                 #robot_has_ans = False # maybe relates to BT, BT can learn this (report action node)
 
                 # Choose vertex idx to report as belief of target location based on prob dist
-                self.robot_belief_idx = self.target_belief.generateRobotBeliefIdx()
+                #self.robot_belief_idx = self.target_belief.generateRobotBeliefIdx() # fix this function, then change name of it and variable
+                self.nearest_wildlife_idx = self.target_belief.find_nearest_target(x, World.CLASS_WILDLIFE)
 
                 # Check if at surface, either True or False
                 is_at_surface = self.state.at_surface(self.known_world)
@@ -353,13 +507,43 @@ class Robot():
 
                 # If the robot has reported something
                 ## Before report was an action ## response = self.basestation_scorer.submit_target(robot_belief_idx, x, is_at_surface, is_in_comms, num_iterations)
-                response = self.report_target_belief(self.robot_belief_idx, x, is_at_surface, is_in_comms, num_iterations)
+                #response = self.report_target_belief(self.nearest_wildlife_idx, World.CLASS_WILDLIFE, is_at_surface, is_in_comms, num_iterations)
+                response = self.report_target_belief(self.nearest_wildlife_idx, is_at_surface, is_in_comms) #report and associated reward, if any, done here # Check with Graeme DONE
 
+                # Update robot belief based on reporting reponse
+                if response == self.basestation_scorer.RESPONSE_CORRECT:
+                    self.target_belief.update_loc_class_0(self.nearest_wildlife_idx)
+                elif response == self.basestation_scorer.RESPONSE_FALSE and self.nearest_wildlife_idx: 
+                    self.target_belief.update_loc_not_class_y(self.nearest_wildlife_idx , World.CLASS_WILDLIFE)
+
+
+                '''
+                # Don't need this for multi-target because prob_dist different
                 if response == self.basestation_scorer.RESPONSE_FALSE:
                     self.target_belief.found_false_update(self.robot_belief_idx)
-                
-            # if no response, nothing happens
+                '''                
 
+                # Update robot belief based on results of actions
+                if self.planner_type == Robot.PLANNER_TYPE_PICKUP and x == self.nearest_benign_idx:
+                    successful_pickup = self.known_world.pickup_target(x,self.basestation_scorer)
+                    if successful_pickup:
+                        self.target_belief.update_loc_class_0(self.nearest_benign_idx)
+                    else:
+                        self.target_belief.update_loc_not_class_y(self.nearest_mine_idx, World.CLASS_BENIGN)
+
+                elif self.planner_type == Robot.PLANNER_TYPE_DISARM and x == self.nearest_mine_idx: # Check with Graeme DONE
+                    successful_disarm = self.known_world.disarm_target(x,self.basestation_scorer)
+                    if successful_disarm:
+                        self.target_belief.update_loc_class_0(self.nearest_mine_idx)
+                        self.is_armed_array[self.nearest_mine_idx] = False # Check with Graeme DONE
+                    else:
+                        self.target_belief.update_loc_not_class_y(self.nearest_mine_idx, World.CLASS_MINE)
+
+                # Reward for correct target detections
+                detection_list = self.target_belief.get_all_detections() 
+                self.basestation_scorer.detection_reward(detection_list) #give scorer +1 for all newly detected vertices in detection_list if detection is correct
+
+            
             # Condition checks
             self.condition_updates()
 
@@ -381,33 +565,73 @@ class Robot():
         # and used to choose actions accordingly
 
         is_at_surface = self.state.at_surface(self.known_world)
+
         is_in_comms = self.state.in_comms(self.known_world)
-        #print('thinks it is in comms',is_in_comms)
-        target_found_50 = self.target_belief.target_found_50()
-        target_found_70 = self.target_belief.target_found_70()
-        target_found_90 = self.target_belief.target_found_90()
+
+        needs_to_surface = self.state.battery_low_check(self.config)
+
+        '''
+        found_class_y_90_array = np.zeros()
+        for y in xrange(1,self.known_world.num_classes): #dont want True for class 0 because that isn't a target
+            np.append(found_class_y_90_array, self.target_belief.class_y_found_90(y))
+            #self.bt_interface.setConditionStatus('class_'+y+'_found_90') #general version, instead of wildlife, mine, benign
+        '''
+
+        likely_target_found = self.target_belief.found_likely_target()
+
+        wildlife_found = self.target_belief.class_y_found(World.CLASS_WILDLIFE)
+        
+        mine_found = self.target_belief.class_y_found(World.CLASS_MINE)
+        
+        self.nearest_mine_idx = self.target_belief.find_nearest_target(self.state.vertex_from_idx, World.CLASS_MINE)
+        if self.nearest_mine_idx:
+            is_armed = self.is_armed_array[self.nearest_mine_idx] #default is that they are always armed, unless they have been disarmed by robot
+        else:
+            is_armed = False
+
+        benign_object_found = self.target_belief.class_y_found(World.CLASS_BENIGN)
+
+        #target_found_50 = self.target_belief.target_found_50()
+        #target_found_70 = self.target_belief.target_found_70()
+        #target_found_90 = self.target_belief.target_found_90()
 
 
         self.bt_interface.setConditionStatus('at_surface', is_at_surface)
 
         self.bt_interface.setConditionStatus('in_comms', is_in_comms)
 
-        self.bt_interface.setConditionStatus('target_found_50', target_found_50)
+        self.bt_interface.setConditionStatus('battery_low', needs_to_surface) 
 
-        self.bt_interface.setConditionStatus('target_found_70', target_found_70)
+        self.bt_interface.setConditionStatus('likely_target_found', likely_target_found)
 
-        self.bt_interface.setConditionStatus('target_found_90', target_found_90)
+        self.bt_interface.setConditionStatus('wildlife_found', wildlife_found)
+
+        self.bt_interface.setConditionStatus('mine_found', mine_found)
+
+        self.bt_interface.setConditionStatus('is_armed', is_armed)
+
+        self.bt_interface.setConditionStatus('benign_object_found', benign_object_found)
+
+        #self.bt_interface.setConditionStatus('target_found_50', target_found_50)
+
+        #self.bt_interface.setConditionStatus('target_found_70', target_found_70)
+
+        #self.bt_interface.setConditionStatus('target_found_90', target_found_90)
 
         # ... more conditions
 
-    def report_target_belief(self,robot_belief_idx, x, is_at_surface, is_in_comms, num_iterations):
+    def report_target_belief(self,target_belief_idx, is_at_surface, is_in_comms):
         active_actions = self.bt_interface.getActiveActions()
         #print(active_actions)
 
         if 'report' in active_actions:
-            response = self.basestation_scorer.submit_target(robot_belief_idx, x, is_at_surface, is_in_comms, num_iterations)
-            if response != self.basestation_scorer.RESPONSE_NONE:
-                self.has_reported = True
+            #response = self.basestation_scorer.submit_target(robot_belief_idx, x, is_at_surface, is_in_comms, num_iterations)
+            #response = self.basestation_scorer.submit_target(robot_belief_idx, robot_belief_y, is_at_surface, is_in_comms, num_iterations)
+            #if response != self.basestation_scorer.RESPONSE_NONE:
+            print('report is active action')
+            self.has_reported = True
+            #return response
+            response = self.known_world.report_target(target_belief_idx, self.basestation_scorer, is_at_surface, is_in_comms)
             return response
         return None
 
@@ -419,14 +643,30 @@ class Robot():
         if 'go_to_comms' in active_actions:
             self.planner_type = Robot.PLANNER_TYPE_COMMSRANGE
 
-        elif 'go_to_belief' in active_actions:
+        elif 'resurface' in active_actions:
+            self.planner_type = Robot.PLANNER_TYPE_RESURFACE
+
+        elif 'go_to_likely_target' in active_actions:
             self.planner_type = Robot.PLANNER_TYPE_PEAKBELIEF
+
+        elif 'take_to_drop_off' in active_actions:
+            self.planner_type = Robot.PLANNER_TYPE_DROPOFF
 
         elif 'random_walk' in active_actions:
             self.planner_type = Robot.PLANNER_TYPE_RANDOM
 
         elif 'shortest_path' in active_actions:
             self.planner_type = Robot.PLANNER_TYPE_SHORTEST
+
+        elif 'disarm' in active_actions:
+            self.planner_type = Robot.PLANNER_TYPE_DISARM
+        
+        elif 'pick_up' in active_actions:
+            self.planner_type = Robot.PLANNER_TYPE_PICKUP
+        
+        elif 'drop_off' in active_actions:
+            self.planner_type = Robot.PLANNER_TYPE_DROPOFF
+        
         else:
             self.planner_type = Robot.PLANNER_TYPE_STOP
             # print("get_planner_type: No planner was picked")
@@ -444,8 +684,18 @@ class Robot():
                     self.bt_interface.setActionStatusRunning(action)
                 else:
                     self.bt_interface.setActionStatusSuccess(action)
-            elif action == 'go_to_belief':
+            elif action == 'resurface':
+                if self.planner_type == Robot.PLANNER_TYPE_RESURFACE:
+                    self.bt_interface.setActionStatusRunning(action)
+                else:
+                    self.bt_interface.setActionStatusSuccess(action)
+            elif action == 'go_to_likely_target':
                 if self.planner_type == Robot.PLANNER_TYPE_PEAKBELIEF:
+                    self.bt_interface.setActionStatusRunning(action)
+                else:
+                    self.bt_interface.setActionStatusSuccess(action)
+            elif action == 'take_to_drop_off':
+                if self.planner_type == Robot.PLANNER_TYPE_DROPOFF:
                     self.bt_interface.setActionStatusRunning(action)
                 else:
                     self.bt_interface.setActionStatusSuccess(action)
@@ -459,9 +709,20 @@ class Robot():
                     self.bt_interface.setActionStatusRunning(action)
                 else:
                     self.bt_interface.setActionStatusSuccess(action)
+            elif action == 'disarm':
+                if self.planner_type == Robot.PLANNER_TYPE_DISARM:
+                    self.bt_interface.setActionStatusRunning(action)
+                else:
+                    self.bt_interface.setActionStatusSuccess(action)
+            elif action == 'pick_up':
+                if self.planner_type == Robot.PLANNER_TYPE_PICKUP:
+                    self.bt_interface.setActionStatusRunning(action)
+                else:
+                    self.bt_interface.setActionStatusSuccess(action)
             elif action == 'report':
                     self.bt_interface.setActionStatusSuccess(action) #Check with Graeme
             else:
+                print('action',action)
                 print("set_action_status: Action does not exist")
 
 
@@ -491,9 +752,43 @@ class Robot():
             action_sequence = planner.plan(debug)
             return action_sequence
 
+        elif self.planner_type == Robot.PLANNER_TYPE_RESURFACE:
+            planner = planners.PlannerResurface(self, self.known_world)
+
+            planner.set_parameters(self.state.vertex_from_idx)
+
+            action_sequence = planner.plan(debug)
+            return action_sequence
+
+        elif self.planner_type == Robot.PLANNER_TYPE_DROPOFF:
+            planner = planners.PlannerShortestPath(self, self.known_world)
+
+            planner.set_parameters(self.state.vertex_from_idx, self.drop_off_idx)
+
+            action_sequence = planner.plan(debug)
+            return action_sequence
+
+        elif self.planner_type == Robot.PLANNER_TYPE_PICKUP: 
+            planner = planners.PlannerShortestPath(self, self.known_world)
+
+            self.nearest_benign_idx = self.target_belief.find_nearest_target(self.state.vertex_from_idx, World.CLASS_BENIGN)
+            planner.set_parameters(self.state.vertex_from_idx, self.nearest_benign_idx) #update to nearest pick up loc
+
+            action_sequence = planner.plan(debug)
+            return action_sequence
+
+        elif self.planner_type == Robot.PLANNER_TYPE_DISARM: 
+            planner = planners.PlannerShortestPath(self, self.known_world)
+
+            self.nearest_mine_idx = self.target_belief.find_nearest_target(self.state.vertex_from_idx, World.CLASS_MINE)
+            planner.set_parameters(self.state.vertex_from_idx, self.nearest_mine_idx) # update to nearest mine loc
+            ##planner.set_location_void_of_target() # Check with Graeme - why is this here? I can't find the function
+
+            action_sequence = planner.plan(debug)
+            return action_sequence
+
         elif self.planner_type == Robot.PLANNER_TYPE_SHORTEST:
             planner = planners.PlannerShortestPath(self, self.known_world)
-            use_known_world = False
 
             # set a random goal if not already set
             try:
@@ -505,7 +800,7 @@ class Robot():
                     self.current_goal_vertex = self.get_next_random_number()
 
             # plan shortest path to goal
-            planner.set_parameters(self.state.vertex_from_idx, self.current_goal_vertex, use_known_world)
+            planner.set_parameters(self.state.vertex_from_idx, self.current_goal_vertex)
             action_sequence = planner.plan(debug)
 
             # Check that path exists
@@ -527,6 +822,7 @@ class Robot():
 
     def observe(self,x):
         return self.known_world.robot_env_observations(x)
+        # needs to return z_array, v_in_range
 
     def plot_robot(self):
         plt.rcParams['toolbar'] = 'None'
@@ -535,9 +831,11 @@ class Robot():
 
         if not self.h_state: #don't redraw if already drawn
             self.known_world.plot_world(ax,self.target_belief)
+        '''
+        # Check with Graeme: commented out because associated func not updated for prob_dist new size
         else:
             self.known_world.plot_world_update(ax,self.target_belief)
-
+        '''
 
         if self.h_state != None:
             self.state.plot_update(self.h_state, self.known_world)
@@ -659,8 +957,8 @@ class RobotController():
         # Give an initial observation
         # print("Give an initial observation")
         x = self.robot.state.vertex_from_idx
-        z = self.robot.observe(x)
-        self.robot.target_belief.bayes_update(x,z)
+        z_array, v_in_range = self.robot.observe(x)
+        self.robot.target_belief.bayes_update(x,z_array,v_in_range)
 
         start_time = rospy.Time.now()
         num_iterations = 0
@@ -675,10 +973,11 @@ class RobotController():
             num_iterations += 1
             # print(num_iterations)
 
-            belief_idx = self.robot.target_belief.generateRobotBeliefIdx()
+            #belief_idx, belief_y = self.robot.target_belief.generateTargetBeliefIdxClass() #self.robot.target_belief.generateRobotBeliefIdx() 
 
-            self.robot.basestation_scorer.update_scorer(num_iterations, belief_idx)
-        
+            #self.robot.basestation_scorer.update_scorer(num_iterations, belief_idx) Check with Graeme DONE
+            self.robot.basestation_scorer.update_scorer(num_iterations) # Now just updates self.finished to be True if done, does not change score
+
             if self.robot.basestation_scorer.finished: #checks if answer is correct, and if so stops sim
                 break
 
@@ -687,7 +986,7 @@ class RobotController():
                 no_move_count += 1
                 # print("no_move_count", no_move_count)
                 if no_move_count >= 3:
-                    # print("exiting due to robot not moving")
+                    print("exiting due to robot not moving")
                     break
             else:
                 no_move_count = 0
@@ -768,9 +1067,30 @@ if __name__ == '__main__':
         # Setup a simple BT
         #character_list = [Character('?'),Character('('), Character('->'),Character('('),\
         #    Character('(target_found_90)'),Character('?'),Character('('),Character('(in_comms)'),\
-        #    Character('[go_to_comms]'),Character(')'),Character(')'),Character('[random_walk]'),Character(')')]
+        #    Character('[go_to_comms]'),Character(')'),Character('[report]'),Character(')'),Character('[go_to_belief]'),Character(')')]
         
-        character_list = [Character('->'),Character('('),Character('[go_to_belief]'),Character(')')]
+        #test
+        #character_list = [Character('->'),Character('('),Character('[report]'),Character('[go_to_belief]'),Character('[random_walk]'),Character(')')]
+
+        #character_list = [Character('->'),Character('('),Character('[resurface]'),Character(')')]
+
+        character_list = [Character('?'),Character('('),\
+            Character('->'),Character('('),\
+            Character('(battery_low)'),Character('[resurface]'),Character(')'),\
+            Character('->'),Character('('),\
+            Character('(wildlife_found)'),Character('?'),Character('('),\
+            Character('(in_comms)'),Character('[go_to_comms]'),Character(')'),Character('[report]'),Character(')'),\
+            Character('->'),Character('('),\
+            Character('(mine_found)'),Character('?'),Character('('),\
+            Character('<!>'),Character('('),\
+            Character('(is_armed)'),Character(')'),Character('[disarm]'),Character(')'),Character(')'),\
+            Character('->'),Character('('),\
+            Character('(benign_object_found)'),Character('[pick_up]'),Character('[take_to_drop_off]'),Character(')'),\
+            Character('->'),Character('('),\
+            Character('(likely_target_found)'),Character('[go_to_likely_target]'),Character(')'),\
+            Character('[random_walk]'),\
+            Character(')')]
+
         cfg_word = Word(character_list) 
         bt_root, bt = cfg_word.createBT()
 
@@ -782,10 +1102,13 @@ if __name__ == '__main__':
 
         world.init_world(seed, do_test)
 
-        robot = Robot(config, robot_id, num_robots, seed, bt, max_iterations, world)
+        robot = Robot(config, robot_id, num_robots, seed, bt, max_iterations, world, TargetBelief)
         # cProfile.run('RobotController(config, robot)')
         robot_controller = RobotController(config, robot)
-        score, target_reported = robot_controller.run()
+        score, target_reported, distance = robot_controller.run()
         print('Score: ', score)
-        print('Has reported:', target_reported)
+        if target_reported:
+            print('Has reported:', target_reported, 'not necessarily correctly')
+        else:
+            print('Has reported:', target_reported)
     except rospy.ROSInterruptException: pass

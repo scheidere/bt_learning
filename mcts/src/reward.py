@@ -117,7 +117,7 @@ def reward(word):
 
 
 ###RUN SIMULATOR (which returns reward)
-def reward(word, max_iterations, underwater_simulator):
+def reward(word, max_iterations, underwater_simulator): # TODO
 
     distance_scale = 20.0
     # roughly...

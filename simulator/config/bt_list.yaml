@@ -2,16 +2,31 @@ actions:
   - go_to_comms #version of shortest path planner that is done when it reaches any vertex in comms range
   # go to comms should include surface now???
   #- go_to_surface #version of shortest path planner that is done when position.z == surface level
-  - go_to_belief #shortest path to vertex with peak belief
+  #- go_to_belief #shortest path to vertex with peak belief
   - random_walk
   - shortest_path
   - report 
+  - resurface
+  - go_to_likely_target #replacing go_to_belief, didn't make any changes, just name for now
+  - disarm
+  - pick_up #includes getting close enough? -Graeme said to just have robot to to single vertex, not one in range for simplicity
+  - take_to_drop_off
+
 
 conditions:
   - in_comms #need to write this check, similar to at_surface check except relates to vertices_in_comms_range
   #which in turn is generated from the world class given a comms range defined there (Need to write that function too)
   # go to comms should include surface now???
   #- at_surface
-  - target_found_50
-  - target_found_70
-  - target_found_90
+  #- target_found_50
+  #- target_found_70
+  #- target_found_90
+  - battery_low
+  - at_surface #???? DO WE NEED THIS? Can it be built into the resurface planner instead?
+  - likely_target_found 
+  - wildlife_found #90% confidence in target location/type #reporting type
+  - mine_found #90% confidence in target location/type #disarming type
+  - is_armed
+  - benign_object_found #90% confidence in target location/type #relocating type
+
+

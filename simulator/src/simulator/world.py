@@ -58,6 +58,12 @@ class GraphPickle():
         self.edge_matrix = edge_matrix
 
 class World():
+
+    CLASS_NONTARGET = 0
+    CLASS_WILDLIFE = 1
+    CLASS_MINE = 2
+    CLASS_BENIGN = 3
+
     def __init__(self, config):
 
         # Create a world
@@ -70,6 +76,7 @@ class World():
         num_nodes = self.config["num_nodes"]
         connection_radius = self.config["connection_radius"]
         environment_size = self.config["environment_size"]
+        self.sensor_range = self.config["sensor_range"]
 
         # vertices
         vertices_surface = []
@@ -89,15 +96,15 @@ class World():
 
 
         # edges, stored as a matrix indexed as [vertex_start, vertex_end]
-        num_nodes = len(self.vertices) #doubled the input num_nodes in creating two layers of vertices instead of one
-        self.edge_matrix = [None] * num_nodes   
-        self.edge_adjacency_idx_lists = [None] * num_nodes  
-        self.edge_adjacency_edge_lists = [None] * num_nodes   
-        for vertex_start_idx in xrange(num_nodes):
-            self.edge_matrix[vertex_start_idx] = [None] * num_nodes
+        self.num_nodes = len(self.vertices) #doubled the input num_nodes in creating two layers of vertices instead of one
+        self.edge_matrix = [None] * self.num_nodes   
+        self.edge_adjacency_idx_lists = [None] * self.num_nodes  
+        self.edge_adjacency_edge_lists = [None] * self.num_nodes   
+        for vertex_start_idx in xrange(self.num_nodes):
+            self.edge_matrix[vertex_start_idx] = [None] * self.num_nodes
             self.edge_adjacency_idx_lists[vertex_start_idx] = []
             self.edge_adjacency_edge_lists[vertex_start_idx] = []
-            for vertex_end_idx in xrange(num_nodes):
+            for vertex_end_idx in xrange(self.num_nodes):
 
                 cost = distance(self.vertices[vertex_start_idx], self.vertices[vertex_end_idx])
                 if cost <= connection_radius and not (vertices_surface[vertex_start_idx] and vertices_surface[vertex_end_idx]):  
@@ -114,14 +121,61 @@ class World():
         if do_test:
             self.test_indices()
 
-        self.vertex_target_idx = self.create_target_idx()
+        #self.vertex_target_idx = self.create_target_idx() #single robot 
+
+        # Define prior distribution
+        self.num_classes = self.config["num_classes"]
+        self.prob_of_class0 = self.config["prob_of_class0"]
+        self.prob_of_other_classes = (1 - self.prob_of_class0)/(self.num_classes - 1)
+        self.prior = np.zeros(self.num_classes) #p_y0, p_y1, ...
+        for i in range(self.num_classes):
+            if i == 0:
+                self.prior[i] = self.prob_of_class0 
+            else:
+                self.prior[i] = self.prob_of_other_classes
+
+        # Vertex classes - ground truth
+        self.classes_y = np.array([]) # 0 - not target, 1 - wildlife/report, 2 - mine/disarm, 3 - benign/move
+        for i in range(self.num_nodes):
+            self.classes_y = np.append(self.classes_y,np.random.choice(a= len(self.prior),p = self.prior))
+
+        #print("classes_y",self.classes_y.shape) 
+
+        # Define single random drop-off location (on surface) per world
+        temp = random.randint(0,len(self.vertices)-1)
+        while vertices_surface[temp] != True:
+            temp = random.randint(0,len(self.vertices)-1)
+        self.drop_off_idx = temp
+
+        '''
+        # Set all class 2 vertices to is_armed = True
+        self.is_armed_array = np.zeros(self.num_nodes, dtype=bool) #default, False for all
+        for v in xrange(len(self.classes_y)):
+            if self.classes_y[v] == 2: #it is a mine
+                self.is_armed_array[v] = True
+        '''      
+
+        '''
+        # Vertex classes
+        # Each vertex has a number between 0 and n, which represents the class of the vertex
+        num_v_y0 = int(self.num_nodes*self.prob_of_class0)
+        num_v_other = self.num_nodes - num_v_y0
+        num_v_each = num_v_other/(self.num_classes-1)
+        classes_y = []
+        classes_y.extend([0]*num_v_y0) # add the non-target vertex classes
+        for i in range(1,self.num_classes):
+            classes_y.extend([i]*num_v_each) # add the target vertex classes
+
+        # G round truth vertex classes
+        random.shuffle(classes_y) #shuffle the list to randomize location of targets
+        '''
 
         self.comms_range = self.config["comms_range"]
 
         self.vertices_in_comms_range = self.generateCommsRangeVertices()
 
         # Setup sensor model
-        self.sensor_model = SensorModel(self.config,num_nodes,self)
+        self.sensor_model = SensorModel(self.config,self.num_nodes,self)
 
     '''
     #old likelihood function we have replaced
@@ -163,6 +217,30 @@ class World():
             return False
     '''
 
+    def disarm_target(self, vertex_idx, scorer):
+        if self.classes_y[vertex_idx] == World.CLASS_MINE:
+            self.classes_y[vertex_idx] = World.CLASS_NONTARGET # Now is class 0 because target removed
+            scorer.action_reward(vertex_idx, World.CLASS_MINE) # Generate score #use reward_action_to_target from scorer
+            return True
+        return False
+
+    def pickup_target(self, vertex_idx, scorer):
+        if self.classes_y[vertex_idx] == World.CLASS_BENIGN:
+            self.classes_y[vertex_idx] = World.CLASS_NONTARGET # Now is class 0 because target removed
+            scorer.action_reward(vertex_idx, World.CLASS_BENIGN) # Generate score
+            return True
+        return False
+
+    def report_target(self, vertex_idx, scorer, is_at_surface, is_in_comms): # Check with Graeme DONE
+        #if classes_y[vertex_idx] == World.CLASS_WILDLIFE:
+        response = scorer.submit_target(vertex_idx, World.CLASS_WILDLIFE, is_at_surface, is_in_comms) # Generate score
+        print('reported something', response)
+        if response == scorer.RESPONSE_CORRECT:
+            print('report is correct')
+            self.classes_y[vertex_idx] = World.CLASS_NONTARGET # Now is class 0 because target removed
+
+        return response
+
     def generateCommsRangeVertices(self):
         idx_list = []
         for vertex in self.vertices:
@@ -171,10 +249,23 @@ class World():
 
         return idx_list #list of indices of vertices in comms range (and at surface)
 
+
     def robot_env_observations(self, vertex_robot_idx): 
-        likelihoods = self.sensor_model.all_likelihoods(vertex_robot_idx, self.vertex_target_idx)
+        #use for single target case
+        #likelihoods = self.sensor_model.all_likelihoods(vertex_robot_idx, self.vertex_target_idx)
         #return a single observation, z based on the probability distribution
-        return np.random.choice(a=len(self.vertices)+1, p=likelihoods)
+        #return np.random.choice(a=len(self.vertices)+1, p=likelihoods)
+
+        v_in_range = np.array([],dtype=int)
+        z_array = np.array([],dtype=int)
+        for v in xrange(self.num_nodes):
+            if self.sensor_model.distances[vertex_robot_idx][v] < self.sensor_range:
+                likelihoods = self.sensor_model.all_likelihoods(self.classes_y[v])
+                v_in_range = np.append(v_in_range,v)
+                z_array = np.append(z_array, np.random.choice(a=self.num_classes,p=likelihoods))
+
+        return z_array, v_in_range
+
 
     def create_target_idx(self):
         #pick random vertex
@@ -242,17 +333,25 @@ class World():
         for vertex_idx in xrange(num_nodes):
             xs.append(self.vertices[vertex_idx].position.x)
             ys.append(self.vertices[vertex_idx].position.y)
-            p = target_belief.prob_dist[vertex_idx]
-            sp = 2+10*p
-            size_list.append(sp)
+            #p = target_belief.prob_dist[vertex_idx] # Single target case
+            #sp = 2+10*p
+            #size_list.append(sp)
         #ax.scatter(xs, ys, s=5, zorder=20)
 
         # print(size_list)
         self.h_scatter_plot = ax.scatter(xs, ys, s=size_list, zorder=20)
 
+        '''
         # Plot goal location as blue star
         pos_target = self.vertices[self.vertex_target_idx].position
         ax.plot(pos_target.x, pos_target.y, 'b*', markersize=20, zorder=10)
+        '''
+
+        # Plot targets as blue stars
+        for v in xrange(len(self.classes_y)):
+            if self.classes_y[v]: #it's not 0, hence is a target of some kind (1,2,or 3)
+                pos_target = self.vertices[v].position
+                ax.plot(pos_target.x, pos_target.y, 'b*', markersize=20, zorder=10)
         
 
         # labels, axis etc
@@ -264,6 +363,9 @@ class World():
         ax.set_aspect('equal', 'box')
 
     def plot_world_update(self, ax, target_belief):
+
+        # Check with Graeme: This is for size and color changes, and is not updated to account for prob_dist[v] being a list
+        # Should I use this for anything?
 
         num_nodes = len(self.vertices)
         size_list = []

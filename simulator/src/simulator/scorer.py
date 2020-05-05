@@ -1,5 +1,6 @@
 
-
+from world import World
+import numpy as np
 '''
 Robot can submit "answers" or locations of targets to the scorer (i.e. basestation)
 Scorer knows the correct answer
@@ -28,8 +29,48 @@ class Scorer():
         self.finished = False
         self.max_iterations = max_iterations
         self.belief_distance = self.world.config['environment_size'][0] + self.world.config['environment_size'][1]
+        self.detection_rewarded_tracker = np.zeros(self.world.num_nodes, dtype=bool)
+        self.action_rewarded_tracker = np.zeros(self.world.num_nodes, dtype=bool)
 
-    def update_scorer(self, num_iterations, robot_belief_idx):
+
+    def action_reward(self, vertex_idx, y): #Check with Graeme DONE
+        '''
+        This function proccesses the reward, i.e. updates the score
+        It assumes this reward should happen, i.e. robot has completed action successfully
+        It also updates a tracker so every target is only rewarded for each action once
+        '''
+
+        # Check if vertex has been rewarded yet
+        if not self.action_rewarded_tracker[vertex_idx]:
+            # If not, process reward and update tracker
+            if y == World.CLASS_WILDLIFE:
+                self.score += 4
+                print('wildlife reported correctly, +4')
+            if y == World.CLASS_MINE:
+                self.score += 5
+                print('mine disarmed, +5')
+            if y == World.CLASS_BENIGN:
+                self.score += 3
+                print('garbage picked up, +3')
+            self.action_rewarded_tracker[vertex_idx] = True 
+
+    def detection_reward(self, detection_list): #Check with Graeme DONE
+        '''
+        This function proccesses the reward, i.e. updates the score
+        It gives this reward iff detection is correct, and hasnt been detected before
+        It also updates a tracker
+        '''  
+        for i in xrange(len(detection_list)):
+            vertex_idx_i = detection_list[i][0]
+            class_i = detection_list[i][1]
+            if not self.detection_rewarded_tracker[vertex_idx_i]: # Check that vertex detection has not been rewarded yet (tracker = False)
+                if self.world.classes_y[vertex_idx_i] == class_i: # Check if robot belief class is same as ground truth class
+                    self.score += 1
+                    print('target detected of class: ', class_i)
+                    self.detection_rewarded_tracker[vertex_idx_i] = True
+
+    '''
+    def update_scorer(self, num_iterations, robot_belief_idx): # Check with Graeme for help with reward update
         if not self.finished:
             self.score = -self.max_iterations
 
@@ -38,12 +79,16 @@ class Scorer():
             self.score = -self.max_iterations
 
         if robot_belief_idx: #so this does not happen if robot_belief_idx = None i.e. doesn't really exist
-            self.belief_distance = self.distance_belief_to_target(robot_belief_idx)
+            self.belief_distance = self.distance_belief_to_target(robot_belief_idx) #??? Need to update to account for new reward method and mult targets
+    '''
+    def update_scorer(self, num_iterations): # Check with Graeme DONE
+        if num_iterations >= self.max_iterations:
+            self.finished = True
             
-    def submit_target(self, robot_belief_idx, robot_location_idx, is_at_surface, is_in_comms, num_iterations):
+    # old # def submit_target(self, robot_belief_idx, robot_belief_y, robot_location_idx, is_at_surface, is_in_comms, num_iterations): 
         # robot_belief_idx: location where the robot believes the target is (because it is above a certain prob?)
         # robot_location_idx: vertex idx where robot is
-
+        '''
         target_location_idx = self.world.vertex_target_idx
         #vertices_in_comms_range = self.world.vertices_in_comms_range
 
@@ -64,15 +109,41 @@ class Scorer():
             response = Scorer.RESPONSE_NONE
 
         return response
+        '''
+    def submit_target(self, target_belief_idx, target_belief_y, is_at_surface, is_in_comms): # Check with Graeme DONE
+        #target_location_idx = self.world.vertex_target_idx
+        #vertices_in_comms_range = self.world.vertices_in_comms_range
 
+        # The robot believes a target of class robot_belief_y is at location robot_belief_idx
+
+        if not self.finished:
+
+            # First, check if you are within comms range and at surface
+            if is_at_surface and is_in_comms:
+                if target_belief_y == self.world.classes_y[target_belief_idx]:
+                    #self.finished = True
+                    #self.score = -num_iterations
+                    self.action_reward(target_belief_idx, target_belief_y)
+                    response = Scorer.RESPONSE_CORRECT
+                else:
+                    response = Scorer.RESPONSE_FALSE
+            else: # either not in comms range or not at surface so robot should receive nothing from basestation
+                response = Scorer.RESPONSE_NONE
+
+        else:
+            response = Scorer.RESPONSE_NONE
+
+        return response
+
+    '''
     def distance_belief_to_target(self, robot_belief_idx):
         # this can be used to change the reward function further
         # i.e. have it relate to distance incorrect guess is from actual target location
-        # reward for this: -distance ???
+        # reward for this: -distance ??
         # I was going to call this is do_iteration in robot.py but should the robot really have this information?
         # Is this too much cheating? I think it is okay in order to assist the learning
 
-        target_location_idx = self.world.vertex_target_idx
+        target_location_idx = self.world.vertex_target_idx #???
         target_vertex = self.world.vertices[target_location_idx]
 
         robot_belief_vertex = self.world.vertices[robot_belief_idx]
@@ -85,4 +156,4 @@ class Scorer():
         #where does the robot make the choice of what belief vertex to submit? need this as input
 
         #what does the robot do given the output of the above function? 
-
+    '''
