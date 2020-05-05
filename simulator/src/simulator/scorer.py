@@ -50,9 +50,15 @@ class Scorer():
                 self.score += 5
                 print('mine disarmed, +5')
             if y == World.CLASS_BENIGN:
-                self.score += 3
-                print('garbage picked up, +3')
+                self.score += 1
+                print('garbage picked up, +1')
             self.action_rewarded_tracker[vertex_idx] = True 
+            print('updated score: ', self.score)
+
+    def dropoff_reward(self, num_targets_picked_up):
+        self.score += 2*num_targets_picked_up
+        print('garbage dropped off, +2 for each of: ', num_targets_picked_up)
+        print('updated score: ', self.score)
 
     def detection_reward(self, detection_list): #Check with Graeme DONE
         '''
@@ -68,6 +74,7 @@ class Scorer():
                     self.score += 1
                     print('target detected of class: ', class_i)
                     self.detection_rewarded_tracker[vertex_idx_i] = True
+                    print('updated score: ', self.score)
 
     '''
     def update_scorer(self, num_iterations, robot_belief_idx): # Check with Graeme for help with reward update

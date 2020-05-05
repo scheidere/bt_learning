@@ -44,6 +44,7 @@ class State():
         self.vertex_to_idx = vertex_idx
         self.fraction_along_edge = 0
         self.battery_life_count = 0
+        self.picked_up_target_count = 0
 
     def get_position(self, world):
         vertex_start = world.vertices[self.vertex_from_idx]
@@ -460,6 +461,7 @@ class Robot():
             if self.state.battery_dead_check(self.config):
                 self.condition_updates()
                 self.set_action_status()
+                print("battery is dead")
                 break
 
             # print("position: ")
@@ -483,18 +485,20 @@ class Robot():
                 distance_to_travel -= distance_traveled
 
             self.state.battery_life_update(self.known_world)
+            x = self.state.vertex_from_idx
 
             # Observe
             if new_vertex:
                 # print("observe")
 
-                x = self.state.vertex_from_idx
+                #x = self.state.vertex_from_idx
                 z_array, v_in_range = self.observe(x)
                 self.target_belief.bayes_update(x,z_array,v_in_range)
 
                 # default is that robot does not know answer
                 #robot_has_ans = False # maybe relates to BT, BT can learn this (report action node)
 
+            if self.state.at_vertex():
                 # Choose vertex idx to report as belief of target location based on prob dist
                 #self.robot_belief_idx = self.target_belief.generateRobotBeliefIdx() # fix this function, then change name of it and variable
                 self.nearest_wildlife_idx = self.target_belief.find_nearest_target(x, World.CLASS_WILDLIFE)
@@ -527,9 +531,15 @@ class Robot():
                 if self.planner_type == Robot.PLANNER_TYPE_PICKUP and x == self.nearest_benign_idx:
                     successful_pickup = self.known_world.pickup_target(x,self.basestation_scorer)
                     if successful_pickup:
+                        self.state.picked_up_target_count += 1
                         self.target_belief.update_loc_class_0(self.nearest_benign_idx)
                     else:
                         self.target_belief.update_loc_not_class_y(self.nearest_mine_idx, World.CLASS_BENIGN)
+
+                if self.planner_type == Robot.PLANNER_TYPE_DROPOFF and x == self.known_world.drop_off_idx:
+                    successful_dropoff = self.known_world.dropoff_target(x, self.basestation_scorer, self.state)
+                    if successful_dropoff:
+                        self.state.picked_up_target_count = 0 # all dropped off
 
                 elif self.planner_type == Robot.PLANNER_TYPE_DISARM and x == self.nearest_mine_idx: # Check with Graeme DONE
                     successful_disarm = self.known_world.disarm_target(x,self.basestation_scorer)
@@ -591,6 +601,11 @@ class Robot():
 
         benign_object_found = self.target_belief.class_y_found(World.CLASS_BENIGN)
 
+        if self.state.picked_up_target_count: # if this not 0, robot is carrying # Check with Graeme
+            carrying_benign = True
+        else:
+            carrying_benign = False
+
         #target_found_50 = self.target_belief.target_found_50()
         #target_found_70 = self.target_belief.target_found_70()
         #target_found_90 = self.target_belief.target_found_90()
@@ -611,6 +626,8 @@ class Robot():
         self.bt_interface.setConditionStatus('is_armed', is_armed)
 
         self.bt_interface.setConditionStatus('benign_object_found', benign_object_found)
+
+        self.bt_interface.setConditionStatus('carrying_benign',carrying_benign)
 
         #self.bt_interface.setConditionStatus('target_found_50', target_found_50)
 
@@ -663,10 +680,7 @@ class Robot():
         
         elif 'pick_up' in active_actions:
             self.planner_type = Robot.PLANNER_TYPE_PICKUP
-        
-        elif 'drop_off' in active_actions:
-            self.planner_type = Robot.PLANNER_TYPE_DROPOFF
-        
+    
         else:
             self.planner_type = Robot.PLANNER_TYPE_STOP
             # print("get_planner_type: No planner was picked")
@@ -1074,6 +1088,20 @@ if __name__ == '__main__':
 
         #character_list = [Character('->'),Character('('),Character('[resurface]'),Character(')')]
 
+        #character_list = [Character('?'),Character('('),Character('->'),Character('('),Character('(likely_target_found)'),Character('?'),Character('('),Character('(in_comms'),Character('[go_to_comms]'),Character(')'),Character('[report]'),Character(')'),Character('[random_walk]'),Character(')')]
+        #character_list = [Character('?'),Character('('),Character('->'),Character('('),\
+            #Character('(battery_low)'),Character('[resurface]'),Character(')'),Character('->'),Character('('),Character('[report]'),\
+            #Character('[random_walk]'),Character(')'),Character(')')]
+        '''
+        character_list = [Character('?'),Character('('),\
+            Character('->'),Character('('),\
+            Character('(battery_low)'),Character('[resurface]'),Character(')'),\
+            Character('->'),Character('('),\
+            Character('(wildlife_found)'),Character('?'),Character('('),\
+            Character('(in_comms)'),Character('[go_to_comms]'),Character(')'),Character('[report]'),Character(')'),\
+            Character('[random_walk]'),\
+            Character(')')]
+        '''
         character_list = [Character('?'),Character('('),\
             Character('->'),Character('('),\
             Character('(battery_low)'),Character('[resurface]'),Character(')'),\
@@ -1085,11 +1113,14 @@ if __name__ == '__main__':
             Character('<!>'),Character('('),\
             Character('(is_armed)'),Character(')'),Character('[disarm]'),Character(')'),Character(')'),\
             Character('->'),Character('('),\
-            Character('(benign_object_found)'),Character('[pick_up]'),Character('[take_to_drop_off]'),Character(')'),\
+            Character('(benign_object_found)'),Character('[pick_up]'),Character(')'),\
+            Character('->'),Character('('),\
+            Character('(carrying_benign)'),Character('[take_to_drop_off]'),Character(')'),\
             Character('->'),Character('('),\
             Character('(likely_target_found)'),Character('[go_to_likely_target]'),Character(')'),\
             Character('[random_walk]'),\
             Character(')')]
+
 
         cfg_word = Word(character_list) 
         bt_root, bt = cfg_word.createBT()

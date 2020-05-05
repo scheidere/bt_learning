@@ -22,6 +22,8 @@ class PlannerRandomWalk(Planner):
         vertex_start_idx = self.robot.state.vertex_from_idx
 
         v_current = vertex_start_idx
+        if debug:
+            print('v_current: ', v_current)
         plan_length = 10
         action_sequence = []
 
@@ -69,6 +71,8 @@ class PlannerRandomWalk(Planner):
                     print('v_next',v_next)
             action_sequence.append(v_next)
             v_current = v_next
+        if debug:
+            print('action_sequence: ', action_sequence)
         return action_sequence
 
 class PlannerShortestPath(Planner):
@@ -78,7 +82,8 @@ class PlannerShortestPath(Planner):
         self.vertex_goal_idx = vertex_goal_idx
 
         # if find_nearest_target returned None (doesn't think it knows where any targets are)
-        if self.vertex_goal_idx == None: 
+        if self.vertex_goal_idx == None: # Check with Graeme
+            rospy.logerr("PlannerShortestPath() goal vertex is None") #maybe just print it instead?
 
 
     def plan(self, debug=False):

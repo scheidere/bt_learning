@@ -107,7 +107,7 @@ class World():
             for vertex_end_idx in xrange(self.num_nodes):
 
                 cost = distance(self.vertices[vertex_start_idx], self.vertices[vertex_end_idx])
-                if cost <= connection_radius and not (vertices_surface[vertex_start_idx] and vertices_surface[vertex_end_idx]):  
+                if vertex_start_idx != vertex_end_idx and cost <= connection_radius and not (vertices_surface[vertex_start_idx] and vertices_surface[vertex_end_idx]):  
                     exists = True 
                 else:
                     exists = False
@@ -228,6 +228,12 @@ class World():
         if self.classes_y[vertex_idx] == World.CLASS_BENIGN:
             self.classes_y[vertex_idx] = World.CLASS_NONTARGET # Now is class 0 because target removed
             scorer.action_reward(vertex_idx, World.CLASS_BENIGN) # Generate score
+            return True
+        return False
+
+    def dropoff_target(self, vertex_idx, scorer, state):
+        if self.drop_off_idx == vertex_idx: # Now is class 0 because target removed
+            scorer.dropoff_reward(state.picked_up_target_count) # Generate score
             return True
         return False
 

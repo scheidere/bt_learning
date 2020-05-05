@@ -28,5 +28,6 @@ conditions:
   - mine_found #90% confidence in target location/type #disarming type
   - is_armed
   - benign_object_found #90% confidence in target location/type #relocating type
+  - carrying_benign
 
 
