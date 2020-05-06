@@ -1,4 +1,4 @@
-robot_plot: True #False
+robot_plot: False #False
 iteration_rate: 10 #0.5 #Hz
 scoring_statistics_frequency: 1 #Hz
 

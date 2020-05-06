@@ -83,7 +83,7 @@ class PlannerShortestPath(Planner):
 
         # if find_nearest_target returned None (doesn't think it knows where any targets are)
         if self.vertex_goal_idx == None: # Check with Graeme
-            rospy.logerr("PlannerShortestPath() goal vertex is None") #maybe just print it instead?
+            rospy.logerr("PlannerShortestPath() goal vertex is None") #maybe just print it instead            
 
 
     def plan(self, debug=False):
@@ -97,6 +97,8 @@ class PlannerShortestPath(Planner):
 
         # rospy.loginfo("Calling dijkstras")
         [distance, path] = self.dijkstras(debug)
+        if path == []: # Check with Graeme
+            return path 
         if len(path) > 1:
             path = path[1:]
             return path
@@ -140,6 +142,9 @@ class PlannerShortestPath(Planner):
         # backtrack to find path and distance
         path = []
         v = self.vertex_goal_idx
+        # Check if goal vertex is None # Check with Graeme
+        if v == None:
+            return [None,[]]
         d = dist_to_go[v]
         if debug:
             print "dijkstra goal: " + str(self.vertex_goal_idx)

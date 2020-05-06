@@ -117,7 +117,8 @@ def reward(word):
 
 
 ###RUN SIMULATOR (which returns reward)
-def reward(word, max_iterations, underwater_simulator): # TODO
+'''
+def reward(word, max_iterations, underwater_simulator): # single target case
 
     distance_scale = 20.0
     # roughly...
@@ -154,6 +155,34 @@ def reward(word, max_iterations, underwater_simulator): # TODO
     reward = float(reward - min_reward)/float(max_reward - min_reward)
 
     return is_valid, reward
+'''
+def reward(word, max_iterations, underwater_simulator): # multi-target case
+
+    min_reward = 0
+    max_reward = 100 # Our tree gets 75 on average # or avg_num_targets_in_world * max_reward_per_target
+
+    word.printWord()
+
+    num_simulations = 1
+
+    if word.list:
+        is_valid = True
+        reward_sum = 0
+        for i in xrange(num_simulations):
+            temp_reward, robot_reported, distance = underwater_simulator.generateReward(word, max_iterations)
+            reward_sum += temp_reward
+
+        reward = float(reward_sum) / float(num_simulations) # average, not-normalized
+        print(reward)
+    else:
+        is_valid = False
+        reward = min_reward
+
+    # Normalisation
+    reward = float(reward - min_reward)/float(max_reward - min_reward)
+
+    return is_valid, reward
+
 
 '''
 if __name__ == "__main__":

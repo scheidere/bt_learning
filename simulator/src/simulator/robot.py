@@ -318,7 +318,7 @@ class Robot():
     PLANNER_TYPE_DISARM = 7
     PLANNER_TYPE_PICKUP = 8
 
-    def __init__(self, config, robot_id, num_robots, seed, bt, max_iterations, world, TargetBelief):
+    def __init__(self, config, robot_id, num_robots, seed, bt, max_iterations, world):
 
         self.bt = bt
         self.config = config
@@ -473,6 +473,8 @@ class Robot():
             action_sequence = None          
             if self.state.at_vertex():
                 action_sequence = self.plan()
+                if action_sequence == None: #goal vertex is None, so path is empty
+                    break
 
             # Move
             # print("move")
@@ -1125,7 +1127,7 @@ if __name__ == '__main__':
         cfg_word = Word(character_list) 
         bt_root, bt = cfg_word.createBT()
 
-        max_iterations = 1000
+        max_iterations = 100
 
         # Create the world
         world = World(config)
@@ -1133,7 +1135,7 @@ if __name__ == '__main__':
 
         world.init_world(seed, do_test)
 
-        robot = Robot(config, robot_id, num_robots, seed, bt, max_iterations, world, TargetBelief)
+        robot = Robot(config, robot_id, num_robots, seed, bt, max_iterations, world)
         # cProfile.run('RobotController(config, robot)')
         robot_controller = RobotController(config, robot)
         score, target_reported, distance = robot_controller.run()
