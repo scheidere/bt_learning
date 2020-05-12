@@ -81,7 +81,7 @@ if __name__ == '__main__':
         	Character('(likely_target_found)'),Character('[go_to_target]'),Character(')'),Character('random_walk'),Character(')'),\
         	Character(')')]
         '''
-
+        '''
         character_list = [Character('?'),Character('('),\
         	Character('->'),Character('('),\
         	Character('(battery_low)'),Character('[resurface]'),Character(')'),\
@@ -99,12 +99,54 @@ if __name__ == '__main__':
         	Character('(likely_target_found)'),Character('[go_to_target]'),Character(')'),\
         	Character('[random_walk]'),Character(')'),\
         	Character(')')]
+        '''
+        '''
+        # updated multi-target manual tree
+        character_list = [Character('?'),Character('('),\
+            Character('->'),Character('('),\
+            Character('(battery_low)'),Character('[resurface]'),Character(')'),\
+            Character('->'),Character('('),\
+            Character('(wildlife_found)'),Character('?'),Character('('),\
+            Character('(in_comms)'),Character('[go_to_comms]'),Character(')'),Character('[report]'),Character(')'),\
+            Character('->'),Character('('),\
+            Character('(mine_found)'),Character('?'),Character('('),\
+            Character('<!>'),Character('('),\
+            Character('(is_armed)'),Character(')'),Character('[disarm]'),Character(')'),Character(')'),\
+            Character('->'),Character('('),\
+            Character('(benign_object_found)'),Character('[pick_up]'),Character(')'),\
+            Character('->'),Character('('),\
+            Character('(carrying_benign)'),Character('[take_to_drop_off]'),Character(')'),\
+            Character('->'),Character('('),\
+            Character('(likely_target_found)'),Character('[go_to_likely_target]'),Character(')'),\
+            Character('[random_walk]'),\
+            Character(')')]
+        '''
+        '''
+        character_list = [Character('?'),Character('('),\
+            Character('->'),Character('('),\
+            Character('->'),Character('('),\
+            Character('?'),Character('('),\
+            Character('<!>'),Character('('),\
+            Character('(likely_target_found)'),Character(')'),\
+            Character('(is_armed)'), Character(')'),\
+            Character('[random_walk]'),Character(')'),\
+            Character('(carrying_benign)'),Character(')'),\
+            Character('[pick_up]'),Character(')')]
+        '''
+            
+        character_list = [Character('?'),Character('('),\
+            Character('?'),Character('('),\
+            Character('->'),Character('('),\
+            Character('(mine_found)'),Character('[disarm]'),Character(')'),\
+            Character('[shortest_path]'),Character(')'),\
+            Character('[go_to_comms]'),Character(')')]
+
 
         cfg_word = Word(character_list) 
         bt_root, bt = cfg_word.createBT()
 
         init_bt(bt)
-        #bt.write_config('onr_example.tree')
+        #bt.write_config('onr_example2.tree') # need to manually add in decorator nodes to config file/ implement it dur
         while not rospy.is_shutdown():   
         	tick_bt(bt)
 

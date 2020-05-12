@@ -15,3 +15,5 @@ exploration_exploitation_parameter: 1.0 # =1.0 is recommended. <1.0 more exploit
 max_mcts_iterations: 10000 #change name to max_mcts_iterations ##you change this to make it run longer
 max_sim_iterations: 100 #iterations robot allows to move for before it gives up
 plot_search_tree: False
+plot_intermediate_results: True
+plot_intermediate_results_iterations: 100

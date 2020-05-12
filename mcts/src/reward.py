@@ -161,6 +161,8 @@ def reward(word, max_iterations, underwater_simulator): # multi-target case
     min_reward = 0
     max_reward = 100 # Our tree gets 75 on average # or avg_num_targets_in_world * max_reward_per_target
 
+    best_temp_reward = 0 # Check with Graeme
+
     word.printWord()
 
     num_simulations = 1
@@ -171,17 +173,26 @@ def reward(word, max_iterations, underwater_simulator): # multi-target case
         for i in xrange(num_simulations):
             temp_reward, robot_reported, distance = underwater_simulator.generateReward(word, max_iterations)
             reward_sum += temp_reward
+            
+            if i == 1: # Check with Graeme
+                best_temp_reward = temp_reward
+            elif temp_reward > best_temp_reward:
+                best_temp_reward = temp_reward
 
         reward = float(reward_sum) / float(num_simulations) # average, not-normalized
-        print(reward)
+        #print("reward",reward)
+
     else:
         is_valid = False
         reward = min_reward
+        best_reward = min_reward
 
     # Normalisation
     reward = float(reward - min_reward)/float(max_reward - min_reward)
+    print("reward",reward)
+    best_reward = float(best_temp_reward - min_reward)/float(max_reward - min_reward)
 
-    return is_valid, reward
+    return is_valid, reward, best_reward
 
 
 '''

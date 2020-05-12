@@ -1,0 +1,26 @@
+?
+	->
+		(battery_low)
+		[resurface]
+	->
+		(wildlife_found)
+		?
+			(in_comms)
+			[go_to_comms]
+		[report]
+	->
+		(mine_found)
+		?
+			
+				(is_armed)
+			[disarm]
+	->
+		(benign_object_found)
+		[pick_up]
+	->
+		(carrying_benign)
+		[take_to_drop_off]
+	->
+		(likely_target_found)
+		[go_to_likely_target]
+	[random_walk]

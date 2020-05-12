@@ -261,15 +261,17 @@ class TargetBelief():
         return False
 
     def update_loc_class_0(self, vertex_idx):
-        self.prob_dist[vertex_idx][0] = 1
-        self.prob_dist[vertex_idx][1:] = 0
+        if vertex_idx: # Check with Graeme
+            self.prob_dist[vertex_idx][0] = 1
+            self.prob_dist[vertex_idx][1:] = 0
 
     def update_loc_not_class_y(self, vertex_idx, y):
         print('vertex_idx', vertex_idx)
         print('y',y)
-        self.prob_dist[vertex_idx][y] = 0
-        total = sum(self.prob_dist[vertex_idx])
-        self.prob_dist[vertex_idx] /= total
+        if vertex_idx: # Check with Graeme
+            self.prob_dist[vertex_idx][y] = 0
+            total = sum(self.prob_dist[vertex_idx])
+            self.prob_dist[vertex_idx] /= total
 
     def find_nearest_target(self, x, y): # Check with Graeme DONE
         # Find nearest location where the robot believes there to be a target of class y, given the robot is at x
@@ -1104,6 +1106,8 @@ if __name__ == '__main__':
             Character('[random_walk]'),\
             Character(')')]
         '''
+        '''
+        # our tree
         character_list = [Character('?'),Character('('),\
             Character('->'),Character('('),\
             Character('(battery_low)'),Character('[resurface]'),Character(')'),\
@@ -1122,12 +1126,33 @@ if __name__ == '__main__':
             Character('(likely_target_found)'),Character('[go_to_likely_target]'),Character(')'),\
             Character('[random_walk]'),\
             Character(')')]
+        '''
+        '''
+        character_list = [Character('?'),Character('('),\
+            Character('->'),Character('('),\
+            Character('->'),Character('('),\
+            Character('?'),Character('('),\
+            Character('<!>'),Character('('),\
+            Character('(likely_target_found)'),Character(')'),\
+            Character('(is_armed)'), Character(')'),\
+            Character('[random_walk]'),Character(')'),\
+            Character('(carrying_benign)'),Character(')'),\
+            Character('[pick_up]'),Character(')')]
+        '''
+        
+        character_list = [Character('?'),Character('('),\
+            Character('?'),Character('('),\
+            Character('->'),Character('('),\
+            Character('(mine_found)'),Character('[disarm]'),Character(')'),\
+            Character('[shortest_path]'),Character(')'),\
+            Character('[go_to_comms]'),Character(')')]
+
 
 
         cfg_word = Word(character_list) 
         bt_root, bt = cfg_word.createBT()
 
-        max_iterations = 100
+        max_iterations = 1000
 
         # Create the world
         world = World(config)

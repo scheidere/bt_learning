@@ -12,5 +12,5 @@ num_classes: 4 # 3 types of targets, one class to represent vertices which are n
 prob_of_class0: 0.9 # if 0.9 then 90% of the vertices are not targets
 TP: 0.7
 confidence_threshold: 0.9
-battery_low_threshold: 5
-battery_dead_threshold: 10
+battery_low_threshold: 500
+battery_dead_threshold: 1000
