@@ -258,7 +258,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
 
                 # Remove that parent
                 # TODO more efficient way to do this?
-                list_of_parents = list_of_parents[1:]
+                list_of_parents.pop()
 
                 # If not already updated
                 if parent not in list_of_already_updated:
@@ -272,8 +272,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                         parent.updateAverage(0.0)
 
                     # Add all parents to the list
-                    # TODO more efficient way to do this?
-                    list_of_parents = list_of_parents + parent.parents
+                    list_of_parents = list_of_parents.extend(parent.parents)
 
                     # Remember that we've already looked at this
                     list_of_already_updated.append(parent)
