@@ -3,14 +3,13 @@
 import rospy
 import yaml
 import rospkg
-from cfg import CFG, Word, Character
+from cfg import CFG, Word, Character, createWord
 
 from behavior_tree.behavior_tree import *
 from behavior_tree_msgs.msg import Status, Active
 
 import behavior_tree.behavior_tree_graphviz as gv
 import zlib
-
 
 def init_bt(bt):
     # print("BT_Interface initialising BT...")
@@ -133,7 +132,8 @@ if __name__ == '__main__':
             Character('(carrying_benign)'),Character(')'),\
             Character('[pick_up]'),Character(')')]
         '''
-            
+        
+        '''    
         character_list = [Character('?'),Character('('),\
             Character('?'),Character('('),\
             Character('->'),Character('('),\
@@ -142,7 +142,10 @@ if __name__ == '__main__':
             Character('[go_to_comms]'),Character(')')]
 
 
-        cfg_word = Word(character_list) 
+        cfg_word = Word(character_list)
+        '''
+        cfg_word = createWord('? ( ? ( -> ( (mine_found) [disarm] ) [shortest_path] ) [go_to_comms] )')
+
         bt_root, bt = cfg_word.createBT()
 
         init_bt(bt)

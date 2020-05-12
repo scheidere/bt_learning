@@ -244,6 +244,25 @@ class ProductionRule():
         print(print_string)
 
 
+def createWord(string_list):
+    # instead of
+    # word = Word([Character("A"),Character("("),Character("children"),Character(")")])
+    # use
+    # word = createWord(["A", "(", "children", ")"])
+    # OR (even better):
+    # word = createWord("A ( children )")    -- Note: ' ' is used as a delimiter
+    # :partyparrot:
+
+    if type(string_list) != type([]):
+        # If a single string is passed in, split between spaces
+        string_list = string_list.split(" ")
+
+    character_list = []
+    for s in string_list:
+        character_list.append(Character(s))
+    return Word(character_list)
+        
+
 class CFG():
     def __init__(self):
 
