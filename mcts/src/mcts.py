@@ -18,13 +18,13 @@ import matplotlib.pyplot as plt
 
 import rospy
 
-def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, config ):
+def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config ):
 
     ################################
     # Setup
     start_sequence = [Word([Character("S")])]
     unpicked_child_words = cfg.applyAllProductionRules(start_sequence[0]) #??? #breaks here
-    root = TreeNode(parent=None, sequence=start_sequence, budget=budget, unpicked_child_words=unpicked_child_words)
+    root = TreeNode(parents=[], sequence=start_sequence, budget=budget, unpicked_child_words=unpicked_child_words)
     list_of_all_nodes = []
     list_of_all_nodes.append(root) # for debugging only
 
@@ -32,6 +32,8 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
     rollout_rewards = []
     best_rewards = []
     best_reward = 0
+    best_reward_word = None
+    count_duplicates = 0
 
     plot_intermediate_results = config['plot_intermediate_results']
     plot_intermediate_results_iterations = config['plot_intermediate_results_iterations']
@@ -103,14 +105,28 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
 
                 new_unpicked_child_words = [w for w in new_unpicked_child_words if not is_overbudget(w)]
 
-                # Create the new node and add it to the tree
-                # printActionSequence(new_sequence)
-                new_child_node = TreeNode(parent=current, sequence=new_sequence, budget=new_budget_left, unpicked_child_words=new_unpicked_child_words)
-                current.children.append(new_child_node)
-                current = new_child_node
-                list_of_all_nodes.append(new_child_node) # for debugging only
-                #print('new_child_node')
-                #new_child_node.sequence[-1].printWord()
+                # If doing DAG, check for duplicate nodes first
+                if use_dag:
+                    found_duplicate, duplicate_node = check_for_duplicates(list_of_all_nodes, child_word)
+                else:
+                    found_duplicate = False
+
+                if found_duplicate:
+                    # In this case, don't add a new node
+                    duplicate_node.addParent(current)
+                    current = duplicate_node
+                    count_duplicates += 1
+                    print("duplicate found! " + str(child_word.toString()))
+
+                else:
+                    # Create the new node and add it to the tree
+                    # printActionSequence(new_sequence)
+                    new_child_node = TreeNode(parents=[current], sequence=new_sequence, budget=new_budget_left, unpicked_child_words=new_unpicked_child_words)
+                    current.children.append(new_child_node)
+                    current = new_child_node
+                    list_of_all_nodes.append(new_child_node) # for debugging only
+                    #print('new_child_node')
+                    #new_child_node.sequence[-1].printWord()
 
                 break # don't go deeper in the tree...
 
@@ -163,8 +179,9 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
         # print("MCTS reward " + str(iter))
         is_valid, rollout_reward, best_rollout_reward = reward(word = rollout_word, max_iterations=max_sim_iterations, underwater_simulator=underwater_simulator)
 
-        if best_reward < rollout_reward:
+        if best_reward_word == None or best_reward < rollout_reward:
             best_reward = rollout_reward
+            best_reward_word = rollout_word
 
         best_rewards.append(best_reward) # whether same or different
         rollout_rewards.append(rollout_reward)
@@ -174,9 +191,12 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
         # Print intermediate results
         
         # If iteration is multiple of 100
-        if iter != 0 and not iter%plot_intermediate_results_iterations: # Check with Graeme
-            print("Average rollout reward: " + str(rollout_reward))
+        # if iter != 0 and not iter%plot_intermediate_results_iterations: # Check with Graeme
+        if True:
+            print("Average rollout reward: " + str(avg_rollout_rewards[-1]))
             print("Best reward: " + str(best_reward))
+            best_reward_word.printWord()
+            print("Num duplicates: " + str(count_duplicates) + "; num nodes: " + str(len(list_of_all_nodes)))
             
         if plot_intermediate_results:   
             # If iteration is multiple of 1000
@@ -192,7 +212,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     plt.ylabel('Score')
                     plt.legend(loc='best')
                     plt.show(block=False)
-                    plt.ion()
+                    # plt.ion()
                 else:
                     line1.set_xdata(range(iter+1))
                     line2.set_xdata(range(iter+1))
@@ -203,42 +223,79 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     fig.canvas.draw()
                     fig.canvas.flush_events()
 
+                fig.text(0.5, 0.9, best_reward_word.toString(), ha='center')
                
-                plt.pause(0.001)
+                #plt.pause(0.001)
         
 
         ################################
         # Back-propagation
         # update stats of all nodes from current back to root node
-        if is_valid:
-            # print("MCTS backprop " + str(iter))
-            parent = current
-            while parent: # is not None
+        if use_dag:
+            # DAG case
+            # backpropagate up ALL paths through the graph to the root node
 
-                # Update the average
-                #print('rollout_reward', rollout_reward)
-                #print('parent.average_evaluation_score before',parent.average_evaluation_score)
-                #print('parent.num_updates before',parent.num_updates)
-                parent.updateAverage(rollout_reward)
-                #print('parent.average_evaluation_score after',parent.average_evaluation_score)
-                #print('parent.num_updates after',parent.num_updates)
-                parent.updateBestRollout(rollout_word, rollout_reward)
+            list_of_parents = []
+            list_of_parents.append(current)
 
-                # Recurse up the tree
-                parent = parent.parent
+            list_of_already_updated = []
+
+            while list_of_parents:
+                # Get a parent from the list
+                parent = list_of_parents[0]
+
+                # Remove that parent
+                # TODO more efficient way to do this?
+                list_of_parents = list_of_parents[1:]
+
+                # If not already updated
+                if parent not in list_of_already_updated:
+                    
+                    # Update the average
+                    if is_valid:
+                        parent.updateAverage(rollout_reward)
+                        parent.updateBestRollout(rollout_word, rollout_reward)
+                    else:
+                        # Invalid (empty) BT gets a reward of 0
+                        parent.updateAverage(0.0)
+
+                    # Add all parents to the list
+                    # TODO more efficient way to do this?
+                    list_of_parents = list_of_parents + parent.parents
+
+                    # Remember that we've already looked at this
+                    list_of_already_updated.append(parent)
         else:
-            print("invalid rollout (empty?)")
-            # print("MCTS backprop " + str(iter))
-            parent = current
-            rollout_reward = 0.0
-            while parent: # is not None
+            # Tree case
+            if is_valid:
+                # print("MCTS backprop " + str(iter))
+                parent = current
+                while parent: # is not None
 
-                # Update the average
-                parent.updateAverage(rollout_reward)
-                #parent.updateBestRollout(rollout_word, rollout_reward)
+                    # Update the average
+                    #print('rollout_reward', rollout_reward)
+                    #print('parent.average_evaluation_score before',parent.average_evaluation_score)
+                    #print('parent.num_updates before',parent.num_updates)
+                    parent.updateAverage(rollout_reward)
+                    #print('parent.average_evaluation_score after',parent.average_evaluation_score)
+                    #print('parent.num_updates after',parent.num_updates)
+                    parent.updateBestRollout(rollout_word, rollout_reward)
 
-                # Recurse up the tree
-                parent = parent.parent
+                    # Recurse up the tree
+                    parent = parent.parents[0]
+            else:
+                print("invalid rollout (empty?)")
+                # print("MCTS backprop " + str(iter))
+                parent = current
+                rollout_reward = 0.0
+                while parent: # is not None
+
+                    # Update the average
+                    parent.updateAverage(rollout_reward)
+                    #parent.updateBestRollout(rollout_word, rollout_reward)
+
+                    # Recurse up the tree
+                    parent = parent.parents[0]
 
     ################################
     # Extract solution
@@ -280,3 +337,14 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
     winner = best_node
 
     return [solution, best_rollout, root, list_of_all_nodes, winner]
+
+
+
+def check_for_duplicates(list_of_all_nodes, child_word):
+
+    for n in list_of_all_nodes:
+        current_word = n.sequence[-1]
+        # check if child_word matches current_word
+        if current_word.equal(child_word):
+            return True, n
+    return False, None

@@ -71,7 +71,7 @@ class Scorer():
             class_i = detection_list[i][1]
             if not self.detection_rewarded_tracker[vertex_idx_i]: # Check that vertex detection has not been rewarded yet (tracker = False)
                 if self.world.classes_y[vertex_idx_i] == class_i: # Check if robot belief class is same as ground truth class
-                    self.score += 1
+                    self.score += 0 #Graeme changed this from 1 to 0
                     print('target detected of class: ', class_i)
                     self.detection_rewarded_tracker[vertex_idx_i] = True
                     print('updated score: ', self.score)

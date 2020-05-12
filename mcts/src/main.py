@@ -54,6 +54,7 @@ def run():
     exploration_exploitation_parameter = config["exploration_exploitation_parameter"]
     max_mcts_iterations = config["max_mcts_iterations"]
     max_sim_iterations = config["max_sim_iterations"]
+    use_dag = config["use_dag"]
     
     '''
     budget = 8
@@ -64,7 +65,7 @@ def run():
     max_mcts_iterations = 10000 #change name to max_mcts_iterations ##you change this to make it run longer
     max_sim_iterations = 100 #iterations robot allows to move for before it gives up
     '''
-    [solution, best_rollout, root, list_of_all_nodes, winner] = mcts( cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, config )
+    [solution, best_rollout, root, list_of_all_nodes, winner] = mcts( cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config )
     
 
     # Display the tree

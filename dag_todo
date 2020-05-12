@@ -1,0 +1,18 @@
+DONE add a parameter to turn dag on or off
+
+DONE tree_node needs to have multiple parents
+
+expand tree
+DONE - need to check for duplicates (use dict or similar)
+DONE - update parents
+
+backpropagation
+DONE - statistics need to go back up all paths through the tree
+
+finding the solution
+DONE - maybe no change required?
+
+tree plotting
+GRAEME LATER - needs to allow for dags
+
+make sure things are efficient
