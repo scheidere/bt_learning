@@ -28,7 +28,11 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
     list_of_all_nodes = []
     list_of_all_nodes.append(root) # for debugging only
 
+    dict_of_all_nodes = dict()
+    dict_of_all_nodes[root.sequence[-1].toString()] = root # for check_for_duplicates()
+
     avg_rollout_rewards = [] # Check with Graeme
+    avg_rollout = 0 # current average
     rollout_rewards = []
     best_rewards = []
     best_reward = 0
@@ -107,7 +111,8 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
 
                 # If doing DAG, check for duplicate nodes first
                 if use_dag:
-                    found_duplicate, duplicate_node = check_for_duplicates(list_of_all_nodes, child_word)
+                    # found_duplicate, duplicate_node = check_for_duplicates(list_of_all_nodes, child_word)
+                    found_duplicate, duplicate_node = check_for_duplicates(dict_of_all_nodes, child_word)
                 else:
                     found_duplicate = False
 
@@ -125,10 +130,11 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     current.children.append(new_child_node)
                     current = new_child_node
                     list_of_all_nodes.append(new_child_node) # for debugging only
+                    dict_of_all_nodes[child_word.toString()] = current # for check_for_duplicates()
                     #print('new_child_node')
                     #new_child_node.sequence[-1].printWord()
 
-                break # don't go deeper in the tree...
+                    break # don't go deeper in the tree...
 
             else:
                 
@@ -185,7 +191,10 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
 
         best_rewards.append(best_reward) # whether same or different
         rollout_rewards.append(rollout_reward)
-        avg_rollout_rewards.append(sum(rollout_rewards)/len(rollout_rewards))
+
+        avg_rollout = float(avg_rollout*len(avg_rollout_rewards)+rollout_reward) / float(len(avg_rollout_rewards) + 1)
+        # avg_rollout_rewards.append(sum(rollout_rewards)/len(rollout_rewards))
+        avg_rollout_rewards.append(avg_rollout)
 
         ################################
         # Print intermediate results
@@ -342,7 +351,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
     return [solution, best_rollout, root, list_of_all_nodes, winner]
 
 
-
+'''
 def check_for_duplicates(list_of_all_nodes, child_word):
 
     for n in list_of_all_nodes:
@@ -350,4 +359,11 @@ def check_for_duplicates(list_of_all_nodes, child_word):
         # check if child_word matches current_word
         if current_word.equal(child_word):
             return True, n
+    return False, None
+'''
+def check_for_duplicates(dict_of_all_nodes, child_word):
+
+    key = child_word.toString()
+    if key in dict_of_all_nodes.keys():
+        return True, dict_of_all_nodes[key]
     return False, None
