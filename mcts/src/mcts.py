@@ -210,6 +210,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     line2, = ax.plot(range(iter+1),avg_rollout_rewards,label = 'average reward')
                     plt.xlabel('MCTS Iterations')
                     plt.ylabel('Score')
+                    fig_text = fig.text(0.5, 0.9, best_reward_word.toString(), ha='center')
                     plt.legend(loc='best')
                     plt.show(block=False)
                     # plt.ion()
@@ -220,10 +221,12 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     line2.set_ydata(avg_rollout_rewards)
                     plt.xlim(0,iter+1)
                     plt.ylim(0,best_rewards[-1]*1.1)
+                    fig_text.set_text(best_reward_word.toString())
+
                     fig.canvas.draw()
                     fig.canvas.flush_events()
 
-                fig.text(0.5, 0.9, best_reward_word.toString(), ha='center')
+                
                
                 #plt.pause(0.001)
         
