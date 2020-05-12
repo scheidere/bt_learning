@@ -11,6 +11,7 @@ from action import Action, printActionSequence
 from tree_node import countNodes
 # from plot_tree import plotTree
 from plot_cfg_tree import plot_cfg_tree
+from plot_cfg_dag import plot_cfg_dag
 import time, sys
 from cfg import Word, Character, CFG
 
@@ -86,8 +87,16 @@ def run():
 
         # new plotting function
         use_uct = False # True case doesn't currently work
-        max_height = 4
-        plot_cfg_tree(list_of_all_nodes, winner, use_uct, max_height, exploration_exploitation_parameter)
+        max_height = 15
+        # plot_cfg_tree(list_of_all_nodes, winner, use_uct, max_height, exploration_exploitation_parameter)
+
+        print_text = False
+        filename='dag.gv'
+        plot_cfg_dag(list_of_all_nodes, winner, use_uct, max_height, exploration_exploitation_parameter, print_text, filename)
+
+        print_text = True
+        filename='dag_text.gv'
+        plot_cfg_dag(list_of_all_nodes, winner, use_uct, max_height, exploration_exploitation_parameter, print_text, filename)
 
         # Wait for Ctrl+C
         while True:

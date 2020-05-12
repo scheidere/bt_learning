@@ -134,7 +134,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     #print('new_child_node')
                     #new_child_node.sequence[-1].printWord()
 
-                break # don't go deeper in the tree...
+                    break # don't go deeper in the tree...
 
             else:
                 
