@@ -134,7 +134,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     #print('new_child_node')
                     #new_child_node.sequence[-1].printWord()
 
-                    break # don't go deeper in the tree...
+                break # don't go deeper in the tree...
 
             else:
                 
@@ -234,8 +234,6 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
 
                     fig.canvas.draw()
                     fig.canvas.flush_events()
-
-                
                
                 #plt.pause(0.001)
         
@@ -253,12 +251,9 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
             list_of_already_updated = []
 
             while list_of_parents:
-                # Get a parent from the list
-                parent = list_of_parents[0]
 
-                # Remove that parent
-                # TODO more efficient way to do this?
-                list_of_parents.pop()
+                # Get and remove a parent from the list
+                parent = list_of_parents.pop()
 
                 # If not already updated
                 if parent not in list_of_already_updated:
@@ -272,10 +267,11 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                         parent.updateAverage(0.0)
 
                     # Add all parents to the list
-                    list_of_parents = list_of_parents.extend(parent.parents)
+                    list_of_parents.extend(parent.parents)
 
                     # Remember that we've already looked at this
                     list_of_already_updated.append(parent)
+
         else:
             # Tree case
             if is_valid:

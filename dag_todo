@@ -6,7 +6,7 @@ expand tree
 DONE - need to check for duplicates (use dict or similar)
 DONE - update parents
 - maybe also look for duplicates in unpicked children? to create more links...
-- when a 'merge' occurs, should the scores also be merged? this might require keeping track of individual rollouts
+- when a 'merge' occurs, should the scores and counts also be merged? this might require keeping track of individual rollouts
 
 backpropagation
 DONE - statistics need to go back up all paths through the tree
