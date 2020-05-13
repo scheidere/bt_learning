@@ -9,6 +9,9 @@ import behavior_tree.behavior_tree_graphviz as gv
 import zlib
 
 def getActionsConditions():
+
+    ?? this function should be identical to the getActionsConditions() in cfg, after changes are made there
+    
     # Read in the list of actions and conditions from the bt_list file
     rospack = rospkg.RosPack()
     filepath = rospack.get_path('simulator') + "/config/" + rospy.get_param('~bt_list')

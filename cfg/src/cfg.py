@@ -23,7 +23,16 @@ def getActionsConditions():
     with open(filepath, 'r') as stream:
         bt_list = yaml.safe_load(stream)
 
+    ?? read in the bt_list file a bit differently
+
+    ?? make sure each action/condition only appears once in the list
+
     return bt_list["actions"], bt_list["conditions"]
+
+def getActionsConditionsGroups():
+
+    ?? return the list of groups, with each group having actions and conditions
+    return bt_list["groups"]
 
 class Character():
     def __init__(self, label):
@@ -833,8 +842,14 @@ class CFG():
         return production_rule_list
 
 
+    def ??
+        ?? create new productions rules for the groups
+        production_rule_list = []
+        list_groups = getActionsConditionsGroups()
 
+        ?? most of the rest of this is the same
 
+        ?? Need characters to determine which group
 
     def printWord(self):
 
