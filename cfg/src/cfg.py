@@ -23,15 +23,30 @@ def getActionsConditions():
     with open(filepath, 'r') as stream:
         bt_list = yaml.safe_load(stream)
 
-    ?? read in the bt_list file a bit differently
+    # Extract conditions and actions
+    conditions = []
+    actions = []
 
-    ?? make sure each action/condition only appears once in the list
+    # Loop over all groups
+    for g in bt_list['groups']:
+        conditions.extend(g['conditions'])
+        actions.extend(g['actions'])
 
-    return bt_list["actions"], bt_list["conditions"]
+    # remove duplicates
+    conditions = list(set(conditions))
+    actions = list(set(actions))
+
+    return actions, conditions
+    #return bt_list["actions"], bt_list["conditions"]
 
 def getActionsConditionsGroups():
 
-    ?? return the list of groups, with each group having actions and conditions
+    # Read in the list of actions and conditions from the bt_list file
+    rospack = rospkg.RosPack()
+    filepath = rospack.get_path('simulator') + "/config/bt_list.yaml" 
+    with open(filepath, 'r') as stream:
+        bt_list = yaml.safe_load(stream)
+        
     return bt_list["groups"]
 
 class Character():

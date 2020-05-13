@@ -8,10 +8,11 @@ from behavior_tree_msgs.msg import Status, Active
 import behavior_tree.behavior_tree_graphviz as gv
 import zlib
 
+'''
 def getActionsConditions():
 
     ?? this function should be identical to the getActionsConditions() in cfg, after changes are made there
-    
+
     # Read in the list of actions and conditions from the bt_list file
     rospack = rospkg.RosPack()
     filepath = rospack.get_path('simulator') + "/config/" + rospy.get_param('~bt_list')
@@ -19,6 +20,29 @@ def getActionsConditions():
         bt_list = yaml.safe_load(stream)
 
     return bt_list["actions"], bt_list["conditions"]
+'''
+def getActionsConditions():
+    # Read in the list of actions and conditions from the bt_list file
+    rospack = rospkg.RosPack()
+    filepath = rospack.get_path('simulator') + "/config/" + rospy.get_param('~bt_list')
+    with open(filepath, 'r') as stream:
+        bt_list = yaml.safe_load(stream)
+
+    # Extract conditions and actions
+    conditions = []
+    actions = []
+
+    # Loop over all groups
+    for g in bt_list['groups']:
+        conditions.extend(g['conditions'])
+        actions.extend(g['actions'])
+
+    # remove duplicates
+    conditions = list(set(conditions))
+    actions = list(set(actions))
+
+    return actions, conditions
+    #return bt_list["actions"], bt_list["conditions"]
 
 class BT_Interface():
     def __init__(self, bt):
