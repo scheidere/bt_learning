@@ -251,7 +251,7 @@ def createWord(string_list):
     # word = createWord(["A", "(", "children", ")"])
     # OR (even better):
     # word = createWord("A ( children )")    -- Note: ' ' is used as a delimiter
-    # :partyparrot:
+    # :partyparrot: LOL
 
     if type(string_list) != type([]):
         # If a single string is passed in, split between spaces
@@ -282,7 +282,7 @@ class CFG():
     
     def generateGrammar(self): 
         
-        return self.generateGrammar_lr()
+        return self.generateGrammarGuidedStructure()
 
     def generateGrammar_treeTest(self):
 
@@ -674,6 +674,158 @@ class CFG():
         production_rule_list.append(production_rule)
         
         return production_rule_list
+
+    def generateGrammarGuidedStructure(self):
+
+        '''
+        This CFG results in the following guided (or forced) structure
+        ?
+        -> -> -> ...
+        ? A C
+        A C
+        '''
+
+        # Create empty production rule list
+        production_rule_list = []
+        list_actions,list_conditions = getActionsConditions()
+
+        input_word = createWord("S")
+        output_word = createWord("? ( sequence add_sequence )")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = createWord("sequence add_sequence")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = createWord("sequence")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("sequence")
+        output_word = createWord("-> ( A children_r )")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("sequence")
+        output_word = createWord("-> ( children_l A )")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("sequence")
+        output_word = createWord("-> ( fallback children_r )")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("sequence")
+        output_word = createWord("-> ( children_l fallback )")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("sequence")
+        output_word = createWord("-> ( children_l CorD )")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("fallback")
+        output_word = createWord("? ( A level3_r )")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("fallback")
+        output_word = createWord("? ( level3_l A )")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("children_r")
+        output_word = createWord("A children_r")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("children_r")
+        output_word = createWord("fallback children_r")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("children_r")
+        output_word = createWord("A")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("children_r")
+        output_word = createWord("fallback")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("children_l")
+        output_word = createWord("children_l CorD")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("children_l")
+        output_word = createWord("children_l fallback")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("children_l")
+        output_word = createWord("CorD")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("children_l")
+        output_word = createWord("fallback")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("level3_r")
+        output_word = createWord("A level3_r")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("level3_r")
+        output_word = createWord("A")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("level3_l")
+        output_word = createWord("level3_l CorD")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("level3_l")
+        output_word = createWord("CorD")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("CorD")
+        output_word = createWord("C")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("CorD")
+        output_word = createWord("<!> ( C )")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        for action in list_actions:
+            action_string = '[' + action + ']'
+            input_word = Word([Character("A")])
+            output_word = Word([Character(action_string)]) #'[]'
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+        for condition in list_conditions:
+            condition_string = '(' + condition + ')'
+            input_word = Word([Character("C")])
+            output_word = Word([Character(condition_string)]) #'()'
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+        return production_rule_list
+
+
 
 
 
