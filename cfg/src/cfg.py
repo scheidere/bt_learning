@@ -257,6 +257,13 @@ def createWord(string_list):
         # If a single string is passed in, split between spaces
         string_list = string_list.split(" ")
 
+    # Remove any empty strings
+    try:
+        while True:
+            string_list.remove('')
+    except ValueError:
+        pass
+
     character_list = []
     for s in string_list:
         character_list.append(Character(s))

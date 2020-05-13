@@ -126,7 +126,7 @@ class Scorer():
         if not self.finished:
 
             # First, check if you are within comms range and at surface
-            if is_at_surface and is_in_comms:
+            if target_belief_idx is not None and is_at_surface and is_in_comms:
                 if target_belief_y == self.world.classes_y[target_belief_idx]:
                     #self.finished = True
                     #self.score = -num_iterations

@@ -30,7 +30,7 @@ import random
 
 from bt_interface import *
 from behavior_tree.behavior_tree import *
-from cfg import CFG, Word, Character
+from cfg import CFG, Word, Character, createWord
 
 import numpy as np
 
@@ -261,14 +261,14 @@ class TargetBelief():
         return False
 
     def update_loc_class_0(self, vertex_idx):
-        if vertex_idx: # Check with Graeme
+        if vertex_idx is not None: # Check with Graeme
             self.prob_dist[vertex_idx][0] = 1
             self.prob_dist[vertex_idx][1:] = 0
 
     def update_loc_not_class_y(self, vertex_idx, y):
         print('vertex_idx', vertex_idx)
         print('y',y)
-        if vertex_idx: # Check with Graeme
+        if vertex_idx is not None: # Check with Graeme
             self.prob_dist[vertex_idx][y] = 0
             total = sum(self.prob_dist[vertex_idx])
             self.prob_dist[vertex_idx] /= total
@@ -506,6 +506,7 @@ class Robot():
                 # Choose vertex idx to report as belief of target location based on prob dist
                 #self.robot_belief_idx = self.target_belief.generateRobotBeliefIdx() # fix this function, then change name of it and variable
                 self.nearest_wildlife_idx = self.target_belief.find_nearest_target(x, World.CLASS_WILDLIFE)
+                # print('self.nearest_wildlife_idx',self.nearest_wildlife_idx)
 
                 # Check if at surface, either True or False
                 is_at_surface = self.state.at_surface(self.known_world)
@@ -645,7 +646,7 @@ class Robot():
         active_actions = self.bt_interface.getActiveActions()
         #print(active_actions)
 
-        if 'report' in active_actions:
+        if 'report' in active_actions and target_belief_idx is not None:
             #response = self.basestation_scorer.submit_target(robot_belief_idx, x, is_at_surface, is_in_comms, num_iterations)
             #response = self.basestation_scorer.submit_target(robot_belief_idx, robot_belief_y, is_at_surface, is_in_comms, num_iterations)
             #if response != self.basestation_scorer.RESPONSE_NONE:
@@ -1139,7 +1140,7 @@ if __name__ == '__main__':
             Character('(carrying_benign)'),Character(')'),\
             Character('[pick_up]'),Character(')')]
         '''
-        
+        '''
         character_list = [Character('?'),Character('('),\
             Character('?'),Character('('),\
             Character('->'),Character('('),\
@@ -1150,6 +1151,8 @@ if __name__ == '__main__':
 
 
         cfg_word = Word(character_list) 
+        '''
+        cfg_word = createWord('?  (  ->  (  (in_comms)  ?  (  (battery_low)  [random_walk]  )  )  ->  (  ?  (  [go_to_comms]  [report]  )  [report]  ?  (  (at_surface)  (benign_object_found)  [take_to_drop_off]  )  )  )')
         bt_root, bt = cfg_word.createBT()
 
         max_iterations = 1000
