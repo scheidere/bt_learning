@@ -21,6 +21,7 @@ def plot_cfg_dag(list_of_all_nodes, winner, use_uct, max_height, exploration_exp
     # Start a graphviz graph
     u = Digraph('search dag', filename=filename, node_attr={'color': 'lightblue2', 'style': 'filled', 'size': '1,1'})
     u.attr(size='100,100')
+    u.attr(ranksep='5')
 
     # For color ranges, get min and max rewards
     min_reward = 9999
