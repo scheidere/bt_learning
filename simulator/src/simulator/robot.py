@@ -1152,8 +1152,13 @@ if __name__ == '__main__':
 
         cfg_word = Word(character_list) 
         '''
-        cfg_word = createWord('?  (  ->  (  (in_comms)  ?  (  (battery_low)  [random_walk]  )  )  ->  (  ?  (  [go_to_comms]  [report]  )  [report]  ?  (  (at_surface)  (benign_object_found)  [take_to_drop_off]  )  )  )')
+        # cfg_word = createWord('?  (  ->  (  (in_comms)  ?  (  (battery_low)  [random_walk]  )  )  ->  (  ?  (  [go_to_comms]  [report]  )  [report]  ?  (  (at_surface)  (benign_object_found)  [take_to_drop_off]  )  )  )')
+        # bt_root, bt = cfg_word.createBT()
+
+        cfg_word = createWord('?  (  ->  (  (is_armed)  [disarm]  )  ->  (  ?  (  [shortest_path]  [shortest_path]  [shortest_path]  )  ?  (  [shortest_path]  [shortest_path]  [shortest_path]  [shortest_path]  )  )  ) ')
         bt_root, bt = cfg_word.createBT()
+
+        
 
         max_iterations = 1000
 

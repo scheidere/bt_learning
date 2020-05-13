@@ -79,7 +79,7 @@ class World():
         self.sensor_range = self.config["sensor_range"]
 
         # vertices
-        vertices_surface = []
+        self.vertices_surface = []
         self.vertices = []
         count = 0
         for vertex_idx in xrange(num_nodes):
@@ -90,9 +90,9 @@ class World():
                 count += 1
                 self.vertices.append(v)
                 if z == self.surface_level:
-                    vertices_surface.append(True)
+                    self.vertices_surface.append(True)
                 else:
-                    vertices_surface.append(False)
+                    self.vertices_surface.append(False)
 
 
         # edges, stored as a matrix indexed as [vertex_start, vertex_end]
@@ -107,7 +107,7 @@ class World():
             for vertex_end_idx in xrange(self.num_nodes):
 
                 cost = distance(self.vertices[vertex_start_idx], self.vertices[vertex_end_idx])
-                if vertex_start_idx != vertex_end_idx and cost <= connection_radius and not (vertices_surface[vertex_start_idx] and vertices_surface[vertex_end_idx]):  
+                if vertex_start_idx != vertex_end_idx and cost <= connection_radius and not (self.vertices_surface[vertex_start_idx] and self.vertices_surface[vertex_end_idx]):  
                     exists = True 
                 else:
                     exists = False
@@ -134,18 +134,13 @@ class World():
             else:
                 self.prior[i] = self.prob_of_other_classes
 
-        # Vertex classes - ground truth
-        self.classes_y = np.array([]) # 0 - not target, 1 - wildlife/report, 2 - mine/disarm, 3 - benign/move
-        for i in range(self.num_nodes):
-            self.classes_y = np.append(self.classes_y,np.random.choice(a= len(self.prior),p = self.prior))
-
-        #print("classes_y",self.classes_y.shape) 
+        self.randomize_targets()  
 
         # Define single random drop-off location (on surface) per world
         temp = random.randint(0,len(self.vertices)-1)
-        while vertices_surface[temp] != True:
+        while self.vertices_surface[temp] != True:
             temp = random.randint(0,len(self.vertices)-1)
-        self.drop_off_idx = temp
+        self.drop_off_idx = temp      
 
         '''
         # Set all class 2 vertices to is_armed = True
@@ -216,6 +211,16 @@ class World():
         else:
             return False
     '''
+
+    def randomize_targets(self):
+        # Vertex classes - ground truth
+        self.classes_y = np.array([]) # 0 - not target, 1 - wildlife/report, 2 - mine/disarm, 3 - benign/move
+        for i in range(self.num_nodes):
+            self.classes_y = np.append(self.classes_y,np.random.choice(a= len(self.prior),p = self.prior))
+
+        #print("classes_y",self.classes_y.shape) 
+
+        
 
     def disarm_target(self, vertex_idx, scorer):
         if self.classes_y[vertex_idx] == World.CLASS_MINE:
