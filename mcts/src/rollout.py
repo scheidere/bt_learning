@@ -48,6 +48,8 @@ def rollout(partial_word, cfg, budget):
         # Reset current word, so you can check if new_word is terminal, and if not, apply a new random rule to it
         current_word = new_word
 
+
+    print('rollout over budget: ' + current_word.toString())
     # Return empty word
     return Word([])
 

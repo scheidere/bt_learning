@@ -43,12 +43,11 @@ class TreeNode():
         self.parents.append(new_parent)
 
     def mergeRewards(self, all_iteration_rewards, other_node):
-        print("mergeRewards old", self.average_evaluation_score, self.num_updates, self.activated_iterations)
-        print("mergeRewards child", other_node.average_evaluation_score, other_node.num_updates, other_node.activated_iterations)
+        # print("mergeRewards old", self.average_evaluation_score, self.num_updates, self.activated_iterations)
+        # print("mergeRewards child", other_node.average_evaluation_score, other_node.num_updates, other_node.activated_iterations)
         # First, merge the activated_iterations list
         # Since it is a set, this will take care of duplicates
         self.activated_iterations.update(other_node.activated_iterations)
-
 
         # Update the score
         self.num_updates = len(self.activated_iterations)
@@ -56,7 +55,7 @@ class TreeNode():
         for iter in self.activated_iterations:
             reward_sum += all_iteration_rewards[iter]
         self.average_evaluation_score = float(reward_sum) / float(self.num_updates)
-        print("mergeRewards merged", self.average_evaluation_score, self.num_updates, self.activated_iterations)
+        # print("mergeRewards merged", self.average_evaluation_score, self.num_updates, self.activated_iterations)
 
 
 def countNodes(current):

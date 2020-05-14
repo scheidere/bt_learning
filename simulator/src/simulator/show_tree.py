@@ -3,7 +3,7 @@
 import rospy
 import yaml
 import rospkg
-from cfg import CFG, Word, Character, createWord
+from cfg import CFG, Word, Character, createWord, filterDuplicates
 
 from behavior_tree.behavior_tree import *
 from behavior_tree_msgs.msg import Status, Active
@@ -144,9 +144,13 @@ if __name__ == '__main__':
 
         cfg_word = Word(character_list)
         '''
-        cfg_word = createWord('? ( ? ( -> ( (mine_found) [disarm] ) [shortest_path] ) [go_to_comms] )')
+        # cfg_word = createWord('? ( ? ( -> ( (mine_found) [disarm] ) [shortest_path] ) [go_to_comms] )')
 
-        bt_root, bt = cfg_word.createBT()
+        cfg_word = createWord('?  (  ->  (  ?  (  (benign_object_found)  [take_to_drop_off]  )  ?  (  <!>  (  (benign_object_found)  )  (benign_object_found)  (benign_object_found)  (carrying_benign)  <!>  (  (carrying_benign)  )  [take_to_drop_off]  )  [pick_up]  )  ->  (  (mine_found)  ?  (  (is_armed)  [disarm]  )  )  )')
+
+        cfg_word_filter = filterDuplicates(cfg_word)
+
+        bt_root, bt = cfg_word_filter.createBT()
 
         init_bt(bt)
         #bt.write_config('onr_example2.tree') # need to manually add in decorator nodes to config file/ implement it dur

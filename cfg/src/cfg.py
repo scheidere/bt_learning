@@ -269,7 +269,24 @@ class ProductionRule():
                 new_char_list.append(start_word.at(i))
 
             new_word = Word(new_char_list)
-            new_word_list.append(new_word)
+
+
+            #############
+            # do filtering for BT duplicates
+            new_word_filtered = filterDuplicates(new_word)
+            duplicate_found = False
+
+            if new_word_filtered.equal(start_word):
+                duplicate_found = True
+
+            if not duplicate_found:
+                for word in new_word_list:
+                    if new_word_filtered.equal(word):
+                        duplicate_found = True
+                        break
+
+            if not duplicate_found:        
+                new_word_list.append(new_word_filtered)
 
         return new_word_list
 
@@ -304,7 +321,89 @@ def createWord(string_list):
     for s in string_list:
         character_list.append(Character(s))
     return Word(character_list)
-        
+
+
+# Precompute these rather than recreating them many times in the below function
+char_open_bracket = Character("(")
+char_close_bracket = Character(")")
+
+def filterDuplicates(in_word):
+    # This filter is specific to the BT CFGs (not really CFGs in general)
+    # Filter out the right most occurence of any duplicate actions/conditions that are:
+    # - within the same subtree
+    # - and at the same level
+    # i.e., are siblings
+    # Also don't allow duplicates for ""sequence"+s" nodes
+
+    maxlevels = 10 # max height of the BT
+    words_at_levels = []
+    for l in xrange(maxlevels):
+        words_at_levels.append([])
+
+    level = 0
+
+    keep_indices = [] # keep these Characters
+    deletion_found = False
+
+    for char_idx in xrange(len(in_word.list)):
+
+        char = in_word.list[char_idx]
+        # char.printLabel()
+        # print
+
+        keep = True
+
+        # Determine the kind of node char is
+        if char.equal(char_open_bracket):
+            level += 1
+        elif char.equal(char_close_bracket):
+            # Clear the siblings at this level
+            words_at_levels[level] = []
+            level -= 1
+        elif len(char.label) > 8 and char.label[0:8] == 'sequence':
+            # "sequence"+s nodes
+            # Note this does not include "sequence" (without the s) nodes
+            if char.label in words_at_levels[level]:
+                keep = False
+            else:
+                words_at_levels[level].append(char.label)
+
+        elif char.label[0] == '(' and not char.equal(char_open_bracket):
+            # Condition
+            if char.label in words_at_levels[level]:
+                keep = False
+            else:
+                words_at_levels[level].append(char.label)
+
+        elif char.label[0] == '[':
+            # Action
+            if char.label in words_at_levels[level]:
+                keep = False
+            else:
+                words_at_levels[level].append(char.label)
+
+        # print(words_at_levels)
+
+        if keep:
+            keep_indices.append(char_idx)
+        else:
+            deletion_found = True
+            # print('duplicate!')
+
+    if deletion_found:
+        new_word_list = []
+        for i in keep_indices:
+            new_word_list.append(in_word.list[i])
+        new_word = Word(new_word_list)
+        # print('filterDuplicates duplicate found!')
+        # print('filterDuplicates in', in_word.toString())
+        # print('filterDuplicates out', new_word.toString())
+        return new_word
+    else:
+        # print('filterDuplicates keep input word')
+        # print('filterDuplicates in', in_word.toString())
+        # print(words_at_levels)
+        return in_word
 
 class CFG():
     def __init__(self):
@@ -882,6 +981,7 @@ class CFG():
         groups = getActionsConditionsGroups()
         num_groups = len(groups)
 
+        '''
         input_word = createWord("S")
         output_word = createWord("? ( add_sequence sequence add_sequence )")
         production_rule = ProductionRule(input_word, output_word)
@@ -899,6 +999,22 @@ class CFG():
 
         input_word = createWord("add_sequence")
         output_word = Word([])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+        '''
+
+        input_word = createWord("S")
+        output_word = createWord("? ( sequence add_sequence )")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = createWord("sequence add_sequence")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = createWord("sequence")
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
@@ -1174,11 +1290,27 @@ class CFG():
 
             # Check if word in output_word_list already in child_words
             for output_word in output_word_list:
+
+                #####
+                # MOVED FILTER TO WITHIN applyProductionRule instead
+                #####
+
+                # Filter out any rubbish duplicate nodes
+                #output_word = filterDuplicates(output_word_before_filter)
+
                 # If output_word not in child_words:
                 duplicate_found = False
-                for word in child_words:
-                    if output_word.equal(word):
-                        duplicate_found = True
+
+                # Make sure this production doesn't go nowhere
+                # Only really relevant after adding the filter step above
+                #if output_word.equal(input_word):
+                #    duplicate_found = True
+
+                if not duplicate_found:
+                    for word in child_words:
+                        if output_word.equal(word):
+                            duplicate_found = True
+                            break
                 if not duplicate_found:        
                     child_words.append(output_word)
             
