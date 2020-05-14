@@ -125,7 +125,29 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     duplicate_node.addParent(current)
 
                     # Also, merge the rewards of the child into the parent
-                    current.mergeRewards(all_iteration_rewards, duplicate_node)
+                    # Do this recursively up the tree
+                    list_of_parents = []
+                    list_of_parents.append(current)
+
+                    list_of_already_updated = []
+
+                    while list_of_parents:
+
+                        # Get and remove a parent from the list
+                        parent = list_of_parents.pop()
+
+                        # If not already updated
+                        if parent not in list_of_already_updated:
+                            
+                            # Update the average
+                            parent.mergeRewards(all_iteration_rewards, duplicate_node)
+
+                            # Add all parents to the list
+                            list_of_parents.extend(parent.parents)
+
+                            # Remember that we've already looked at this
+                            list_of_already_updated.append(parent)
+                    # current.mergeRewards(all_iteration_rewards, duplicate_node)
 
                     current = duplicate_node
                     count_duplicates += 1                    
