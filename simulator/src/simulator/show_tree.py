@@ -148,7 +148,9 @@ if __name__ == '__main__':
 
         cfg_word = createWord('?  (  ->  (  ?  (  (benign_object_found)  [take_to_drop_off]  )  ?  (  <!>  (  (benign_object_found)  )  (benign_object_found)  (benign_object_found)  (carrying_benign)  <!>  (  (carrying_benign)  )  [take_to_drop_off]  )  [pick_up]  )  ->  (  (mine_found)  ?  (  (is_armed)  [disarm]  )  )  )')
 
+        cfg_word.printWord()
         cfg_word_filter = filterDuplicates(cfg_word)
+        cfg_word_filter.printWord()
 
         bt_root, bt = cfg_word_filter.createBT()
 
