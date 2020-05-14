@@ -28,6 +28,8 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
     list_of_all_nodes = []
     list_of_all_nodes.append(root) # for debugging only
 
+    all_iteration_rewards = [0] * max_iterations
+
     dict_of_all_nodes = dict()
     dict_of_all_nodes[root.sequence[-1].toString()] = root # for check_for_duplicates()
 
@@ -41,6 +43,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
 
     plot_intermediate_results = config['plot_intermediate_results']
     plot_intermediate_results_iterations = config['plot_intermediate_results_iterations']
+
 
     if plot_intermediate_results:
         # Initialize results figure
@@ -118,10 +121,14 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
 
                 if found_duplicate:
                     # In this case, don't add a new node
-                    duplicate_node.addParent(current)
-                    current = duplicate_node
-                    count_duplicates += 1
                     print("duplicate found! " + str(child_word.toString()))
+                    duplicate_node.addParent(current)
+
+                    # Also, merge the rewards of the child into the parent
+                    current.mergeRewards(all_iteration_rewards, duplicate_node)
+
+                    current = duplicate_node
+                    count_duplicates += 1                    
 
                 else:
                     # Create the new node and add it to the tree
@@ -260,11 +267,11 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     
                     # Update the average
                     if is_valid:
-                        parent.updateAverage(rollout_reward)
+                        parent.updateAverage(rollout_reward, iter)
                         parent.updateBestRollout(rollout_word, rollout_reward)
                     else:
                         # Invalid (empty) BT gets a reward of 0
-                        parent.updateAverage(0.0)
+                        parent.updateAverage(0.0, iter)
 
                     # Add all parents to the list
                     list_of_parents.extend(parent.parents)
@@ -283,7 +290,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     #print('rollout_reward', rollout_reward)
                     #print('parent.average_evaluation_score before',parent.average_evaluation_score)
                     #print('parent.num_updates before',parent.num_updates)
-                    parent.updateAverage(rollout_reward)
+                    parent.updateAverage(rollout_reward, iter)
                     #print('parent.average_evaluation_score after',parent.average_evaluation_score)
                     #print('parent.num_updates after',parent.num_updates)
                     parent.updateBestRollout(rollout_word, rollout_reward)
@@ -298,11 +305,14 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                 while parent: # is not None
 
                     # Update the average
-                    parent.updateAverage(rollout_reward)
+                    parent.updateAverage(rollout_reward, iter)
                     #parent.updateBestRollout(rollout_word, rollout_reward)
 
                     # Recurse up the tree
                     parent = parent.parents[0]
+
+        # Remember the rollout score, for DAG merging
+        all_iteration_rewards[iter] = rollout_reward
 
     ################################
     # Extract solution
