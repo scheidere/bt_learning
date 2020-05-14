@@ -290,6 +290,75 @@ class ProductionRule():
 
         return new_word_list
 
+    def applyProductionRuleBackwards(self, start_word):
+        '''
+        almost identical to applyProductionRule()
+        but apply rule backwards
+        and don't bother doing the filtering
+        '''
+
+        # Initialize list for found word/char within word indices
+        index_pair_list = []
+
+        # Find insert index
+        word_found = False
+        for i in range(start_word.lenWord() - self.output_word.lenWord() + 1):
+            flag = True
+            for j in range(self.output_word.lenWord()):
+                if not start_word.at(i+j).equal(self.output_word.at(j)):
+                    flag = False
+                    break
+            if flag:
+                word_found = True
+                start_index = i
+                end_index = i + self.output_word.lenWord() - 1
+                index_pair_list.append((start_index,end_index))
+
+        '''
+        if not word_found:
+            return None 
+        '''
+
+        new_word_list = []
+
+        for index_pair in index_pair_list:
+
+            start_index = index_pair[0]
+            end_index = index_pair[1]
+
+            new_char_list = []
+
+            # Before edit
+            for i in range(start_index):
+                new_char_list.append(start_word.at(i))
+
+            # During edit
+            for i in range(self.input_word.lenWord()):
+                new_char_list.append(self.input_word.at(i))
+
+            # After edit
+            for i in range(end_index + 1, start_word.lenWord()):
+                new_char_list.append(start_word.at(i))
+
+            new_word = Word(new_char_list)
+
+
+            duplicate_found = False
+
+            if new_word.equal(start_word):
+                duplicate_found = True
+
+            if not duplicate_found:
+                for word in new_word_list:
+                    if new_word.equal(word):
+                        duplicate_found = True
+                        break
+
+            if not duplicate_found:        
+                new_word_list.append(new_word)
+
+        return new_word_list
+
     def printProductionRule(self):
         input_word_string = self.input_word.toString()
         output_word_string = self.output_word.toString()
@@ -1460,6 +1529,98 @@ class CFG():
             
 
         return child_words
+
+    def applyAllProductionRulesBackwards(self, input_word):
+        '''
+        Return list of all child words of the input word
+        '''
+
+        # print("applyAllProductionRules")
+        # print("input word: ")
+        # input_word.printWord()
+
+        parent_words = []
+        for i in range(len(self.grammar)):
+            output_word_list = self.grammar[i].applyProductionRuleBackwards(input_word) 
+
+            # print("applying production rule: ")
+            # self.grammar[i].printProductionRule()
+
+            # print("generates words: ")
+            # for w in output_word_list:
+            #     w.printWord()
+
+            # Check if word in output_word_list already in child_words
+            for output_word in output_word_list:
+
+                # If output_word not in child_words:
+                duplicate_found = False
+
+                if not duplicate_found:
+                    for word in parent_words:
+                        if output_word.equal(word):
+                            duplicate_found = True
+                            break
+                if not duplicate_found:        
+                    parent_words.append(output_word)
+            
+
+        return parent_words
+
+    def derivePreviousWords(self, input_word, num_steps):
+        '''
+        Apply production rules BACKWARDS
+        repeat this num_steps times
+        '''
+
+        parent_words_each_step = []
+
+        for step in xrange(num_steps):
+
+            # Get the set of child words at this step
+            if step == 0:
+                child_words = [input_word]
+            else:
+                child_words = parent_words_each_step[step-1]
+
+            if not child_words:
+                break
+
+            parent_words_each_step.append([])
+
+            # Apply production rules BACKWARDS to each child
+            for child_word in child_words:
+
+                # Backward production rules
+                parent_words_list = this.applyAllProductionRulesBackwards(child_word)
+
+                # Ensure unique
+                for parent_word in parent_words_list:
+
+                    # If output_word not in child_words:
+                    duplicate_found = False
+
+                    if parent_word.equal(input_word):
+                        duplicate_found = True
+
+                    if not duplicate_found:
+                        for prev_step in xrange(num_steps-1):
+                            for prev_word in parent_words_each_step[prev_step]:
+                                if parent_word.equal(prev_word):
+                                    duplicate_found = True
+                                    break
+                    if not duplicate_found:        
+                        parent_words_each_step[step].append(output_word)
+
+            # If none, stop
+            if len(parent_words_each_step[step]) == 0:
+                break
+
+        # Concatenate the lists
+        parent_words_concat = []
+        for step in xrange(len(parent_words_each_step)):
+            parent_words_concat.extend(parent_words_each_step[step])
+        return parent_words_concat
 
 
 class BehaviorTreeNode:
