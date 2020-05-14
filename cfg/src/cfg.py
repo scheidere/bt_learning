@@ -100,6 +100,18 @@ class Word():
             str_list.append(char.toString())
         return " ".join(str_list)
 
+    '''
+    def preventSameLevelDuplicates(self):
+        # This is for the prevention of duplicate actions/conditions
+        control_flow_related = [Character('?'),Character('->'),Character('<!>'),Character('('),Character(')')]
+
+        for i in range(len(self.list)-1):
+            char = self.list[i]
+            if char not in control_flow_related:
+
+    '''
+
+
     def createBT(self):        
         
         nodes_worklist = []
@@ -871,17 +883,22 @@ class CFG():
         num_groups = len(groups)
 
         input_word = createWord("S")
-        output_word = createWord("? ( sequence add_sequence )")
+        output_word = createWord("? ( add_sequence sequence add_sequence )")
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
         input_word = createWord("add_sequence")
-        output_word = createWord("sequence add_sequence")
+        output_word = createWord("add_sequence sequence add_sequence")
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
         input_word = createWord("add_sequence")
         output_word = createWord("sequence")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = Word([])
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
