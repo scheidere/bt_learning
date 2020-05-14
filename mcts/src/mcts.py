@@ -192,9 +192,9 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
         # print("MCTS reward " + str(iter))
         is_valid, rollout_reward, best_rollout_reward = reward(word = rollout_word, max_iterations=max_sim_iterations, underwater_simulator=underwater_simulator)
 
-        if not is_valid:
-            print('invalid rollout from ' + current.sequence[-1].toString())
-            print('to ' + rollout_word.toString())
+        # if not is_valid:
+        #     print('invalid rollout from ' + current.sequence[-1].toString())
+        #     print('to ' + rollout_word.toString())
 
         if best_reward_word == None or best_reward < rollout_reward:
             best_reward = rollout_reward
