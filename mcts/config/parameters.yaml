@@ -10,18 +10,18 @@
 #sensor_range: 400 # distance robot is capable of sensing a target
 #comms_range: 500 # distance beyond which the robot is unable to contact basestation
 
-budget: 50
-exploration_exploitation_parameter: 5.0 # =1.0 is recommended. <1.0 more exploitation. >1.0 more exploration. 
+budget: 25
+exploration_exploitation_parameter: 20.0 # =1.0 is recommended. <1.0 more exploitation. >1.0 more exploration. 
 max_mcts_iterations: 200001 #change name to max_mcts_iterations ##you change this to make it run longer
 max_sim_iterations: 200 #iterations robot allows to move for before it gives up
 plot_search_tree: True
 plot_intermediate_results: True
 plot_intermediate_results_iterations: 50
 use_dag: True
-iterations_between_adding_best_edges: 100
+iterations_between_adding_best_edges: 200
 adding_best_edges_steps: 3
 adding_nonzero_edges_steps: 3
-iterations_between_adding_production_rules: 100
-max_ancestors: 10000 # number of ancestors allowed when looking back up the DAG
+iterations_between_adding_production_rules: 200
+max_ancestors: 1000 # number of ancestors allowed when looking back up the DAG
 
-probability_skip_unpicked_child_words: 0.0
+probability_skip_unpicked_child_words: 0.05

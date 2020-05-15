@@ -89,7 +89,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
             # Are there any children to be added here?
             if current.unpicked_child_words and not skip_unpicked_child_words: # if not empty
 
-                print("current.unpicked_child_words")
+                # print("current.unpicked_child_words")
 
                 # Pick one of the children that haven't been added
                 # Do this at random
@@ -193,8 +193,8 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     break
                 else:
 
-                    if len(current.sequence) < 4:
-                        print('current word', current.sequence[-1].toString())
+                    # if len(current.sequence) < 4:
+                        # print('current word', current.sequence[-1].toString())
 
                     # Define the UCB
                     def ucb(average, n_parent, n_child):
@@ -209,11 +209,11 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     for child_idx in range(len(current.children)):
                         child = current.children[child_idx]                        
                         ucb_score = ucb(child.average_evaluation_score, n_parent, child.num_updates)
-                        if len(current.sequence) < 4:
-                            print('child word', child.sequence[-1].toString())
-                            print('child average_evaluation_score',child.average_evaluation_score)
-                            print('child num_updates',child.num_updates)
-                            print('ucb_score',ucb_score)
+                        # if len(current.sequence) < 4:
+                        #     print('child word', child.sequence[-1].toString())
+                        #     print('child average_evaluation_score',child.average_evaluation_score)
+                        #     print('child num_updates',child.num_updates)
+                        #     print('ucb_score',ucb_score)
                         if best_child == -1 or (ucb_score > best_ucb_score):
                             best_child = child
                             best_ucb_score = ucb_score
@@ -222,9 +222,9 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     #print('n_parent',n_parent)
                     # Recurse down the tree
                     current = best_child
-                    if len(current.sequence) < 4:
-                        print('best_child:')
-                        best_child.sequence[-1].printWord()
+                    # if len(current.sequence) < 4:
+                    #     print('best_child:')
+                    #     best_child.sequence[-1].printWord()
 
         ################################
         # Rollout
