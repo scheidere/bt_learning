@@ -165,7 +165,7 @@ def reward(word, max_iterations, underwater_simulator): # multi-target case
 
     word.printWord()
 
-    num_simulations = 1
+    num_simulations = 3
 
     if word.list:
         is_valid = True
