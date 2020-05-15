@@ -539,7 +539,7 @@ class Robot():
                         self.state.picked_up_target_count += 1
                         self.target_belief.update_loc_class_0(self.nearest_benign_idx)
                     else:
-                        self.target_belief.update_loc_not_class_y(self.nearest_mine_idx, World.CLASS_BENIGN)
+                        self.target_belief.update_loc_not_class_y(self.nearest_benign_idx, World.CLASS_BENIGN)
 
                 if self.planner_type == Robot.PLANNER_TYPE_DROPOFF and x == self.known_world.drop_off_idx:
                     successful_dropoff = self.known_world.dropoff_target(x, self.basestation_scorer, self.state)

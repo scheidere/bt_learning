@@ -13,7 +13,7 @@ from action import Action, printActionSequence
 import copy
 import random
 import math
-from cfg import CFG, Word, Character
+from cfg import CFG, Word, Character, extract_subtrees, ProductionRule, createWord
 import matplotlib.pyplot as plt
 
 import rospy
@@ -43,6 +43,14 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
 
     plot_intermediate_results = config['plot_intermediate_results']
     plot_intermediate_results_iterations = config['plot_intermediate_results_iterations']
+    iterations_between_adding_best_edges = config['iterations_between_adding_best_edges']
+    adding_best_edges_steps = config['adding_best_edges_steps']
+    adding_nonzero_edges_steps = config['adding_nonzero_edges_steps']
+    iterations_between_adding_production_rules = config['iterations_between_adding_production_rules']
+    probability_skip_unpicked_child_words = config['probability_skip_unpicked_child_words']
+    max_ancestors = config['max_ancestors']
+
+    shortcut_words = []
 
 
     if plot_intermediate_results:
@@ -72,8 +80,16 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
         current = root
         while True: 
 
+            # Add a probability for ignoring unpicked children, to search deeper instead
+            if not current.children:
+                skip_unpicked_child_words = False
+            else:
+                skip_unpicked_child_words = random.random() < probability_skip_unpicked_child_words
+
             # Are there any children to be added here?
-            if current.unpicked_child_words: # if not empty
+            if current.unpicked_child_words and not skip_unpicked_child_words: # if not empty
+
+                print("current.unpicked_child_words")
 
                 # Pick one of the children that haven't been added
                 # Do this at random
@@ -177,6 +193,9 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     break
                 else:
 
+                    if len(current.sequence) < 4:
+                        print('current word', current.sequence[-1].toString())
+
                     # Define the UCB
                     def ucb(average, n_parent, n_child):
                         if n_child == 0:
@@ -188,10 +207,13 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     best_child = -1
                     best_ucb_score = 0
                     for child_idx in range(len(current.children)):
-                        child = current.children[child_idx]
-                        #print('child average_evaluation_score',child.average_evaluation_score)
+                        child = current.children[child_idx]                        
                         ucb_score = ucb(child.average_evaluation_score, n_parent, child.num_updates)
-                        #print('ucb_score',ucb_score)
+                        if len(current.sequence) < 4:
+                            print('child word', child.sequence[-1].toString())
+                            print('child average_evaluation_score',child.average_evaluation_score)
+                            print('child num_updates',child.num_updates)
+                            print('ucb_score',ucb_score)
                         if best_child == -1 or (ucb_score > best_ucb_score):
                             best_child = child
                             best_ucb_score = ucb_score
@@ -200,8 +222,9 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     #print('n_parent',n_parent)
                     # Recurse down the tree
                     current = best_child
-                    #print('best_child')
-                    #best_child.sequence[-1].printWord()
+                    if len(current.sequence) < 4:
+                        print('best_child:')
+                        best_child.sequence[-1].printWord()
 
         ################################
         # Rollout
@@ -278,6 +301,8 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
             # DAG case
             # backpropagate up ALL paths through the graph to the root node
 
+            print('backprop start')
+
             list_of_parents = []
             list_of_parents.append(current)
 
@@ -304,6 +329,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
 
                     # Remember that we've already looked at this
                     list_of_already_updated.append(parent)
+            print('backprop finished')
 
         else:
             # Tree case
@@ -339,6 +365,169 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
 
         # Remember the rollout score, for DAG merging
         all_iteration_rewards[iter] = rollout_reward
+
+        # DAG: if the rollout was good, add extra parents
+        if use_dag:
+            if rollout_reward > 0:
+                add_backwards_edges(cfg, dict_of_all_nodes, current, all_iteration_rewards, adding_nonzero_edges_steps, max_ancestors)
+
+        # DAG: periodically add edges
+        # for parents of best node at each level of DAG
+        # AND add new rules
+        if use_dag:
+            if iter%iterations_between_adding_best_edges==0:
+
+                # Find best node at each level
+                max_depth = budget*2
+                best_nodes = [None]*max_depth
+                for node in list_of_all_nodes:
+                    level = len(node.sequence)
+                    if node.average_evaluation_score > 0:
+                        if not best_nodes[level]:
+                            best_nodes[level] = node
+                        elif best_nodes[level].average_evaluation_score < node.average_evaluation_score:
+                            best_nodes[level] = node
+
+                # Add backward edges
+                for node in best_nodes:
+                    if node:
+                        add_backwards_edges(cfg, dict_of_all_nodes, node, all_iteration_rewards, adding_best_edges_steps, max_ancestors)
+
+            if iter%iterations_between_adding_production_rules==0:
+
+                # Find the best node that contains sequenceX as part of its evaluation, for each X
+                best_nodes_dict = dict()
+                for node in list_of_all_nodes:
+                    if node.average_evaluation_score > 0:
+
+                        # Find which sequenceX types are seen here
+                        relevant_chars = set()
+                        for word in node.sequence:
+                            for char in word.list:
+                                if len(char.label) > 8 and char.label[0:8] == 'sequence':
+                                    relevant_chars.add(char.label[8:])
+
+                        if relevant_chars:
+
+                            relevant_chars_sorted = sorted(relevant_chars)
+
+                            key = "_".join(relevant_chars_sorted)
+                            value_score = node.average_evaluation_score
+                            try:
+                                # Check if better than previous sequenceX
+                                prev_value_score = best_nodes_dict[key].average_evaluation_score
+                                if value_score > prev_value_score:
+                                    best_nodes_dict[key] = node
+                            except KeyError:
+                                # First sequenceX
+                                best_nodes_dict[key] = node
+
+                print("best nodes for adding new production rules:")
+                for node in best_nodes_dict.values():
+                    node.sequence[-1].printWord()
+                print("associated keys:")
+                for key in best_nodes_dict.keys():
+                    print(key)
+
+                # Add new shortcut production rules
+                for node in best_nodes_dict.values():
+                    if node:
+                        # subtree_words = extract_subtrees(node.sequence[-1])
+                        # subtree_words.extend(extract_subtrees(node.best_rollout))
+                        subtree_words = extract_subtrees(node.best_rollout)
+
+                        # For each subtree of node
+                        for subtree_word in subtree_words:
+
+                            subtree_word_already_shortcut = False
+                            for shortcut_word in shortcut_words:
+                                if shortcut_word.equal(subtree_word):
+                                    subtree_word_already_shortcut = True
+                                    break
+
+                            if not subtree_word_already_shortcut:
+
+                                # Create a new production rule
+                                shortcut_words.append(subtree_word)
+                                input_word = createWord("sequence")
+                                output_word = subtree_word
+                                production_rule = ProductionRule(input_word, output_word)
+
+                                # Add PR to CFG
+                                is_added = cfg.addProductionRule(production_rule)
+
+                                # If was correctly added to CFG
+                                if is_added:
+
+                                    # Apply PR to all nodes
+                                    for node in list_of_all_nodes:
+
+                                        # Apply production rule
+                                        child_words = production_rule.applyProductionRule(node.sequence[-1])
+
+                                        # For each word that results from applying the PR
+                                        for child_word in child_words:
+
+                                            # If already exists in tree
+                                            child_exists, child_node = check_for_duplicates(dict_of_all_nodes, child_word)
+                                            if child_exists:
+
+                                                # Add child edge
+                                                if child_node not in node.children:
+
+                                                    # Merge rewards etc.
+
+                                                    child_node.addParent(node)
+
+                                                    # Also, merge the rewards of the child into the parent
+                                                    # Do this recursively up the tree
+                                                    list_of_parents = []
+                                                    list_of_parents.append(node)
+
+                                                    list_of_already_updated = []
+
+                                                    while list_of_parents:
+
+                                                        # Get and remove a parent from the list
+                                                        parent = list_of_parents.pop()
+
+                                                        # If not already updated
+                                                        if parent not in list_of_already_updated:
+                                                            
+                                                            # Update the average
+                                                            parent.mergeRewards(all_iteration_rewards, child_node)
+
+                                                            # Add all parents to the list
+                                                            list_of_parents.extend(parent.parents)
+
+                                                            # Remember that we've already looked at this
+                                                            list_of_already_updated.append(parent)
+
+                                                # Make sure not in unpicked children
+                                                child_node_word = child_node.sequence[-1]
+                                                for unpicked_child_word_idx in xrange(len(node.unpicked_child_words)):
+                                                    if node.unpicked_child_words[unpicked_child_word_idx].equal(child_node_word):
+                                                        # Found it!
+                                                        del node.unpicked_child_words[unpicked_child_word_idx]
+                                                        break
+
+                                            else:
+
+                                                # Make sure not in unpicked child already
+                                                already_unpicked_child = False
+                                                for unpicked_child_word in node.unpicked_child_words:
+                                                    if unpicked_child_word.equal(child_word):
+                                                        # Found it!
+                                                        already_unpicked_child = True
+                                                        break
+
+                                                # Add unpicked child
+                                                if not already_unpicked_child:
+                                                    node.unpicked_child_words.append(child_word)
+                # Print all shortcut words
+                print("All shortcut words:")
+                for word in shortcut_words:
+                    word.printWord()
 
     ################################
     # Extract solution
@@ -398,3 +587,90 @@ def check_for_duplicates(dict_of_all_nodes, child_word):
     if key in dict_of_all_nodes.keys():
         return True, dict_of_all_nodes[key]
     return False, None
+
+def add_backwards_edges(cfg, dict_of_all_nodes, current_node, all_iteration_rewards, max_steps, max_ancestors):
+
+    current_node_word = current_node.sequence[-1]
+
+    if current_node.ancestor_words == None:
+
+        # Get a list of existing parents, so we don't try to rederive those paths
+        ignore_words = []
+        for parent in current_node.parents:
+            ignore_words.append(parent.sequence[-1])
+
+        # Get a list of ancestor words of this word
+        ancestors = cfg.derivePreviousWords(current_node_word, max_steps, ignore_words, max_ancestors)
+        # current_node.ancestor_words = ancestors
+    else:
+        ancestors = current_node.ancestor_words
+
+    print('add_backwards_edges current_node_word:')
+    current_node_word.printWord()
+
+    # print('add_backwards_edges ancestors:')
+    # for a in ancestors:
+    #     a.printWord()
+
+    stats_count_ancestors = len(ancestors)
+    stats_count_new_parents = 0
+
+    # Keep track of parents that have already had their reward merged
+    list_of_already_updated = []
+
+    for ancestor in ancestors:
+
+        # Does this ancestor exist in the DAG?
+        ancestor_key = ancestor.toString()
+        try:
+            ancestor_node = dict_of_all_nodes[ancestor_key]
+        except KeyError:
+            # Not found!
+            ancestor_node = None
+            continue
+
+        # If not already a parent?
+        if ancestor_node not in current_node.parents:
+
+            stats_count_new_parents += 1
+
+            # Add them as parents
+            current_node.addParent(ancestor_node)
+
+            # Add me as child
+            ancestor_node.children.append(current_node)
+
+            # Removed from unpicked children if it exists
+            for unpicked_child_word_idx in xrange(len(ancestor_node.unpicked_child_words)):
+                if ancestor_node.unpicked_child_words[unpicked_child_word_idx].equal(current_node_word):
+                    # Found it!
+                    del ancestor_node.unpicked_child_words[unpicked_child_word_idx]
+                    break
+                
+
+            # Merge rewards of all ancestors
+            # Do this recursively up the DAG
+            list_of_parents = []
+            list_of_parents.append(ancestor_node)
+
+            while list_of_parents:
+
+                # Get and remove a parent from the list
+                parent = list_of_parents.pop()
+
+                # If not already updated
+                if parent not in list_of_already_updated:
+                    
+                    # Update the average
+                    parent.mergeRewards(all_iteration_rewards, current_node)
+
+                    # Add all parents to the list
+                    list_of_parents.extend(parent.parents)
+
+                    # Remember that we've already looked at this
+                    list_of_already_updated.append(parent)
+
+    # Print stats
+    print('add_backwards_edges stats_count_ancestors', stats_count_ancestors)
+    print('add_backwards_edges stats_count_new_parents', stats_count_new_parents)
+            

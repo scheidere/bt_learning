@@ -223,6 +223,9 @@ class ProductionRule():
         self.input_word = input_word
         self.output_word = output_word
 
+    def equal(self, other_production_rule):
+        return self.input_word.equal(other_production_rule.input_word) and self.output_word.equal(other_production_rule.output_word)
+
     def applyProductionRule(self, start_word):
 
         # Initialize list for found word/char within word indices
@@ -618,6 +621,31 @@ def removeEmptySubtrees(in_word):
     else:
         return False, in_word
 
+def extract_subtrees(word):
+    # extracts the words for the sequence subtrees
+
+    subtree_words = []
+
+    level = 0
+
+    for char_idx in xrange(len(word.list)):
+
+        char = word.list[char_idx]
+
+        # Determine the kind of node char is
+        if char.equal(char_open_bracket):
+            level += 1
+            if level == 2:
+                start_subtree = char_idx-1
+        elif char.equal(char_close_bracket):
+            level -= 1 
+            if level == 1:
+                end_subtree = char_idx+1
+                subtree_word_list = word.list[start_subtree:end_subtree]
+                subtree_words.append(Word(subtree_word_list))
+    return subtree_words
+
+
 class CFG():
     def __init__(self):
 
@@ -630,6 +658,19 @@ class CFG():
 
         # Print all words
         #self.printAllTerminalWords(4)
+
+    def addProductionRule(self, new_production_rule):
+
+        # Check it doesn't already exist
+        for pr in self.grammar:
+            if pr.equal(new_production_rule):
+                return False
+
+        # Add it
+        self.grammar.append(new_production_rule)
+        print("Production rule added!")
+        new_production_rule.printProductionRule()
+        return True
 
     def printAllProdRules(self):
         for rule in self.grammar:
@@ -1567,15 +1608,19 @@ class CFG():
 
         return parent_words
 
-    def derivePreviousWords(self, input_word, num_steps):
+    def derivePreviousWords(self, input_word, num_steps, ignore_words, max_ancestors):
         '''
         Apply production rules BACKWARDS
         repeat this num_steps times
         '''
 
         parent_words_each_step = []
+        count_ancestors = 0
 
         for step in xrange(num_steps):
+
+            if count_ancestors > max_ancestors:
+                break
 
             # Get the set of child words at this step
             if step == 0:
@@ -1591,26 +1636,36 @@ class CFG():
             # Apply production rules BACKWARDS to each child
             for child_word in child_words:
 
+                if count_ancestors > max_ancestors:
+                    break
+
                 # Backward production rules
-                parent_words_list = this.applyAllProductionRulesBackwards(child_word)
+                parent_words_list = self.applyAllProductionRulesBackwards(child_word)
 
                 # Ensure unique
                 for parent_word in parent_words_list:
 
-                    # If output_word not in child_words:
+                    # If parent_word not in child_words:
                     duplicate_found = False
 
                     if parent_word.equal(input_word):
                         duplicate_found = True
 
                     if not duplicate_found:
-                        for prev_step in xrange(num_steps-1):
+                        for prev_word in ignore_words:
+                            if parent_word.equal(prev_word):
+                                duplicate_found = True
+                                break
+
+                    if not duplicate_found:
+                        for prev_step in xrange(step-1):
                             for prev_word in parent_words_each_step[prev_step]:
                                 if parent_word.equal(prev_word):
                                     duplicate_found = True
                                     break
                     if not duplicate_found:        
-                        parent_words_each_step[step].append(output_word)
+                        parent_words_each_step[step].append(parent_word)
+                        count_ancestors += 1
 
             # If none, stop
             if len(parent_words_each_step[step]) == 0:

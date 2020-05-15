@@ -44,14 +44,14 @@ class Scorer():
         if not self.action_rewarded_tracker[vertex_idx]:
             # If not, process reward and update tracker
             if y == World.CLASS_WILDLIFE:
-                self.score += 4
-                print('wildlife reported correctly, +4')
+                self.score += 3 #4
+                print('wildlife reported correctly, +3')
             if y == World.CLASS_MINE:
-                self.score += 5
-                print('mine disarmed, +5')
+                self.score += 3 #5
+                print('mine disarmed, +3')
             if y == World.CLASS_BENIGN:
-                self.score += 1
-                print('garbage picked up, +1')
+                self.score += 3 #1
+                print('garbage picked up, +3')
             self.action_rewarded_tracker[vertex_idx] = True 
             print('updated score: ', self.score)
 
