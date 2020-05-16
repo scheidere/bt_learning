@@ -3,7 +3,7 @@
 import rospy
 import yaml
 import rospkg
-from cfg import CFG, Word, Character, createWord, filterDuplicates, exportBT
+from cfg import CFG, Word, Character, createWord, filterDuplicates, exportBT, extract_subtrees
 
 from behavior_tree.behavior_tree import *
 from behavior_tree_msgs.msg import Status, Active
@@ -146,7 +146,7 @@ if __name__ == '__main__':
         '''
         # cfg_word = createWord('? ( ? ( -> ( (mine_found) [disarm] ) [shortest_path] ) [go_to_comms] )')
 
-        cfg_word = createWord('?  (  ->  (  ?  (  <!>  (  (benign_object_found)  )  (benign_object_found)  (benign_object_found)  (carrying_benign)  <!>  (  (carrying_benign)  )  [take_to_drop_off]  )  [pick_up]  )  ->  (  (mine_found)  ?  (  (is_armed)  [disarm]  )  )  )')
+        cfg_word = createWord('?  (  ->  (  ?  (  <!>  (  (benign_object_found)  )  (benign_object_found)  <!>  (  (carrying_benign)  )  [take_to_drop_off]  )  [pick_up]  )  ->  (  (mine_found)  ?  (  (is_armed)  [disarm]  )  )  )')
 
         cfg_word.printWord()
         # cfg_word_filter = filterDuplicates(cfg_word)
@@ -155,7 +155,17 @@ if __name__ == '__main__':
         bt_root, bt = cfg_word.createBT()
         # bt_root, bt = cfg_word_filter.createBT()
 
-        exportBT(bt)
+        includes = [True, True, True, True, True, True, True, True, True, True,\
+            True, True, True, True, True]
+
+        new_word = exportBT(bt, includes)
+
+        print("new_word:")
+        new_word.printWord()
+        print("subtrees:")
+        subtrees = extract_subtrees(new_word)
+        for subtree in subtrees:
+            subtree.printWord()
 
         init_bt(bt)
         #bt.write_config('onr_example2.tree') # need to manually add in decorator nodes to config file/ implement it dur

@@ -36,7 +36,7 @@ class TreeNode():
         if (self.best_rollout == None) or (rollout_evaluation_score >= self.best_rollout_evaluation_score):
             self.best_rollout = rollout
             self.best_rollout_evaluation_score = rollout_evaluation_score
-            self.best_rollout_active_words = self.best_rollout_active_words
+            self.best_rollout_active_words = rollout_active_words
 
     def updateAverage(self, evaluation_score, iteration_number):
         # Incremental update to the average

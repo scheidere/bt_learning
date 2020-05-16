@@ -237,8 +237,8 @@ def exportBT(bt, include_nodes=None):
     for i in include_nodes:
         if i:
             num_include_nodes += 1
-    print("exportBT num_include_nodes", num_include_nodes)
-    print("exportBT len(include_nodes)", len(include_nodes))
+    # print("exportBT num_include_nodes", num_include_nodes)
+    # print("exportBT len(include_nodes)", len(include_nodes))
 
     # Do the traversal, using the stack to help
     while len(nodes_stack) != 0:
@@ -258,7 +258,8 @@ def exportBT(bt, include_nodes=None):
             if level > prev_level:
                 char_list.append(Character('('))
             elif level < prev_level:
-                char_list.append(Character(')'))
+                for i in xrange(prev_level-level):
+                    char_list.append(Character(')'))
             
             label = bt.get_node_text(current_node)
             char_list.append(Character(label))

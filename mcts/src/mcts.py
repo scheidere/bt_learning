@@ -237,6 +237,13 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
         # print("MCTS reward " + str(iter))
         is_valid, rollout_reward, best_rollout_reward, rollout_active_words = reward(word = rollout_word, max_iterations=max_sim_iterations, underwater_simulator=underwater_simulator)
 
+        print("rollout_word")
+        rollout_word.printWord()
+
+        print("rollout_active_words")
+        for rollout_active_word in rollout_active_words:
+            rollout_active_word.printWord()
+
         # if not is_valid:
         #     print('invalid rollout from ' + current.sequence[-1].toString())
         #     print('to ' + rollout_word.toString())
@@ -424,7 +431,8 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
 
                 print("best nodes for adding new production rules:")
                 for node in best_nodes_dict.values():
-                    node.sequence[-1].printWord()
+                    # node.sequence[-1].printWord()
+                    node.best_rollout_active_words[0].printWord()
                 print("associated keys:")
                 for key in best_nodes_dict.keys():
                     print(key)
