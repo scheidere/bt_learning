@@ -23,6 +23,7 @@ class TreeNode():
 
         # rollout solutions
         self.best_rollout = None
+        self.best_rollout_active_words = []
         self.best_rollout_evaluation_score = 0
 
         # keep track of which iterations where the backtracking passed through this node
@@ -31,10 +32,11 @@ class TreeNode():
         # remember ancestor words (if they are computed) so they don't need to be recomputed
         self.ancestor_words = None
 
-    def updateBestRollout(self, rollout, rollout_evaluation_score):
+    def updateBestRollout(self, rollout, rollout_active_words, rollout_evaluation_score):
         if (self.best_rollout == None) or (rollout_evaluation_score >= self.best_rollout_evaluation_score):
             self.best_rollout = rollout
             self.best_rollout_evaluation_score = rollout_evaluation_score
+            self.best_rollout_active_words = self.best_rollout_active_words
 
     def updateAverage(self, evaluation_score, iteration_number):
         # Incremental update to the average
@@ -61,7 +63,7 @@ class TreeNode():
         # print("mergeRewards merged", self.average_evaluation_score, self.num_updates, self.activated_iterations)
 
         # Update best rollout too
-        self.updateBestRollout(other_node.best_rollout, other_node.best_rollout_evaluation_score)
+        self.updateBestRollout(other_node.best_rollout, other_node.best_rollout_active_words, other_node.best_rollout_evaluation_score)
 
 
 def countNodes(current):

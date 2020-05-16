@@ -8,6 +8,8 @@ from behavior_tree_msgs.msg import Status, Active
 import behavior_tree.behavior_tree_graphviz as gv
 import zlib
 
+from cfg import exportBT
+
 '''
 def getActionsConditions():
 
@@ -62,6 +64,8 @@ class BT_Interface():
         self.defineActionNodes()        
         self.defineConditionNodes()
 
+        self.initActiveTest()
+
     def init_bt(self):
         # print("BT_Interface initialising BT...")
         for node in self.bt.nodes:
@@ -71,6 +75,8 @@ class BT_Interface():
 
     def tick_bt(self):
         self.bt.tick()#root.tick(True)
+
+        self.activeTest()
 
         source = gv.get_graphviz(self.bt)
         source_msg = String()
@@ -116,6 +122,27 @@ class BT_Interface():
 
                     # Add it to the dictionary
                     self.condition_nodes[n.label].append(n)
+
+    def initActiveTest(self):
+
+        self.node_activated = [False]*len(self.bt.nodes)
+
+    def activeTest(self):
+
+        for n_idx in xrange(len(self.bt.nodes)):            
+            n = self.bt.nodes[n_idx]
+            if n.is_active:
+                self.node_activated[n_idx] = True
+
+    def generateActiveCFGWord(self):
+        '''
+        print("len(self.bt.nodes)", len(self.bt.nodes))
+        self.bt.print_BT()
+        for n_idx in xrange(len(self.bt.nodes)):            
+            n = self.bt.nodes[n_idx]
+            print(n.__class__.__name__)
+        '''
+        return exportBT(self.bt, self.node_activated)
     
 
     def getActiveActions(self):

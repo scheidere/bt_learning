@@ -212,11 +212,71 @@ class Word():
                 parent = nodes_worklist[-1]
                 parent.add_child(node)   
 
-        #print("Finished")
-        #print(bt)
-        #bt.print_BT()
+        # print("Finished")
+        # print("len(bt.nodes)",len(bt.nodes))
+        # bt.print_BT()
         return bt.root, bt
-    
+
+
+def exportBT(bt, include_nodes=None):  
+    # Create a Word that represents this BT  
+    # But only include nodes that include_nodes[node_idx]==True
+
+    # Setup a stack data structure (similar to nodes_worklist)
+    # Do this for both keeping track of nodes and for number of tabs
+    nodes_stack = []
+    level_stack = []
+    nodes_stack.append(bt.root) #push
+    level_stack.append(0)
+
+    char_list = []
+
+    prev_level = 0
+
+    num_include_nodes = 0
+    for i in include_nodes:
+        if i:
+            num_include_nodes += 1
+    print("exportBT num_include_nodes", num_include_nodes)
+    print("exportBT len(include_nodes)", len(include_nodes))
+
+    # Do the traversal, using the stack to help
+    while len(nodes_stack) != 0:
+
+        # Pop a node off the stack
+        current_node = nodes_stack.pop() #pop
+        level = level_stack.pop()
+        # print(current_node.__class__.__name__)
+
+        if include_nodes == None:
+            include_node = True
+        else:
+            node_index = bt.nodes.index(current_node)
+            include_node = include_nodes[node_index]
+
+        if include_node:
+            if level > prev_level:
+                char_list.append(Character('('))
+            elif level < prev_level:
+                char_list.append(Character(')'))
+            
+            label = bt.get_node_text(current_node)
+            char_list.append(Character(label))
+
+            # Add all children to the stack
+            for child_idx in reversed(range(len(current_node.children))):
+                nodes_stack.append(current_node.children[child_idx]) #push
+                level_stack.append(level+1)
+
+            prev_level = level
+
+    while prev_level > 0:
+        char_list.append(Character(')'))
+        prev_level -= 1
+
+    # Close the file
+    new_word = Word(char_list)
+    return new_word
 
 class ProductionRule():
     def __init__(self, input_word, output_word):

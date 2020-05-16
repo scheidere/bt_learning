@@ -235,7 +235,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
         #print('rollout_word')
         #rollout_word.printWord()
         # print("MCTS reward " + str(iter))
-        is_valid, rollout_reward, best_rollout_reward = reward(word = rollout_word, max_iterations=max_sim_iterations, underwater_simulator=underwater_simulator)
+        is_valid, rollout_reward, best_rollout_reward, rollout_active_words = reward(word = rollout_word, max_iterations=max_sim_iterations, underwater_simulator=underwater_simulator)
 
         # if not is_valid:
         #     print('invalid rollout from ' + current.sequence[-1].toString())
@@ -319,7 +319,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     # Update the average
                     if is_valid:
                         parent.updateAverage(rollout_reward, iter)
-                        parent.updateBestRollout(rollout_word, rollout_reward)
+                        parent.updateBestRollout(rollout_word, rollout_active_words, rollout_reward)
                     else:
                         # Invalid (empty) BT gets a reward of 0
                         parent.updateAverage(0.0, iter)
@@ -345,7 +345,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     parent.updateAverage(rollout_reward, iter)
                     #print('parent.average_evaluation_score after',parent.average_evaluation_score)
                     #print('parent.num_updates after',parent.num_updates)
-                    parent.updateBestRollout(rollout_word, rollout_reward)
+                    parent.updateBestRollout(rollout_word, rollout_active_words, rollout_reward)
 
                     # Recurse up the tree
                     parent = parent.parents[0]
@@ -358,7 +358,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
 
                     # Update the average
                     parent.updateAverage(rollout_reward, iter)
-                    #parent.updateBestRollout(rollout_word, rollout_reward)
+                    #parent.updateBestRollout(rollout_word, rollout_active_words, rollout_reward)
 
                     # Recurse up the tree
                     parent = parent.parents[0]
@@ -432,9 +432,12 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                 # Add new shortcut production rules
                 for node in best_nodes_dict.values():
                     if node:
-                        # subtree_words = extract_subtrees(node.sequence[-1])
+                        subtree_words = []
+                        # subtree_words.extend(extract_subtrees(node.sequence[-1]))
                         # subtree_words.extend(extract_subtrees(node.best_rollout))
-                        subtree_words = extract_subtrees(node.best_rollout)
+
+                        for best_rollout_active_word in node.best_rollout_active_words:
+                            subtree_words.extend(extract_subtrees(best_rollout_active_word))
 
                         # For each subtree of node
                         for subtree_word in subtree_words:
