@@ -76,7 +76,7 @@ def mcts_restarts(cfg, budget, max_mcts_iterations, exploration_exploitation_par
             best_rollout_active_word.printWord()
 
         # Extract information to pass to the next round
-        shortcut_words = [] # comment this out to keep the previous words
+        # shortcut_words = [] # comment this out to keep the previous words
         subtree_words = []
         for best_node in best_nodes_dict.values():
 

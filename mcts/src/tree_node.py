@@ -21,6 +21,9 @@ class TreeNode():
         self.average_evaluation_score = 0
         self.num_updates = 0
 
+        # for dag, number of times selected by UCB -- not this is different to num_updates
+        self.num_selections = 0
+
         # rollout solutions
         self.best_rollout = None
         self.best_rollout_active_words = []
@@ -43,6 +46,9 @@ class TreeNode():
         self.average_evaluation_score = float(self.average_evaluation_score * self.num_updates + evaluation_score) / float(self.num_updates + 1)
         self.num_updates = self.num_updates + 1
         self.activated_iterations.add(iteration_number)
+
+    def updateNumSelections(self):
+        self.num_selections += 1
 
     def addParent(self, new_parent):
         self.parents.append(new_parent)

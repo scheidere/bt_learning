@@ -92,6 +92,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
         # then add a new leaf node
         # print("MCTS selection " + str(iter))
         current = root
+        selection_path = [current]
         while True: 
 
             # Add a probability for ignoring unpicked children, to search deeper instead
@@ -180,7 +181,8 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     # current.mergeRewards(all_iteration_rewards, duplicate_node)
 
                     current = duplicate_node
-                    count_duplicates += 1                    
+                    count_duplicates += 1  
+                    selection_path.append(current)                  
 
                 else:
                     # Create the new node and add it to the tree
@@ -192,7 +194,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     dict_of_all_nodes[child_word.toString()] = current # for check_for_duplicates()
                     #print('new_child_node')
                     #new_child_node.sequence[-1].printWord()
-
+                    selection_path.append(current)
                     break # don't go deeper in the tree...
 
             else:
@@ -229,11 +231,14 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     for child_idx in range(len(current.children)):
                         child = current.children[child_idx]  
 
-                        ucb_score = ucb(child.average_evaluation_score, n_parent, child.num_updates)                        
-                        # if len(current.sequence) > 4:                      
+                        # ucb_score = ucb(child.average_evaluation_score, n_parent, child.num_updates)                        
+                        # if len(current.sequence) > 3:                      
                         #     ucb_score = ucb(child.average_evaluation_score, n_parent, child.num_updates)
                         # else:
                         #     ucb_score = explore(n_parent, child.num_updates)
+
+                        ucb_score = ucb(child.average_evaluation_score, current.num_selections, child.num_selections)
+                        
 
                         # if len(current.sequence) <= 4:
                         #     print('child word', child.sequence[-1].toString())
@@ -251,6 +256,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     #     best_child.sequence[-1].printWord()
                     # Recurse down the tree
                     current = best_child
+                    selection_path.append(current)
                     
 
         ################################
@@ -310,7 +316,14 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     line2, = ax.plot(range(iter+1),avg_rollout_rewards,label = 'average reward')
                     plt.xlabel('MCTS Iterations')
                     plt.ylabel('Score')
-                    fig_text = fig.text(0.5, 0.9, best_reward_word.toString(), ha='center')
+                    # fig_text = fig.text(0.5, 0.9, best_reward_word.toString(), ha='center')
+                    title_string = ""
+                    if best_rollout_node:
+                        if best_rollout_node.best_rollout_active_words:
+                            title_string = best_rollout_node.best_rollout_active_words[0].toString()
+                    fig_text = fig.text(0.5, 0.9, title_string, ha='center',wrap=True)
+
+                    
                     plt.legend(loc='best')
                     plt.show(block=False)
                     # plt.ion()
@@ -321,7 +334,11 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     line2.set_ydata(avg_rollout_rewards)
                     plt.xlim(0,iter+1)
                     plt.ylim(0,best_rewards[-1]*1.1)
-                    fig_text.set_text(best_reward_word.toString())
+                    title_string = ""
+                    if best_rollout_node:
+                        if best_rollout_node.best_rollout_active_words:
+                            title_string = best_rollout_node.best_rollout_active_words[0].toString()
+                    fig_text.set_text(title_string)
 
                     fig.canvas.draw()
                     fig.canvas.flush_events()
@@ -365,6 +382,10 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     # Remember that we've already looked at this
                     list_of_already_updated.append(parent)
             print('backprop finished')
+
+            # Also update updateNumSelections, but only along the selection path
+            for selection_node in selection_path:
+                selection_node.updateNumSelections()
 
         else:
             # Tree case
