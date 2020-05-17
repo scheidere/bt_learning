@@ -21,7 +21,7 @@ use_dag: True
 iterations_between_adding_best_edges: 200
 adding_best_edges_steps: 3
 adding_nonzero_edges_steps: 3
-iterations_between_adding_production_rules: 1000
+iterations_between_adding_production_rules: 10000
 max_ancestors: 1000 # number of ancestors allowed when looking back up the DAG
 
-probability_skip_unpicked_child_words: 0.05
+probability_skip_unpicked_child_words: 0.0

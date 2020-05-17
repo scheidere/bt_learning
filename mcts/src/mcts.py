@@ -207,23 +207,35 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     break
                 else:
 
-                    # if len(current.sequence) < 4:
-                        # print('current word', current.sequence[-1].toString())
+                    # if len(current.sequence) <= 4:
+                    #     print('current word', current.sequence[-1].toString())
 
                     # Define the UCB
                     def ucb(average, n_parent, n_child):
                         if n_child == 0:
                             return 999999999.0
-                        return average + exploration_exploitation_parameter * math.sqrt( (2*math.log(n_parent)) / float(n_child) )
+                        # + random.random() added to random select between subtrees with same counts -- otherwise the DAG version gets stuck down one subtree due to each rollout incrementing all counts equally
+                        return average + exploration_exploitation_parameter * math.sqrt( (2*math.log(n_parent)) / float(n_child + random.random()) )
+
+                    def explore(n_parent, n_child):
+                        if n_child == 0:
+                            return 999999999.0
+                        return 1.0 / float(n_child + random.random())
 
                     # Pick the child that maximises the UCB
                     n_parent = current.num_updates
                     best_child = -1
                     best_ucb_score = 0
                     for child_idx in range(len(current.children)):
-                        child = current.children[child_idx]                        
-                        ucb_score = ucb(child.average_evaluation_score, n_parent, child.num_updates)
-                        # if len(current.sequence) < 4:
+                        child = current.children[child_idx]  
+
+                        ucb_score = ucb(child.average_evaluation_score, n_parent, child.num_updates)                        
+                        # if len(current.sequence) > 4:                      
+                        #     ucb_score = ucb(child.average_evaluation_score, n_parent, child.num_updates)
+                        # else:
+                        #     ucb_score = explore(n_parent, child.num_updates)
+
+                        # if len(current.sequence) <= 4:
                         #     print('child word', child.sequence[-1].toString())
                         #     print('child average_evaluation_score',child.average_evaluation_score)
                         #     print('child num_updates',child.num_updates)
@@ -234,11 +246,12 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
 
                     #print('best_ucb_score',best_ucb_score)
                     #print('n_parent',n_parent)
-                    # Recurse down the tree
-                    current = best_child
-                    # if len(current.sequence) < 4:
+                    # if len(current.sequence) <= 4:
                     #     print('best_child:')
                     #     best_child.sequence[-1].printWord()
+                    # Recurse down the tree
+                    current = best_child
+                    
 
         ################################
         # Rollout
@@ -444,6 +457,20 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                                 # First sequenceX
                                 best_nodes_dict[key] = node
 
+                        else:
+
+                            key = "B"
+                            value_score = node.average_evaluation_score
+                            try:
+                                # Check if better than previous sequenceX
+                                prev_value_score = best_nodes_dict[key].average_evaluation_score
+                                if value_score > prev_value_score:
+                                    best_nodes_dict[key] = node
+                            except KeyError:
+                                # First sequenceX
+                                best_nodes_dict[key] = node
+
+
                 print("best nodes for adding new production rules:")
                 for node in best_nodes_dict.values():
                     # node.sequence[-1].printWord()
@@ -471,6 +498,11 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                         for subtree_word in subtree_words:
 
                             subtree_word_already_shortcut = False
+
+                            if len(subtree_word.list) <= 3:
+                                # Filter out empty subtree (why is this needed?)
+                                subtree_word_already_shortcut = True
+
                             for shortcut_word in shortcut_words:
                                 if shortcut_word.equal(subtree_word):
                                     subtree_word_already_shortcut = True

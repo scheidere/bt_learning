@@ -137,7 +137,7 @@ def mcts_restarts(cfg, budget, max_mcts_iterations, exploration_exploitation_par
 
             # new plotting function
             use_uct = False # True case doesn't currently work
-            max_height = 15
+            max_height = 1000
             # plot_cfg_tree(list_of_all_nodes, winner, use_uct, max_height, exploration_exploitation_parameter)
 
             print_text = False
