@@ -9,7 +9,7 @@ robot_speed: 100 # units of distance travelled between iterations #500
 sensor_range: 400 # distance robot is capable of sensing a target
 comms_range: 500 # distance beyond which the robot is unable to contact basestation
 num_classes: 4 # 3 types of targets, one class to represent vertices which are not targets
-prob_of_class0: 0.95 # if 0.9 then ~90% of the vertices are not targets
+prob_of_class0: 0.90 # if 0.9 then ~90% of the vertices are not targets
 TP: 0.95
 confidence_threshold: 0.75
 battery_low_threshold: 500

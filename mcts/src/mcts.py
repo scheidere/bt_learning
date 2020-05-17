@@ -18,7 +18,20 @@ import matplotlib.pyplot as plt
 
 import rospy
 
-def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config ):
+def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config, shortcut_words=[] ):
+
+    ################################
+    # Add shortcut words to the production rules
+    # shortcut_words = []
+    for shortcut_word in shortcut_words:
+
+        # Create a new production rule
+        input_word = createWord("sequence")
+        output_word = shortcut_word
+        production_rule = ProductionRule(input_word, output_word)
+
+        # Add PR to CFG
+        is_added = cfg.addProductionRule(production_rule)
 
     ################################
     # Setup
@@ -39,6 +52,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
     best_rewards = []
     best_reward = 0
     best_reward_word = None
+    best_rollout_node = None
     count_duplicates = 0
 
     plot_intermediate_results = config['plot_intermediate_results']
@@ -50,7 +64,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
     probability_skip_unpicked_child_words = config['probability_skip_unpicked_child_words']
     max_ancestors = config['max_ancestors']
 
-    shortcut_words = []
+    
 
 
     if plot_intermediate_results:
@@ -251,6 +265,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
         if best_reward_word == None or best_reward < rollout_reward:
             best_reward = rollout_reward
             best_reward_word = rollout_word
+            best_rollout_node = current
 
         best_rewards.append(best_reward) # whether same or different
         rollout_rewards.append(rollout_reward)
@@ -400,7 +415,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     if node:
                         add_backwards_edges(cfg, dict_of_all_nodes, node, all_iteration_rewards, adding_best_edges_steps, max_ancestors)
 
-            if iter%iterations_between_adding_production_rules==0:
+            if iter%iterations_between_adding_production_rules==0 or iter==max_iterations-1:
 
                 # Find the best node that contains sequenceX as part of its evaluation, for each X
                 best_nodes_dict = dict()
@@ -436,6 +451,11 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                 print("associated keys:")
                 for key in best_nodes_dict.keys():
                     print(key)
+
+                # Append the best_rollout_active_words
+                # Since the best rollout is computed a little bit differently -- not guaranteed to appear above
+                if best_rollout_node:
+                    best_nodes_dict["A"] = best_rollout_node
 
                 # Add new shortcut production rules
                 for node in best_nodes_dict.values():
@@ -579,7 +599,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
     best_rollout = best_node.best_rollout
     winner = best_node
 
-    return [solution, best_rollout, root, list_of_all_nodes, winner]
+    return [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict]
 
 
 '''

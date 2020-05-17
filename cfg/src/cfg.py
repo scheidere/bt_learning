@@ -1465,6 +1465,60 @@ class CFG():
 
         return production_rule_list
 
+
+    def generateGrammarShortcutsOnly(self):
+
+        '''
+        Same as generateGrammarGuidedStructure, but with groups
+        Only actions and conditions in the same group are allowed within the same sequence subtree
+
+        This CFG results in the following guided (or forced) structure
+        ?
+        -> -> -> ...
+        ? A C
+        A C
+        '''
+
+        # Create empty production rule list
+        production_rule_list = []
+        # list_actions,list_conditions = getActionsConditions()
+        groups = getActionsConditionsGroups()
+        num_groups = len(groups)
+
+        '''
+        input_word = createWord("S")
+        output_word = createWord("? ( add_sequence sequence add_sequence )")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = createWord("add_sequence sequence add_sequence")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = createWord("sequence")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = Word([])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+        '''
+
+        input_word = createWord("S")
+        output_word = createWord("? ( sequence sequence sequence sequence sequence sequence sequence sequence sequence sequence )")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("sequence")
+        output_word = createWord("")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        return production_rule_list
+
     def printWord(self):
 
         # Need an input word
