@@ -47,11 +47,11 @@ class Scorer():
                 self.score += 3 #4
                 print('wildlife reported correctly, +3; at vertex ' + str(vertex_idx))
             if y == World.CLASS_MINE:
-                self.score += 3 #5
-                print('mine disarmed, +3; at vertex ' + str(vertex_idx))
+                self.score += 4 #5
+                print('mine disarmed, +4; at vertex ' + str(vertex_idx))
             if y == World.CLASS_BENIGN:
-                self.score += 3 #1
-                print('garbage picked up, +3; at vertex ' + str(vertex_idx))
+                self.score += 2 #1
+                print('garbage picked up, +2; at vertex ' + str(vertex_idx))
             self.action_rewarded_tracker[vertex_idx] = True 
             print('updated score: ', self.score)
 
@@ -71,7 +71,10 @@ class Scorer():
             class_i = detection_list[i][1]
             if not self.detection_rewarded_tracker[vertex_idx_i]: # Check that vertex detection has not been rewarded yet (tracker = False)
                 if self.world.classes_y[vertex_idx_i] == class_i: # Check if robot belief class is same as ground truth class
-                    self.score += 0 #Graeme changed this from 1 to 0
+                    if class_i == World.CLASS_WILDLIFE:
+                        self.score += 0 #Graeme changed this from 1 to 0
+                    else:
+                        self.score += 0 #Graeme changed this from 1 to 0
                     print('target detected of class: ', class_i)
                     self.detection_rewarded_tracker[vertex_idx_i] = True
                     print('updated score: ', self.score)
