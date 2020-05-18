@@ -1485,7 +1485,7 @@ class CFG():
         groups = getActionsConditionsGroups()
         num_groups = len(groups)
 
-        
+        '''
         input_word = createWord("S")
         output_word = createWord("? ( add_sequence sequence add_sequence )")
         production_rule = ProductionRule(input_word, output_word)
@@ -1505,11 +1505,11 @@ class CFG():
         output_word = Word([])
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
-        
-
         '''
+
+        
         input_word = createWord("S")
-        output_word = createWord("? ( sequence sequence sequence sequence sequence sequence sequence sequence sequence sequence )")
+        output_word = createWord("? ( sequence sequence sequence sequence sequence sequence sequence sequence )")
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
@@ -1517,7 +1517,7 @@ class CFG():
         output_word = createWord("")
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
-        '''
+        
 
         return production_rule_list
 

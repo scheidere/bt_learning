@@ -17,15 +17,15 @@ import yaml
 def mcts_restarts(cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config):
 
 
-    num_rounds = 20
-    iterations_per_round = 500
+    num_rounds = 10
+    iterations_per_round = 1000
 
     shortcut_words = []
 
     # cfg.grammar = cfg.generateGrammarGuidedStructureGroupsOneSequence()
 
     cfg_shortcuts_only = CFG()
-    cfg_shortcuts_only.grammar = cfg_shortcuts_only.generateGrammarShortcutsOnly()
+    # cfg_shortcuts_only.grammar = cfg_shortcuts_only.generateGrammarShortcutsOnly()
 
     # Do the rounds
     for round in xrange(num_rounds):
