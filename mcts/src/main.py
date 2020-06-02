@@ -7,6 +7,7 @@ Jan 2020
 '''
 
 from mcts import mcts
+from mcts_restarts import mcts_restarts
 from action import Action, printActionSequence
 from tree_node import countNodes
 # from plot_tree import plotTree
@@ -57,16 +58,7 @@ def run():
     max_sim_iterations = config["max_sim_iterations"]
     use_dag = config["use_dag"]
     
-    '''
-    budget = 8
-    
-
-    # Solve it with MCTS
-    exploration_exploitation_parameter = 1.0 # =1.0 is recommended. <1.0 more exploitation. >1.0 more exploration. 
-    max_mcts_iterations = 10000 #change name to max_mcts_iterations ##you change this to make it run longer
-    max_sim_iterations = 100 #iterations robot allows to move for before it gives up
-    '''
-    [solution, best_rollout, root, list_of_all_nodes, winner] = mcts( cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config )
+    [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict] = mcts_restarts( cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config )
     
 
     # Display the tree
@@ -79,6 +71,21 @@ def run():
     print('best_rollout at best node:')
     best_rollout.printWord()
 
+    print('best_rollout_active_words at best node:')
+    for best_rollout_active_word in winner.best_rollout_active_words:
+        best_rollout_active_word.printWord()
+
+    print('sequence at best_rollout_node:')
+    for soln in best_rollout_node.sequence:
+        soln.printWord()
+
+    print('best_rollout at best_rollout_node:')    
+    best_rollout_node.best_rollout.printWord()
+
+    print('best_rollout_active_words at best_rollout_node:')
+    for best_rollout_active_word in best_rollout_node.best_rollout_active_words:
+        best_rollout_active_word.printWord()
+
     # OLD plotting function -- does not work for these cfg trees
     #plotTree(list_of_all_nodes, winner, action_set, False, budget, 1, exploration_exploitation_parameter)
     #plotTree(list_of_all_nodes, winner, action_set, True, budget, 2, exploration_exploitation_parameter)
@@ -87,7 +94,7 @@ def run():
 
         # new plotting function
         use_uct = False # True case doesn't currently work
-        max_height = 15
+        max_height = 1000
         # plot_cfg_tree(list_of_all_nodes, winner, use_uct, max_height, exploration_exploitation_parameter)
 
         print_text = False

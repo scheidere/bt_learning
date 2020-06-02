@@ -63,12 +63,20 @@ class UnderwaterSimulator():
             # Create BT object from terminal BT CFG
             bt_root, bt = word.createBT()
 
+            print("run_simulator")
+            word.printWord()
+            print("len(bt.nodes)", len(bt.nodes))
+
             robot = Robot(self.config, self.robot_id, self.num_robots, self.seed, bt, max_iterations, self.world)
             # cProfile.run('RobotController(config, robot)')
             robot_controller = RobotController(self.config, robot)
             score, target_reported, belief_distance = robot_controller.run()
             #print('Score: ', score)
-            return score, target_reported, belief_distance
+
+            # Get the Word of all active parts of the BT
+            active_word = robot.bt_interface.generateActiveCFGWord()
+
+            return score, target_reported, belief_distance, active_word
 
         except rospy.ROSInterruptException: pass
 

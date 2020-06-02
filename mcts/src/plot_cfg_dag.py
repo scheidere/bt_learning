@@ -74,7 +74,7 @@ def plot_cfg_dag(list_of_all_nodes, winner, use_uct, max_height, exploration_exp
                 # Add an edge back to the parent
                 for parent in n.parents:
                     parent_id = str(id(parent))
-                    u.edge(parent_id, node_id)
+                    u.edge(parent_id, node_id)#, color=col)
 
             # if the children are being cut off due to max_height
             '''

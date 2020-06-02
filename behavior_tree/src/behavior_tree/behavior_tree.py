@@ -557,7 +557,7 @@ class BehaviorTree:
         elif node_type == 'Action':
             node_text = node.label
             node_label = '[' + node_text + ']'
-        elif node_type == 'Decorator':
+        elif node_type == 'Decorator' or node_type == 'NotDecorator':
             node_text = node.label
             node_label = '<' + node_text + '>'
         else:

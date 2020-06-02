@@ -212,16 +212,80 @@ class Word():
                 parent = nodes_worklist[-1]
                 parent.add_child(node)   
 
-        #print("Finished")
-        #print(bt)
-        #bt.print_BT()
+        # print("Finished")
+        # print("len(bt.nodes)",len(bt.nodes))
+        # bt.print_BT()
         return bt.root, bt
-    
+
+
+def exportBT(bt, include_nodes=None):  
+    # Create a Word that represents this BT  
+    # But only include nodes that include_nodes[node_idx]==True
+
+    # Setup a stack data structure (similar to nodes_worklist)
+    # Do this for both keeping track of nodes and for number of tabs
+    nodes_stack = []
+    level_stack = []
+    nodes_stack.append(bt.root) #push
+    level_stack.append(0)
+
+    char_list = []
+
+    prev_level = 0
+
+    num_include_nodes = 0
+    for i in include_nodes:
+        if i:
+            num_include_nodes += 1
+    # print("exportBT num_include_nodes", num_include_nodes)
+    # print("exportBT len(include_nodes)", len(include_nodes))
+
+    # Do the traversal, using the stack to help
+    while len(nodes_stack) != 0:
+
+        # Pop a node off the stack
+        current_node = nodes_stack.pop() #pop
+        level = level_stack.pop()
+        # print(current_node.__class__.__name__)
+
+        if include_nodes == None:
+            include_node = True
+        else:
+            node_index = bt.nodes.index(current_node)
+            include_node = include_nodes[node_index]
+
+        if include_node:
+            if level > prev_level:
+                char_list.append(Character('('))
+            elif level < prev_level:
+                for i in xrange(prev_level-level):
+                    char_list.append(Character(')'))
+            
+            label = bt.get_node_text(current_node)
+            char_list.append(Character(label))
+
+            # Add all children to the stack
+            for child_idx in reversed(range(len(current_node.children))):
+                nodes_stack.append(current_node.children[child_idx]) #push
+                level_stack.append(level+1)
+
+            prev_level = level
+
+    while prev_level > 0:
+        char_list.append(Character(')'))
+        prev_level -= 1
+
+    # Close the file
+    new_word = Word(char_list)
+    return new_word
 
 class ProductionRule():
     def __init__(self, input_word, output_word):
         self.input_word = input_word
         self.output_word = output_word
+
+    def equal(self, other_production_rule):
+        return self.input_word.equal(other_production_rule.input_word) and self.output_word.equal(other_production_rule.output_word)
 
     def applyProductionRule(self, start_word):
 
@@ -269,7 +333,93 @@ class ProductionRule():
                 new_char_list.append(start_word.at(i))
 
             new_word = Word(new_char_list)
-            new_word_list.append(new_word)
+
+
+            #############
+            # do filtering for BT duplicates
+            new_word_filtered = filterDuplicates(new_word)
+            duplicate_found = False
+
+            if new_word_filtered.equal(start_word):
+                duplicate_found = True
+
+            if not duplicate_found:
+                for word in new_word_list:
+                    if new_word_filtered.equal(word):
+                        duplicate_found = True
+                        break
+
+            if not duplicate_found:        
+                new_word_list.append(new_word_filtered)
+
+        return new_word_list
+
+    def applyProductionRuleBackwards(self, start_word):
+        '''
+        almost identical to applyProductionRule()
+        but apply rule backwards
+        and don't bother doing the filtering
+        '''
+
+        # Initialize list for found word/char within word indices
+        index_pair_list = []
+
+        # Find insert index
+        word_found = False
+        for i in range(start_word.lenWord() - self.output_word.lenWord() + 1):
+            flag = True
+            for j in range(self.output_word.lenWord()):
+                if not start_word.at(i+j).equal(self.output_word.at(j)):
+                    flag = False
+                    break
+            if flag:
+                word_found = True
+                start_index = i
+                end_index = i + self.output_word.lenWord() - 1
+                index_pair_list.append((start_index,end_index))
+
+        '''
+        if not word_found:
+            return None 
+        '''
+
+        new_word_list = []
+
+        for index_pair in index_pair_list:
+
+            start_index = index_pair[0]
+            end_index = index_pair[1]
+
+            new_char_list = []
+
+            # Before edit
+            for i in range(start_index):
+                new_char_list.append(start_word.at(i))
+
+            # During edit
+            for i in range(self.input_word.lenWord()):
+                new_char_list.append(self.input_word.at(i))
+
+            # After edit
+            for i in range(end_index + 1, start_word.lenWord()):
+                new_char_list.append(start_word.at(i))
+
+            new_word = Word(new_char_list)
+
+
+            duplicate_found = False
+
+            if new_word.equal(start_word):
+                duplicate_found = True
+
+            if not duplicate_found:
+                for word in new_word_list:
+                    if new_word.equal(word):
+                        duplicate_found = True
+                        break
+
+            if not duplicate_found:        
+                new_word_list.append(new_word)
 
         return new_word_list
 
@@ -304,7 +454,258 @@ def createWord(string_list):
     for s in string_list:
         character_list.append(Character(s))
     return Word(character_list)
-        
+
+
+# Precompute these rather than recreating them many times in the below function
+char_open_bracket = Character("(")
+char_close_bracket = Character(")")
+char_sequence = Character("->")
+char_fallback = Character("?")
+
+'''
+def filterDuplicates(in_word):
+    # This filter is specific to the BT CFGs (not really CFGs in general)
+    # Filter out the right most occurence of any duplicate actions/conditions that are:
+    # - within the same subtree
+    # - and at the same level
+    # i.e., are siblings
+    # Also don't allow duplicates for ""sequence"+s" nodes
+
+    maxlevels = 10 # max height of the BT
+    words_at_levels = []
+    for l in xrange(maxlevels):
+        words_at_levels.append([])
+
+    level = 0
+
+    keep_indices = [] # keep these Characters
+    deletion_found = False
+
+    for char_idx in xrange(len(in_word.list)):
+
+        char = in_word.list[char_idx]
+        # char.printLabel()
+        # print
+
+        keep = True
+
+        # Determine the kind of node char is
+        if char.equal(char_open_bracket):
+            level += 1
+        elif char.equal(char_close_bracket):
+            # Clear the siblings at this level
+            words_at_levels[level] = []
+            level -= 1
+        elif len(char.label) > 8 and char.label[0:8] == 'sequence':
+            # "sequence"+s nodes
+            # Note this does not include "sequence" (without the s) nodes
+            if char.label in words_at_levels[level]:
+                keep = False
+            else:
+                words_at_levels[level].append(char.label)
+
+        elif char.label[0] == '(' and not char.equal(char_open_bracket):
+            # Condition
+            if char.label in words_at_levels[level]:
+                keep = False
+            else:
+                words_at_levels[level].append(char.label)
+
+        elif char.label[0] == '[':
+            # Action
+            if char.label in words_at_levels[level]:
+                keep = False
+            else:
+                words_at_levels[level].append(char.label)
+
+        # print(words_at_levels)
+
+        if keep:
+            keep_indices.append(char_idx)
+        else:
+            deletion_found = True
+            # print('duplicate!')
+
+    if deletion_found:
+        new_word_list = []
+        for i in keep_indices:
+            new_word_list.append(in_word.list[i])
+        new_word = Word(new_word_list)
+        # print('filterDuplicates duplicate found!')
+        # print('filterDuplicates in', in_word.toString())
+        # print('filterDuplicates out', new_word.toString())
+        return new_word
+    else:
+        # print('filterDuplicates keep input word')
+        # print('filterDuplicates in', in_word.toString())
+        # print(words_at_levels)
+        return in_word
+'''
+
+def filterDuplicates(in_word):
+    # This filter is specific to the BT CFGs (not really CFGs in general)
+    # Filter out the right most occurence of any duplicate actions/conditions that are:
+    # - within the same subtree
+    # - and at the same level
+    # i.e., are siblings
+    # Also don't allow duplicates for ""sequence"+s" nodes
+
+    maxlevels = 10 # max height of the BT
+    words_at_levels = []
+    for l in xrange(maxlevels):
+        words_at_levels.append([])
+
+    level = 0
+
+    keep_indices = [] # keep these Characters
+    deletion_found = False
+
+    for char_idx in xrange(len(in_word.list)):
+
+        char = in_word.list[char_idx]
+        # char.printLabel()
+        # print
+
+        keep = True
+
+        # Determine the kind of node char is
+        if char.equal(char_open_bracket):
+            level += 1
+        elif char.equal(char_close_bracket):
+            level -= 1
+            # Clear lists above level 1
+            if level <= 1:
+                for l in xrange(level+1,maxlevels):
+                    words_at_levels[l] = []
+        elif len(char.label) > 8 and char.label[0:8] == 'sequence':
+            # "sequence"+s nodes
+            # Note this does not include "sequence" (without the s) nodes
+            if char.label in words_at_levels[level]:
+                keep = False
+            else:
+                words_at_levels[level].append(char.label)
+
+        elif char.label[0] == '(' and not char.equal(char_open_bracket):
+            # Condition
+            if char.label in words_at_levels[2]:
+                keep = False
+            else:
+                words_at_levels[2].append(char.label)
+
+        elif char.label[0] == '[':
+            # Action
+            if char.label in words_at_levels[2]:
+                keep = False
+            else:
+                words_at_levels[2].append(char.label)
+
+        # print(words_at_levels)
+
+        if keep:
+            keep_indices.append(char_idx)
+        else:
+            deletion_found = True
+            # print('duplicate!')
+
+    if deletion_found:
+        new_word_list = []
+        for i in keep_indices:
+            new_word_list.append(in_word.list[i])
+
+        new_word = Word(new_word_list)
+
+        # For this version of this method, we also need to then remove all empty subtrees
+        subtree_removed,new_word = removeEmptySubtrees(new_word)
+
+        # print('filterDuplicates duplicate found!')
+        # print('filterDuplicates in', in_word.toString())
+        # print('filterDuplicates out', new_word.toString())
+        return new_word
+    else:
+        # print('filterDuplicates keep input word')
+        # print('filterDuplicates in', in_word.toString())
+        # print(words_at_levels)
+        return in_word
+
+def removeEmptySubtrees(in_word):
+
+    maxlevels = 10 # max height of the BT
+    level_start_index = [0]*maxlevels
+    level_subtree_count = [0]*maxlevels
+
+    level = 0
+
+    deletion_ranges = [] # keep these Characters
+    deletion_found = False
+
+    for char_idx in xrange(len(in_word.list)):
+
+        char = in_word.list[char_idx]
+        # char.printLabel()
+        # print
+
+        keep = True
+
+        # Determine the kind of node char is
+        if char.equal(char_open_bracket):
+            level += 1
+            level_start_index[level] = char_idx-1
+        elif char.equal(char_close_bracket):
+            if level_subtree_count[level] == 0:
+                deletion_ranges.append([level_start_index[level], char_idx])
+                deletion_found = True
+                # print('remove level', level, [level_start_index[level], char_idx])
+            level_subtree_count[level] = 0
+            level -= 1            
+
+        # If not a control node
+        # Increment all level counts up to this level
+        if not char.equal(char_open_bracket) and not char.equal(char_close_bracket) and not char.equal(char_sequence) and not char.equal(char_fallback) and not char.label[0] == '<':
+            for l in xrange(level+1):
+                level_subtree_count[l] += 1
+
+    if deletion_found:
+        new_word_list = []
+        for char_idx in xrange(len(in_word.list)):
+            in_deletion_range = False
+            for deletion_range in deletion_ranges:
+                if char_idx >= deletion_range[0] and char_idx <= deletion_range[1]:
+                    in_deletion_range = True
+                    break
+            if not in_deletion_range:
+                new_word_list.append(in_word.list[char_idx])
+
+        new_word = Word(new_word_list)
+        # in_word.printWord()
+        # new_word.printWord()
+        return True, new_word
+    else:
+        return False, in_word
+
+def extract_subtrees(word):
+    # extracts the words for the sequence subtrees
+
+    subtree_words = []
+
+    level = 0
+
+    for char_idx in xrange(len(word.list)):
+
+        char = word.list[char_idx]
+
+        # Determine the kind of node char is
+        if char.equal(char_open_bracket):
+            level += 1
+            if level == 2:
+                start_subtree = char_idx-1
+        elif char.equal(char_close_bracket):
+            level -= 1 
+            if level == 1:
+                end_subtree = char_idx+1
+                subtree_word_list = word.list[start_subtree:end_subtree]
+                subtree_words.append(Word(subtree_word_list))
+    return subtree_words
+
 
 class CFG():
     def __init__(self):
@@ -318,6 +719,19 @@ class CFG():
 
         # Print all words
         #self.printAllTerminalWords(4)
+
+    def addProductionRule(self, new_production_rule):
+
+        # Check it doesn't already exist
+        for pr in self.grammar:
+            if pr.equal(new_production_rule):
+                return False
+
+        # Add it
+        self.grammar.append(new_production_rule)
+        print("Production rule added!")
+        new_production_rule.printProductionRule()
+        return True
 
     def printAllProdRules(self):
         for rule in self.grammar:
@@ -882,6 +1296,7 @@ class CFG():
         groups = getActionsConditionsGroups()
         num_groups = len(groups)
 
+        '''
         input_word = createWord("S")
         output_word = createWord("? ( add_sequence sequence add_sequence )")
         production_rule = ProductionRule(input_word, output_word)
@@ -899,6 +1314,257 @@ class CFG():
 
         input_word = createWord("add_sequence")
         output_word = Word([])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+        '''
+
+        input_word = createWord("S")
+        output_word = createWord("? ( sequence add_sequence )")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = createWord("sequence add_sequence")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = createWord("sequence")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        for g_idx in xrange(num_groups):
+
+            g = groups[g_idx]
+            s = str(g_idx)
+
+            # Convert generic sequence to a sequence of a particular group
+            input_word = createWord("sequence")
+            output_word = createWord("sequence"+s)
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("sequence"+s)
+            output_word = createWord(["->", "(", "A"+s, "children_r"+s, ")"])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("sequence"+s)
+            output_word = createWord(["->","(","children_l"+s,"A"+s, ")"])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("sequence"+s)
+            output_word = createWord(["->","(","fallback"+s,"children_r"+s, ")"])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("sequence"+s)
+            output_word = createWord(["->","(","children_l"+s,"fallback"+s, ")"])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("fallback"+s)
+            output_word = createWord(["?","(","A"+s,"level3_r"+s, ")"])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("children_r"+s)
+            output_word = createWord(["A"+s, "children_r"+s])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("children_r"+s)
+            output_word = createWord(["fallback"+s, "children_r"+s])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("children_r"+s)
+            output_word = createWord("A"+s)
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("children_r"+s)
+            output_word = createWord("fallback"+s)
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("children_l"+s)
+            output_word = createWord(["children_l"+s,"fallback"+s])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            # Only do the following if there are conditions in this group
+            if len(g["conditions"]) > 0:
+
+                input_word = createWord("fallback"+s)
+                output_word = createWord(["?", "(", "level3_l"+s, "A"+s, ")"])
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                input_word = createWord("children_l"+s)
+                output_word = createWord(["children_l"+s, "CorD"+s])
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                input_word = createWord("children_l"+s)
+                output_word = createWord("CorD"+s)
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                input_word = createWord("level3_l"+s)
+                output_word = createWord(["level3_l"+s,"CorD"+s])
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                input_word = createWord("level3_l"+s)
+                output_word = createWord("CorD"+s)
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                input_word = createWord("CorD"+s)
+                output_word = createWord("C"+s)
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                input_word = createWord("CorD"+s)
+                output_word = createWord(["<!>", "(", "C"+s, ")"])
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                for condition in g["conditions"]:
+                    condition_string = '(' + condition + ')'
+                    input_word = Word([Character("C"+s)])
+                    output_word = Word([Character(condition_string)]) #'()'
+                    production_rule = ProductionRule(input_word, output_word)
+                    production_rule_list.append(production_rule)
+
+            input_word = createWord("children_l"+s)
+            output_word = createWord("fallback"+s)
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("level3_r"+s)
+            output_word = createWord(["A"+s,"level3_r"+s])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("level3_r"+s)
+            output_word = createWord("A"+s)
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            for action in g["actions"]:
+                action_string = '[' + action + ']'
+                input_word = Word([Character("A"+s)])
+                output_word = Word([Character(action_string)]) #'[]'
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+            
+
+        return production_rule_list
+
+
+    def generateGrammarShortcutsOnly(self):
+
+        '''
+        Same as generateGrammarGuidedStructure, but with groups
+        Only actions and conditions in the same group are allowed within the same sequence subtree
+
+        This CFG results in the following guided (or forced) structure
+        ?
+        -> -> -> ...
+        ? A C
+        A C
+        '''
+
+        # Create empty production rule list
+        production_rule_list = []
+        # list_actions,list_conditions = getActionsConditions()
+        groups = getActionsConditionsGroups()
+        num_groups = len(groups)
+
+        '''
+        input_word = createWord("S")
+        output_word = createWord("? ( add_sequence sequence add_sequence )")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = createWord("add_sequence sequence add_sequence")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = createWord("sequence")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = Word([])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+        '''
+
+        
+        input_word = createWord("S")
+        output_word = createWord("? ( sequence sequence sequence sequence sequence sequence sequence sequence )")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("sequence")
+        output_word = createWord("")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+        
+
+        return production_rule_list
+
+
+    def generateGrammarGuidedStructureGroupsOneSequence(self):
+
+        '''
+        Same as generateGrammarGuidedStructure, but with groups
+        Only actions and conditions in the same group are allowed within the same sequence subtree
+
+        This CFG results in the following guided (or forced) structure
+        ?
+        -> -> -> ...
+        ? A C
+        A C
+        '''
+
+        # Create empty production rule list
+        production_rule_list = []
+        # list_actions,list_conditions = getActionsConditions()
+        groups = getActionsConditionsGroups()
+        num_groups = len(groups)
+
+        '''
+        input_word = createWord("S")
+        output_word = createWord("? ( add_sequence sequence add_sequence )")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = createWord("add_sequence sequence add_sequence")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = createWord("sequence")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = Word([])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+        '''
+
+        input_word = createWord("S")
+        output_word = createWord("? ( sequence )")
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
@@ -1174,16 +1840,138 @@ class CFG():
 
             # Check if word in output_word_list already in child_words
             for output_word in output_word_list:
+
+                #####
+                # MOVED FILTER TO WITHIN applyProductionRule instead
+                #####
+
+                # Filter out any rubbish duplicate nodes
+                #output_word = filterDuplicates(output_word_before_filter)
+
                 # If output_word not in child_words:
                 duplicate_found = False
-                for word in child_words:
-                    if output_word.equal(word):
-                        duplicate_found = True
+
+                # Make sure this production doesn't go nowhere
+                # Only really relevant after adding the filter step above
+                #if output_word.equal(input_word):
+                #    duplicate_found = True
+
+                if not duplicate_found:
+                    for word in child_words:
+                        if output_word.equal(word):
+                            duplicate_found = True
+                            break
                 if not duplicate_found:        
                     child_words.append(output_word)
             
 
         return child_words
+
+    def applyAllProductionRulesBackwards(self, input_word):
+        '''
+        Return list of all child words of the input word
+        '''
+
+        # print("applyAllProductionRules")
+        # print("input word: ")
+        # input_word.printWord()
+
+        parent_words = []
+        for i in range(len(self.grammar)):
+            output_word_list = self.grammar[i].applyProductionRuleBackwards(input_word) 
+
+            # print("applying production rule: ")
+            # self.grammar[i].printProductionRule()
+
+            # print("generates words: ")
+            # for w in output_word_list:
+            #     w.printWord()
+
+            # Check if word in output_word_list already in child_words
+            for output_word in output_word_list:
+
+                # If output_word not in child_words:
+                duplicate_found = False
+
+                if not duplicate_found:
+                    for word in parent_words:
+                        if output_word.equal(word):
+                            duplicate_found = True
+                            break
+                if not duplicate_found:        
+                    parent_words.append(output_word)
+            
+
+        return parent_words
+
+    def derivePreviousWords(self, input_word, num_steps, ignore_words, max_ancestors):
+        '''
+        Apply production rules BACKWARDS
+        repeat this num_steps times
+        '''
+
+        parent_words_each_step = []
+        count_ancestors = 0
+
+        for step in xrange(num_steps):
+
+            if count_ancestors > max_ancestors:
+                break
+
+            # Get the set of child words at this step
+            if step == 0:
+                child_words = [input_word]
+            else:
+                child_words = parent_words_each_step[step-1]
+
+            if not child_words:
+                break
+
+            parent_words_each_step.append([])
+
+            # Apply production rules BACKWARDS to each child
+            for child_word in child_words:
+
+                if count_ancestors > max_ancestors:
+                    break
+
+                # Backward production rules
+                parent_words_list = self.applyAllProductionRulesBackwards(child_word)
+
+                # Ensure unique
+                for parent_word in parent_words_list:
+
+                    # If parent_word not in child_words:
+                    duplicate_found = False
+
+                    if parent_word.equal(input_word):
+                        duplicate_found = True
+
+                    if not duplicate_found:
+                        for prev_word in ignore_words:
+                            if parent_word.equal(prev_word):
+                                duplicate_found = True
+                                break
+
+                    if not duplicate_found:
+                        for prev_step in xrange(step-1):
+                            for prev_word in parent_words_each_step[prev_step]:
+                                if parent_word.equal(prev_word):
+                                    duplicate_found = True
+                                    break
+                    if not duplicate_found:        
+                        parent_words_each_step[step].append(parent_word)
+                        count_ancestors += 1
+
+            # If none, stop
+            if len(parent_words_each_step[step]) == 0:
+                break
+
+        # Concatenate the lists
+        parent_words_concat = []
+        for step in xrange(len(parent_words_each_step)):
+            parent_words_concat.extend(parent_words_each_step[step])
+        return parent_words_concat
 
 
 class BehaviorTreeNode:
