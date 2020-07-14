@@ -706,6 +706,88 @@ def extract_subtrees(word):
                 subtree_words.append(Word(subtree_word_list))
     return subtree_words
 
+class GeneticRule():
+    def __init__(self):
+        pass
+
+    # Copied from ProductionRule()
+    def equal(self, other_production_rule):
+        return self.input_word.equal(other_production_rule.input_word) and self.output_word.equal(other_production_rule.output_word)
+    
+    def findSubtree(self, start_word, input_word):
+        word_found = False
+        for i in range(start_word.lenWord() - self.input_word.lenWord() + 1):
+            flag = True
+            for j in range(self.input_word.lenWord()):
+                if not start_word.at(i+j).equal(self.input_word.at(j)):
+                    flag = False
+                    break
+            if flag:
+                word_found = True
+                start_index = i
+                end_index = i + self.input_word.lenWord() - 1
+                return start_index, end_index
+
+            return None
+
+    # Copied from ProductionRule()
+    def applyGeneticRule(self, start_word):
+
+        # return error if ever called from here
+        raise ValueError("Cannot apply rule with parent class")
+
+
+class CrossoverRule(GeneticRule):
+
+    def applyGeneticRule(self, start_word):
+
+        new_word_list = []
+
+        # Extract sub-trees as words from current BT word
+        subtree_words_list = extract_subtrees(start_word)
+
+        # Remove subtrees from starting BT, start_word
+        first_start_index, first_end_index = findSubtree(start_word, subtree_words_list[0])
+        last_start_index, last_end_index = findSubtree(start_word, subtree_words_list[len(subtree_words_list)-1:])
+        pre_subtree_word_list = start_word.list[:first_start_index]
+        post_subtree_word_list = start_word.list[last_end_index:]
+        print(pre_subtree_word,post_subtree_word)
+
+        ## Iterate through all pairs of two subtrees
+        for i in range(len(subtree_words_list)):
+            for j in range(i+1,len(subtree_words_list)+1):
+
+                # Reset subtree order
+                subtree_order = [k for k in range(len(subtree_words_list))]
+
+                # Update subtree order via swapping of given pair
+                subtree_order[i], subtree_order[j] = subtree_order[j], subtree_order[i]
+                 
+                # Add subtrees in new order to create child tree from crossover
+                new_char_list = []
+
+                # Add original root structure
+                for char in pre_subtree_word_list:
+                    new_char_list.append(char)
+
+                # Add ordered subtrees 
+                for i in subtree_order:
+                    for char in subtree_words_list[i]:
+                        new_char_list.append(char)
+
+                # Add original conclusive characters, relating to root
+                for char in post_subtree_word_list:
+                    new_char_list.append(char)
+
+                new_word = Word(new_char_list)
+
+                # Add new word to the population
+                new_word_list.append(new_word)
+
+        return new_word_list
+
+
+       
 
 class CFG():
     def __init__(self):
@@ -713,6 +795,8 @@ class CFG():
         # Generate a grammar
         self.grammar = self.generateGrammar()
         self.printAllProdRules()
+
+        self.genetic_grammar = self.generateGeneticGrammar()
 
         # Print word
         #self.printWord()
@@ -740,6 +824,14 @@ class CFG():
     def generateGrammar(self): 
         
         return self.generateGrammarGuidedStructureGroups()
+
+    def generateGeneticGrammar(self):
+
+        rules = []
+
+        rules.append(CrossoverRule())
+
+        return rules
 
     def generateGrammar_treeTest(self):
 
@@ -1863,7 +1955,44 @@ class CFG():
                             break
                 if not duplicate_found:        
                     child_words.append(output_word)
-            
+
+        # Now do the same for all genetic rules
+        for i in range(len(self.genetic_grammar)):
+            output_word_list = self.genetic_grammar[i].applyGeneticRule(input_word) 
+
+            # print("applying production rule: ")
+            # self.grammar[i].printProductionRule()
+
+            # print("generates words: ")
+            # for w in output_word_list:
+            #     w.printWord()
+
+            # Check if word in output_word_list already in child_words
+            for output_word in output_word_list:
+
+                #####
+                # MOVED FILTER TO WITHIN applyProductionRule instead
+                #####
+
+                # Filter out any rubbish duplicate nodes
+                #output_word = filterDuplicates(output_word_before_filter)
+
+                # If output_word not in child_words:
+                duplicate_found = False
+
+                # Make sure this production doesn't go nowhere
+                # Only really relevant after adding the filter step above
+                #if output_word.equal(input_word):
+                #    duplicate_found = True
+
+                if not duplicate_found:
+                    for word in child_words:
+                        if output_word.equal(word):
+                            duplicate_found = True
+                            break
+                if not duplicate_found:        
+                    child_words.append(output_word)            
+
 
         return child_words
 
