@@ -748,54 +748,57 @@ class CrossoverRule(GeneticRule):
 
         # Extract sub-trees as words from current BT word
         subtree_words_list = extract_subtrees(start_word)
+        #print(len(subtree_words_list),'len')
 
-        # Remove subtrees from starting BT, start_word
-        first_start_index, first_end_index = self.findSubtree(start_word, subtree_words_list[0])
-        last_start_index, last_end_index = self.findSubtree(start_word, subtree_words_list[-1])
-        pre_subtree_word_list = start_word.list[:first_start_index]
-        post_subtree_word_list = start_word.list[last_end_index:]
-        print("pre,post",pre_subtree_word_list,post_subtree_word_list)
+        if len(subtree_words_list) > 0:
 
-        ## Iterate through all pairs of two subtrees
-        for i in range(len(subtree_words_list)-1):
-            #print("i",i)
-            test_i = i
-            for j in range(i+1,len(subtree_words_list)):
+            # Remove subtrees from starting BT, start_word
+            first_start_index, first_end_index = self.findSubtree(start_word, subtree_words_list[0])
+            last_start_index, last_end_index = self.findSubtree(start_word, subtree_words_list[-1])
+            pre_subtree_char_list = start_word.list[:first_start_index]
+            post_subtree_char_list = start_word.list[last_end_index+1:]
+            ##print("pre,post",pre_subtree_char_list,post_subtree_char_list)
+
+            ##print("start_word:")
+            start_word.printWord()
+            ##print("new words:")
+            ## Iterate through all pairs of two subtrees
+            for i in range(len(subtree_words_list)-1):
                 #print("i",i)
-                #print(test_i)
-                #print('j',j)
-                print('i,j',test_i,j)
+                test_i = i
+                for j in range(i+1,len(subtree_words_list)):
 
-                # Reset subtree order
-                subtree_order = [k for k in range(len(subtree_words_list))]
-                print(subtree_order)
-                #print(i,j)
-                # Update subtree order via swapping of given pair
-                subtree_order[test_i], subtree_order[j] = subtree_order[j], subtree_order[test_i]
-                print(subtree_order)
-                 
-                # Add subtrees in new order to create child tree from crossover
-                new_char_list = []
+                    # Reset subtree order
+                    subtree_order = [k for k in range(len(subtree_words_list))]
+                    #print(subtree_order)
+                    #print(i,j)
+                    # Update subtree order via swapping of given pair
+                    subtree_order[test_i], subtree_order[j] = subtree_order[j], subtree_order[test_i]
+                    #print(subtree_order)
+                     
+                    # Add subtrees in new order to create child tree from crossover
+                    new_char_list = []
 
-                # Add original root structure
-                for char in pre_subtree_word_list:
-                    new_char_list.append(char)
-
-                # Add ordered subtrees 
-                for i in subtree_order:
-                    for char in subtree_words_list[i].list:
+                    # Add original root structure
+                    for char in pre_subtree_char_list:
                         new_char_list.append(char)
 
-                # Add original conclusive characters, relating to root
-                for char in post_subtree_word_list:
-                    new_char_list.append(char)
+                    # Add ordered subtrees 
+                    for i in subtree_order:
+                        for char in subtree_words_list[i].list:
+                            new_char_list.append(char)
 
-                for char in new_char_list:
-                    print(char.label)
-                new_word = Word(new_char_list)
+                    # Add original conclusive characters, relating to root
+                    for char in post_subtree_char_list:
+                        new_char_list.append(char)
 
-                # Add new word to the population
-                new_word_list.append(new_word)
+                    #for char in new_char_list:
+                        #print(char.label)
+                    new_word = Word(new_char_list)
+                    ##new_word.printWord()
+
+                    # Add new word to the population
+                    new_word_list.append(new_word)
 
         return new_word_list
 
@@ -2173,8 +2176,8 @@ if __name__ == "__main__":
             print(char.label)
     '''
 
-    crossover = CrossoverRule()
-    crossover.applyGeneticRule(start_word)
+    ##crossover = CrossoverRule()
+    ##crossover.applyGeneticRule(start_word)
 
     #rospy.init_node('behavior_tree_node')
     #list_actions,list_conditions = getActionsConditions()
