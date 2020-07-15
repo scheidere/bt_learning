@@ -716,9 +716,9 @@ class GeneticRule():
     
     def findSubtree(self, start_word, input_word):
         word_found = False
-        print("in findSubtree")
-        print(start_word, start_word.lenWord())
-        print(input_word, input_word.lenWord())
+        #print("in findSubtree")
+        #print(start_word, start_word.lenWord())
+        #print(input_word, input_word.lenWord())
         for i in range(start_word.lenWord() - input_word.lenWord() + 1):
             flag = True
             for j in range(input_word.lenWord()):
@@ -750,17 +750,21 @@ class CrossoverRule(GeneticRule):
         subtree_words_list = extract_subtrees(start_word)
         #print(len(subtree_words_list),'len')
 
-        if len(subtree_words_list) > 0:
+        if start_word.list[-1].equal(Character("*")) and len(subtree_words_list) > 0:
+
+            # Check that crossover has not been applied yet (i.e. star still at end)
+            #if start_word.list[-1].equal(Character("*")):
+            ###start_word.printWord()
 
             # Remove subtrees from starting BT, start_word
             first_start_index, first_end_index = self.findSubtree(start_word, subtree_words_list[0])
             last_start_index, last_end_index = self.findSubtree(start_word, subtree_words_list[-1])
             pre_subtree_char_list = start_word.list[:first_start_index]
-            post_subtree_char_list = start_word.list[last_end_index+1:]
+            post_subtree_char_list = start_word.list[last_end_index+1:-1] # End of tree minus star
             ##print("pre,post",pre_subtree_char_list,post_subtree_char_list)
 
             ##print("start_word:")
-            start_word.printWord()
+            ##start_word.printWord()
             ##print("new words:")
             ## Iterate through all pairs of two subtrees
             for i in range(len(subtree_words_list)-1):
@@ -795,7 +799,7 @@ class CrossoverRule(GeneticRule):
                     #for char in new_char_list:
                         #print(char.label)
                     new_word = Word(new_char_list)
-                    ##new_word.printWord()
+                    ###new_word.printWord()
 
                     # Add new word to the population
                     new_word_list.append(new_word)
@@ -1425,9 +1429,16 @@ class CFG():
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
         '''
-
+        '''
         input_word = createWord("S")
         output_word = createWord("? ( sequence add_sequence )")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+        '''
+
+        # Star denotes crossover has not yet been applied
+        input_word = createWord("S")
+        output_word = createWord("? ( sequence add_sequence ) *")
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
@@ -2166,18 +2177,36 @@ if __name__ == "__main__":
 
     #cfg.printAllTerminalWords(7)
 
-    start_word = createWord('? ( -> ( (mine_found) ? ( [disarm] ) ) -> ( [shortest_path] ) -> ( [random_walk] ) )')
-    
+    start_word = createWord('? ( -> ( (mine_found) ? ( [disarm] ) ) -> ( [shortest_path] ) -> ( [random_walk] ) ) *')
+    #test_char = Character("*")
+    #print(test_char.label)
+
+    #test_word = createWord('? ( (mine_found) ) *')
+    #print(test_word.list[-1])
+    #test_word.list[-1].printLabel()
     '''
     subtrees = extract_subtrees(start_word)
+    for tree in subtrees:
+        tree.printWord()
+    
     for tree in subtrees:
         print(tree)
         for char in tree.list:
             print(char.label)
     '''
+    #print(subtrees[-1].list[-1].label)
+    #print('test')
+    #bla = subtrees[-1].list[-1]
+    #bla.printLabel()
+    #print('test')
+    #start_word.list[-1].printLabel()
+    #if start_word.list[-1].equal(Character("*")):
+    #    print("win")
 
-    ##crossover = CrossoverRule()
-    ##crossover.applyGeneticRule(start_word)
+    
+
+    crossover = CrossoverRule()
+    crossover.applyGeneticRule(start_word)
 
     #rospy.init_node('behavior_tree_node')
     #list_actions,list_conditions = getActionsConditions()
