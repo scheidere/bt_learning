@@ -734,7 +734,7 @@ class GeneticRule():
         return None
 
     # Copied from ProductionRule()
-    def applyGeneticRule(self, start_word):
+    def applyProductionRule(self, start_word): #changed name from applyGeneticRule (made rollout.py easier)
 
         # return error if ever called from here
         raise ValueError("Cannot apply rule with parent class")
@@ -742,7 +742,7 @@ class GeneticRule():
 
 class CrossoverRule(GeneticRule):
 
-    def applyGeneticRule(self, start_word):
+    def applyProductionRule(self, start_word): #changed name from applyGeneticRule
 
         new_word_list = []
 
@@ -750,11 +750,11 @@ class CrossoverRule(GeneticRule):
         subtree_words_list = extract_subtrees(start_word)
         #print(len(subtree_words_list),'len')
 
-        if start_word.list[-1].equal(Character("*")) and len(subtree_words_list) > 0:
+        if start_word.list[-1].equal(Character("*")) and len(subtree_words_list) > 1:
 
             # Check that crossover has not been applied yet (i.e. star still at end)
             #if start_word.list[-1].equal(Character("*")):
-            ###start_word.printWord()
+            #start_word.printWord()
 
             # Remove subtrees from starting BT, start_word
             first_start_index, first_end_index = self.findSubtree(start_word, subtree_words_list[0])
@@ -803,6 +803,16 @@ class CrossoverRule(GeneticRule):
 
                     # Add new word to the population
                     new_word_list.append(new_word)
+
+        if start_word.list[-1].equal(Character("*")):
+            new_char_list = []
+            # Add non-crossed-over word without star
+            for char in start_word.list[:-1]:
+                new_char_list.append(char)
+            new_word_list.append(Word(new_char_list))
+
+        #for word in new_word_list:
+        #    word.printWord()
 
         return new_word_list
 
@@ -1985,7 +1995,7 @@ class CFG():
 
         # Now do the same for all genetic rules
         for i in range(len(self.genetic_grammar)):
-            output_word_list = self.genetic_grammar[i].applyGeneticRule(input_word) 
+            output_word_list = self.genetic_grammar[i].applyProductionRule(input_word) #changed name from applyGeneticRule
 
             # print("applying production rule: ")
             # self.grammar[i].printProductionRule()
@@ -2205,8 +2215,8 @@ if __name__ == "__main__":
 
     
 
-    crossover = CrossoverRule()
-    crossover.applyGeneticRule(start_word)
+    ##crossover = CrossoverRule()
+    ##crossover.applyProductionRule(start_word)
 
     #rospy.init_node('behavior_tree_node')
     #list_actions,list_conditions = getActionsConditions()
