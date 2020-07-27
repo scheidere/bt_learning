@@ -71,15 +71,18 @@ def applyRandomProductionRule(partial_word,cfg):
     '''
 
     # Incorporate genetic rules
-    for i in range(len(cfg.grammar) + len(cfg.genetic_grammar)):
-        rule = np.random.choice(cfg.grammar + cfg.genetic_grammar)
-        output_word_list = rule.applyProductionRule(partial_word) #applyGeneticRule now also called applyProductionRule for simplicity
+
+    # Randomize order of combined list
+    combined_grammar = cfg.grammar + cfg.genetic_grammar
+    random_order = np.random.permutation(len(combined_grammar))
+
+    for i in random_order:
+        output_word_list = combined_grammar[i].applyProductionRule(partial_word) #applyGeneticRule now also called applyProductionRule for simplicity
 
         if len(output_word_list) != 0: 
-            test = output_word_list[random.randint(0,len(output_word_list)-1)]
-            test.printWord()
+            #test = output_word_list[random.randint(0,len(output_word_list)-1)]
+            #test.printWord()
             return output_word_list[random.randint(0,len(output_word_list)-1)]
-
 
     return None
 
@@ -89,7 +92,8 @@ if __name__ == "__main__":
 
     cfg = CFG()
 
-    partial_word = createWord('? ( -> ( (mine_found) ? ( [disarm] ) ) -> ( [shortest_path] ) -> ( [random_walk] ) add_sequence ) *')
+    #partial_word = createWord('? ( -> ( (mine_found) ? ( [disarm] ) ) -> ( [shortest_path] ) -> ( [random_walk] ) add_sequence ) *')
+    partial_word = createWord('?  (  ->  (  ?  (  [resurface]  )  )  ->  (  ?  (  (likely_target_found)  [go_to_likely_target]  )  ?  (  CorD1  CorD1  )  )  ) ')
     partial_word.printWord()
 
-    applyRandomProductionRule(partial_word, cfg)
+    applyRandomProductionRule(partial_word, cfg).printWord()

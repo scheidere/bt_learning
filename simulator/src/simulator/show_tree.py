@@ -99,7 +99,7 @@ if __name__ == '__main__':
         	Character('[random_walk]'),Character(')'),\
         	Character(')')]
         '''
-        '''
+        
         # updated multi-target manual tree
         character_list = [Character('?'),Character('('),\
             Character('->'),Character('('),\
@@ -119,7 +119,7 @@ if __name__ == '__main__':
             Character('(likely_target_found)'),Character('[go_to_likely_target]'),Character(')'),\
             Character('[random_walk]'),\
             Character(')')]
-        '''
+        
         '''
         character_list = [Character('?'),Character('('),\
             Character('->'),Character('('),\
@@ -141,13 +141,16 @@ if __name__ == '__main__':
             Character('[shortest_path]'),Character(')'),\
             Character('[go_to_comms]'),Character(')')]
 
-
-        cfg_word = Word(character_list)
         '''
+        #cfg_word = Word(character_list)
+        
         # cfg_word = createWord('? ( ? ( -> ( (mine_found) [disarm] ) [shortest_path] ) [go_to_comms] )')
 
-        cfg_word = createWord('?  (  ->  (  ?  (  <!>  (  (benign_object_found)  )  (benign_object_found)  <!>  (  (carrying_benign)  )  [take_to_drop_off]  )  [pick_up]  )  ->  (  (mine_found)  ?  (  (is_armed)  [disarm]  )  )  )')
-
+        #cfg_word = createWord('?  (  ->  (  ?  (  <!>  (  (benign_object_found)  )  (benign_object_found)  <!>  (  (carrying_benign)  )  [take_to_drop_off]  )  [pick_up]  )  ->  (  (mine_found)  ?  (  (is_armed)  [disarm]  )  )  )')
+        
+        # Manual tree
+        #cfg_word = createWord('? ( -> ( (target_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( ? ( <!> ( (carrying_object) ) [take_to_drop_off] ) (object_found) [pick_up] ) -> ( (likely_target_found) [go_to_likely_target] ) -> ( [random_walk] ) )')
+        
         cfg_word.printWord()
         # cfg_word_filter = filterDuplicates(cfg_word)
         # cfg_word_filter.printWord()
@@ -156,7 +159,7 @@ if __name__ == '__main__':
         # bt_root, bt = cfg_word_filter.createBT()
 
         includes = [True, True, True, True, True, True, True, True, True, True,\
-            True, True, True, True, True]
+            True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True]
 
         new_word = exportBT(bt, includes)
 

@@ -134,6 +134,7 @@ class World():
             else:
                 self.prior[i] = self.prob_of_other_classes
 
+
         self.randomize_targets()  
 
         # Define single random drop-off location (on surface) per world
@@ -217,10 +218,8 @@ class World():
         self.classes_y = np.array([]) # 0 - not target, 1 - wildlife/report, 2 - mine/disarm, 3 - benign/move
         for i in range(self.num_nodes):
             self.classes_y = np.append(self.classes_y,np.random.choice(a= len(self.prior),p = self.prior))
-
         #print("classes_y",self.classes_y.shape) 
-
-        
+        #self.original_classes = self.classes_y
 
     def disarm_target(self, vertex_idx, scorer):
         if self.classes_y[vertex_idx] == World.CLASS_MINE:

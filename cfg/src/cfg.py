@@ -232,7 +232,7 @@ def exportBT(bt, include_nodes=None):
     char_list = []
 
     prev_level = 0
-
+    #print("initial: ", len(include_nodes))
     num_include_nodes = 0
     for i in include_nodes:
         if i:
@@ -251,7 +251,11 @@ def exportBT(bt, include_nodes=None):
         if include_nodes == None:
             include_node = True
         else:
+            #print("include_nodes: ", include_nodes)
+            #print("current node: ", current_node)
             node_index = bt.nodes.index(current_node)
+            #print("node_index: ", node_index)
+            #print(len(include_nodes))
             include_node = include_nodes[node_index]
 
         if include_node:
@@ -1638,7 +1642,7 @@ class CFG():
 
         
         input_word = createWord("S")
-        output_word = createWord("? ( sequence sequence sequence sequence sequence sequence sequence sequence )")
+        output_word = createWord("? ( sequence sequence sequence sequence sequence sequence sequence sequence ) *")
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 

@@ -25,7 +25,7 @@ def mcts_restarts(cfg, budget, max_mcts_iterations, exploration_exploitation_par
     # cfg.grammar = cfg.generateGrammarGuidedStructureGroupsOneSequence()
 
     cfg_shortcuts_only = CFG()
-    #cfg_shortcuts_only.grammar = cfg_shortcuts_only.generateGrammarShortcutsOnly()
+    cfg_shortcuts_only.grammar = cfg_shortcuts_only.generateGrammarShortcutsOnly()
     # Can alternate with genetic grammar here, etc, etc
 
     # Do the rounds

@@ -34,6 +34,8 @@ from cfg import CFG, Word, Character, createWord
 
 import numpy as np
 
+import time
+
 
 
 class State():
@@ -458,6 +460,9 @@ class Robot():
         while distance_to_travel > 0:
             self.bt_interface.tick_bt()
 
+            active_actions = self.bt_interface.getActiveActions()
+            ###print("+++++++++++++++++++++++++active_actions", active_actions)
+
             # Stop episode if battery is dead
             # Battery_low criteria (10 without resurface - dead; 5+ after Full - low battery)
             if self.state.battery_dead_check(self.config):
@@ -472,11 +477,13 @@ class Robot():
             
             # Plan
             # print("plan")
-            action_sequence = None          
+            action_sequence = None  
+            ###print("self.state.at_vertex() 1",self.state.at_vertex())        
             if self.state.at_vertex():
                 action_sequence = self.plan()
-                if action_sequence == None: #goal vertex is None, so path is empty
-                    break
+                #if action_sequence == None: #goal vertex is None, so path is empty
+                    #print("action sequence is None about to break")
+                    #break
 
             # Move
             # print("move")
@@ -502,6 +509,7 @@ class Robot():
                 # default is that robot does not know answer
                 #robot_has_ans = False # maybe relates to BT, BT can learn this (report action node)
 
+            ###print("self.state.at_vertex() 2",self.state.at_vertex())
             if self.state.at_vertex():
                 # Choose vertex idx to report as belief of target location based on prob dist
                 #self.robot_belief_idx = self.target_belief.generateRobotBeliefIdx() # fix this function, then change name of it and variable
@@ -518,6 +526,7 @@ class Robot():
                 ## Before report was an action ## response = self.basestation_scorer.submit_target(robot_belief_idx, x, is_at_surface, is_in_comms, num_iterations)
                 #response = self.report_target_belief(self.nearest_wildlife_idx, World.CLASS_WILDLIFE, is_at_surface, is_in_comms, num_iterations)
                 response = self.report_target_belief(self.nearest_wildlife_idx, is_at_surface, is_in_comms) #report and associated reward, if any, done here # Check with Graeme DONE
+                print("report should happen here")
 
                 # Update robot belief based on reporting reponse
                 if response == self.basestation_scorer.RESPONSE_CORRECT:
@@ -645,7 +654,10 @@ class Robot():
     def report_target_belief(self,target_belief_idx, is_at_surface, is_in_comms):
         active_actions = self.bt_interface.getActiveActions()
         #print(active_actions)
-
+        #print("check if report is active action")
+        print("Is report in active_actions? ", 'report' in active_actions)
+        print("target_belief_idx: ", target_belief_idx)
+        #print("active_actions", active_actions)
         if 'report' in active_actions and target_belief_idx is not None:
             #response = self.basestation_scorer.submit_target(robot_belief_idx, x, is_at_surface, is_in_comms, num_iterations)
             #response = self.basestation_scorer.submit_target(robot_belief_idx, robot_belief_y, is_at_surface, is_in_comms, num_iterations)
@@ -1001,11 +1013,12 @@ class RobotController():
                 break
 
             # Exit early if the robot hasn't moved in a while
-            if no_move and num_iterations >= 3:
+            if no_move and num_iterations >= 10:
                 no_move_count += 1
-                # print("no_move_count", no_move_count)
-                if no_move_count >= 3:
+                print("no_move_count", no_move_count)
+                if no_move_count >= 10: 
                     print("exiting due to robot not moving")
+                    #time.sleep(30)
                     break
             else:
                 no_move_count = 0

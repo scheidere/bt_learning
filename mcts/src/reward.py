@@ -6,8 +6,8 @@ Jan 2020
 '''
 
 from action import Action #, printActionSequence
-from cfg import Word, Character
-# from run_simulator import UnderwaterSimulator
+from cfg import Word, Character, createWord
+from run_simulator import UnderwaterSimulator
 
 
 '''
@@ -199,12 +199,13 @@ def reward(word, max_iterations, underwater_simulator): # multi-target case
     return is_valid, reward, best_reward, active_words
 
 
-'''
+
 if __name__ == "__main__":
 
     word = Word([Character("->"),Character("("),Character("[]"),Character("?"),Character("("),Character("[]"),Character("()"),Character(")"),Character(")")])
+    #word = createWord('? ( -> ( (target_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( ? ( <!> ( (carrying_object) ) [take_to_drop_off] ) (object_found) [pick_up] ) -> ( (likely_target_found) [go_to_likely_target] ) -> ( [random_walk] ) )')
 
-    reward(word)
+    underwater_simulator = UnderwaterSimulator()
+    is_valid, rollout_reward, best_rollout_reward, rollout_active_words = reward(word, 200, underwater_simulator)
 
-    print(reward(word))
-'''
+    print('is_valid, rollout_reward, best_rollout_reward, rollout_active_words',is_valid, rollout_reward, best_rollout_reward, rollout_active_words)

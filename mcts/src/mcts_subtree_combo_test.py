@@ -1,33 +1,50 @@
 #!/usr/bin/env python
-'''
-Basic MCTS implementation
-Graeme Best
-Oregon State University
-Jan 2020
-'''
+# Calls mcts for one round, given the even round subtree-combining production rules
 
-from mcts import mcts
-from mcts_restarts import mcts_restarts
+from mcts import *
+import copy
+
 from action import Action, printActionSequence
-from tree_node import countNodes
-# from plot_tree import plotTree
 from plot_cfg_tree import plot_cfg_tree
 from plot_cfg_dag import plot_cfg_dag
 import time, sys
-from cfg import Word, Character, CFG
+from cfg import Word, Character, CFG, createWord
 
 import rospy
 import rospkg
 import yaml
+
+from tree_node import countNodes
 
 import cProfile
 import pstats
 
 from run_simulator import UnderwaterSimulator
 
+def mcts_subtree_combo_round(cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config):
+    
+    iterations_per_round = 1000
+
+    manual_subtree_report = createWord('-> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] )')
+    manual_subtree_disarm = createWord('-> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) )')
+    manual_subtree_pickplace = createWord('-> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_found) [pick_up] )')
+    manual_subtree_likelytarget = createWord('-> ( (likely_target_found) [go_to_likely_target] )')
+    manual_subtree_randomwalk = createWord('-> ( [random_walk] )')
+    shortcut_words = [manual_subtree_report, manual_subtree_disarm, manual_subtree_pickplace, manual_subtree_likelytarget, manual_subtree_randomwalk]
+
+    cfg.grammar = cfg.generateGrammarShortcutsOnly()
+
+    [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict] = mcts( cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config, shortcut_words)
+
+    # Print all shortcut words
+    print("All shortcut words:")
+    for word in shortcut_words:
+        word.printWord()
+
+    return [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict]
+
 
 def run():
-
     rospy.init_node('mcts')
 
     # Create CFG object
@@ -58,7 +75,8 @@ def run():
     max_sim_iterations = config["max_sim_iterations"]
     use_dag = config["use_dag"]
     
-    [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict] = mcts_restarts( cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config )    
+    [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict] = mcts_subtree_combo_round( cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config )
+    
 
     # Display the tree
     ###printActionSequence(solution) #this is not set up for words instead of sequences for actions
@@ -112,14 +130,6 @@ def run():
                 sys.exit()
     
 
-
-def run_profiler():
-    cProfile.run('run()', 'profile_stats')
-    p = pstats.Stats('profile_stats')
-    p.sort_stats("cumulative").print_stats(50)
-
 if __name__ == "__main__":
     run()
-    # run_profiler()
-    
-    
+

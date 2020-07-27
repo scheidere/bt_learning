@@ -13,12 +13,13 @@ import rospkg
 import yaml
 from std_msgs.msg import String
 
-from cfg import Word, Character
+from cfg import Word, Character, createWord
 from simulator.robot import Robot, RobotController, TargetBelief
 from simulator.world import World
 from simulator.sensor_model import SensorModel
 
 import random
+import copy
 
 
 class UnderwaterSimulator():
@@ -34,6 +35,7 @@ class UnderwaterSimulator():
             self.config = yaml.safe_load(stream)
         self.robot_id = rospy.get_param('~robot_id')
         self.num_robots = rospy.get_param('~num_robots')
+        self.randomize_targets = self.config['randomize_targets']
         # seed = rospy.get_param('~seed')
         self.seed = 0 #random.randint(0,20) # random environment
 
@@ -57,8 +59,11 @@ class UnderwaterSimulator():
             word = Word(character_list)
             '''
 
+            print('classes_y',self.world.classes_y)
+
             # Re-randomize the worlds
-            self.update_worlds()
+            if self.randomize_targets:
+                self.update_worlds()
 
             # Create BT object from terminal BT CFG
             bt_root, bt = word.createBT()
@@ -87,15 +92,39 @@ class UnderwaterSimulator():
 
 if __name__ == "__main__":
 
+
+    # Run with roslaunch mcts sim_test.launch
+
     rospy.init_node('underwater_simulator')
 
+    '''
     character_list = [Character('?'),Character('('), Character('->'),Character('('),\
     Character('(target_found_90)'),Character('?'),Character('('),Character('(in_comms)'),\
     Character('[go_to_comms]'),Character(')'),Character(')'),Character('[shortest_path]'),Character(')')]
     word = Word(character_list)
-    
+    '''
+
+    # Below used to test and compare different trees on the same sim map/set of targets
+
+    word_manual = createWord('? ( -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_object_found) [pick_up] ) -> ( (likely_target_found) [go_to_likely_target] ) -> ( [random_walk] ) )')
+    word_no_likelytarget = createWord('? ( -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_object_found) [pick_up] ) -> ( [random_walk] ) )')
+    word_even_test = createWord('? ( -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_object_found) [pick_up] )  -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( [random_walk] ) )')
+    word_report = createWord('? ( -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( [random_walk] ) )')
+    word_pickdrop = createWord('? ( -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_object_found) [pick_up] ) -> ( [random_walk] ) )')
     sim = UnderwaterSimulator()
+    original_target_locations = copy.copy(sim.world.classes_y)
 
-    reward = sim.generateReward(word, 1000)
-
-    print(reward)
+    score, target_reported, belief_distance, active_word = sim.generateReward(word_manual, 5000)
+    print('1',sim.world.classes_y)
+    '''
+    print(original_target_locations == sim.world.classes_y)
+    sim.world.classes_y = copy.copy(original_target_locations)
+    score2, target_reported2, belief_distance2, active_word2 = sim.generateReward(word_report, 2000)
+    print('orig', original_target_locations)
+    print('2',sim.world.classes_y)
+    print(original_target_locations == sim.world.classes_y)
+    '''
+    print('manual with target_belief:')
+    print(score, target_reported, belief_distance, active_word)
+    #print('manual without target_belief')
+    #print(score2, target_reported2, belief_distance2, active_word2)
