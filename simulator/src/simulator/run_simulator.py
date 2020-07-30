@@ -14,9 +14,9 @@ import yaml
 from std_msgs.msg import String
 
 from cfg import Word, Character, createWord
-from simulator.robot import Robot, RobotController, TargetBelief
-from simulator.world import World
-from simulator.sensor_model import SensorModel
+from robot import Robot, RobotController, TargetBelief
+from world import World
+from sensor_model import SensorModel
 
 import random
 import copy
@@ -59,7 +59,7 @@ class UnderwaterSimulator():
             word = Word(character_list)
             '''
 
-            print('classes_y',self.world.classes_y)
+            #print('classes_y',self.world.classes_y)
 
             # Re-randomize the worlds
             if self.randomize_targets:
@@ -70,7 +70,7 @@ class UnderwaterSimulator():
 
             print("run_simulator")
             word.printWord()
-            print("len(bt.nodes)", len(bt.nodes))
+            #print("len(bt.nodes)", len(bt.nodes))
 
             robot = Robot(self.config, self.robot_id, self.num_robots, self.seed, bt, max_iterations, self.world)
             # cProfile.run('RobotController(config, robot)')

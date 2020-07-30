@@ -526,7 +526,7 @@ class Robot():
                 ## Before report was an action ## response = self.basestation_scorer.submit_target(robot_belief_idx, x, is_at_surface, is_in_comms, num_iterations)
                 #response = self.report_target_belief(self.nearest_wildlife_idx, World.CLASS_WILDLIFE, is_at_surface, is_in_comms, num_iterations)
                 response = self.report_target_belief(self.nearest_wildlife_idx, is_at_surface, is_in_comms) #report and associated reward, if any, done here # Check with Graeme DONE
-                print("report should happen here")
+                #print("report should happen here")
 
                 # Update robot belief based on reporting reponse
                 if response == self.basestation_scorer.RESPONSE_CORRECT:
@@ -655,14 +655,14 @@ class Robot():
         active_actions = self.bt_interface.getActiveActions()
         #print(active_actions)
         #print("check if report is active action")
-        print("Is report in active_actions? ", 'report' in active_actions)
-        print("target_belief_idx: ", target_belief_idx)
+        #print("Is report in active_actions? ", 'report' in active_actions)
+        #print("target_belief_idx: ", target_belief_idx)
         #print("active_actions", active_actions)
         if 'report' in active_actions and target_belief_idx is not None:
             #response = self.basestation_scorer.submit_target(robot_belief_idx, x, is_at_surface, is_in_comms, num_iterations)
             #response = self.basestation_scorer.submit_target(robot_belief_idx, robot_belief_y, is_at_surface, is_in_comms, num_iterations)
             #if response != self.basestation_scorer.RESPONSE_NONE:
-            print('report is active action')
+            #print('report is active action')
             self.has_reported = True
             #return response
             response = self.known_world.report_target(target_belief_idx, self.basestation_scorer, is_at_surface, is_in_comms)
@@ -1015,7 +1015,7 @@ class RobotController():
             # Exit early if the robot hasn't moved in a while
             if no_move and num_iterations >= 10:
                 no_move_count += 1
-                print("no_move_count", no_move_count)
+                #print("no_move_count", no_move_count)
                 if no_move_count >= 10: 
                     print("exiting due to robot not moving")
                     #time.sleep(30)

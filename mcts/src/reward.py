@@ -7,7 +7,7 @@ Jan 2020
 
 from action import Action #, printActionSequence
 from cfg import Word, Character, createWord
-from run_simulator import UnderwaterSimulator
+from simulator.run_simulator import UnderwaterSimulator
 
 
 '''

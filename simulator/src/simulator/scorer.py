@@ -39,13 +39,13 @@ class Scorer():
         It assumes this reward should happen, i.e. robot has completed action successfully
         It also updates a tracker so every target is only rewarded for each action once
         '''
-        print("getting action reward if not already rewarded")
-        print("class", self.world.classes_y[vertex_idx])
-        print("Already rewarded: ", self.action_rewarded_tracker[vertex_idx])
+        #print("getting action reward if not already rewarded")
+        #print("class", self.world.classes_y[vertex_idx])
+        #print("Already rewarded: ", self.action_rewarded_tracker[vertex_idx])
         # Check if vertex has been rewarded yet
         if not self.action_rewarded_tracker[vertex_idx]:
             # If not, process reward and update tracker
-            print("In reward loop")
+            #print("In reward loop")
             if y == World.CLASS_WILDLIFE:
                 self.score += 3 #4
                 print('wildlife reported correctly, +3; at vertex ' + str(vertex_idx))
