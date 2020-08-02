@@ -111,10 +111,14 @@ if __name__ == "__main__":
     word_even_test = createWord('? ( -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_object_found) [pick_up] )  -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( [random_walk] ) )')
     word_report = createWord('? ( -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( [random_walk] ) )')
     word_pickdrop = createWord('? ( -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_object_found) [pick_up] ) -> ( [random_walk] ) )')
+    word_disarm_random = createWord('? ( -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( [random_walk] ) )')
+
+    word = createWord('?  (  ->  (  [random_walk]  )  ->  (  (wildlife_found)  ?  (  (in_comms)  [go_to_comms]  )  [report]  )  ->  (  (likely_target_found)  [go_to_likely_target]  )  ->  (  ?  (  <!>  (  (carrying_benign)  )  [take_to_drop_off]  )  (benign_found)  [pick_up]  )  ) ')
+
     sim = UnderwaterSimulator()
     original_target_locations = copy.copy(sim.world.classes_y)
 
-    score, target_reported, belief_distance, active_word = sim.generateReward(word_manual, 200)
+    score, target_reported, belief_distance, active_word = sim.generateReward(word, 200)
     print('1',sim.world.classes_y)
     '''
     print(original_target_locations == sim.world.classes_y)

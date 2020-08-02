@@ -14,6 +14,10 @@ import rospy
 
 import sys
 
+import matplotlib.pyplot as plt
+
+import time
+
 class SimulatedAnnealing():
     def __init__(self, initial_state, initial_temperature, k_max):
         self.initial_state = initial_state
@@ -22,7 +26,10 @@ class SimulatedAnnealing():
         self.initial_temperature = initial_temperature
         self.k_max = k_max
 
-        self.tiny_num = 0.001
+        self.best_state = initial_state #initially
+        self.best_score = -self.energy(self.best_state)
+        self.probabilities = [] #for plotting
+        self.iterations = [] #for plotting
 
     def temperature(self, k): #needs to take in (k-1)/k_max
         # temp should start at max t and end at 0
@@ -35,7 +42,7 @@ class SimulatedAnnealing():
             step = (float(k) + 1.0)/self.k_max
             #if step == 0: #kept getting an error b/c small numbers round to 0
             #    step = self.tiny_num
-            self.T -= step
+            self.T = -self.initial_temperature*step + self.initial_temperature
         return self.T
 
     def energy(self, state):
@@ -53,6 +60,12 @@ class SimulatedAnnealing():
         sim = UnderwaterSimulator()
         score, target_reported, belief_distance, active_word = sim.generateReward(state_word, 200)  
         print("Score: " + str(score))
+
+        print("Best Score: " + str(self.best_score))
+        if score > self.best_score:
+            self.best_state = state #this might be wrong, not giving correct num at end
+            self.best_score = score
+
         return -score
 
     def probability(self, current_state, neighbor_state, temperature):
@@ -69,27 +82,47 @@ class SimulatedAnnealing():
             # New state is better, so pick it always
             return 1
         else:
+            if temperature == 0:
+                temperature = 0.001
             return math.exp(-(energy_neighbor - energy_current)/temperature)
-
 
     def run(self):
 
 
-        print("running simulated annealing...")
+        print("Running simulated annealing...")
         self.current_state = self.initial_state
+
+        '''
+        # Plot method that should work based on: https://stackoverflow.com/questions/12822762/pylab-ion-in-python-2-matplotlib-1-1-1-and-updating-of-the-plot-while-the-pro/12826273
+        # but doesn't because I need to suffer :D
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        h1, = ax.plot(self.probabilities)
+        ax.set_xlim([0,self.k_max])
+        plt.ion()
+        #plt.show()
+        '''
+
+        # Slow way that works
+        #plt.ion()
+
+        # MCTS way that should work
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        #first_plot = True
 
         for k in range(k_max):
 
             if rospy.is_shutdown(): 
                 # Return solution before closing
                 break
-            
+            print("+++++++++++++++++++++++++++")
             print('Iteration: ' + str(k))
 
             # Get temperature
             self.T = self.temperature(k)
             print('T: ' + str(self.T))
-
+            print("+++++++++++++++++++++++++++")
             # Generate neighbors of current state
             neighbors = Neighbors(self.current_state)
             list_of_neighbor_lists = neighbors.getAllNeighbors() # List of lists
@@ -101,6 +134,46 @@ class SimulatedAnnealing():
             # Calculate probability of picking neighbor state
             P = self.probability(self.current_state, self.neighbor_state, self.T)
             print("Probability: " + str(P))
+            self.probabilities.append(P)
+            print(self.probabilities)
+
+            # MCTS plotting method
+            line1, = ax.plot(range(k+1),self.probabilities,label = 'probability')
+            plt.xlabel('Iteration')
+            plt.ylabel('Probability')
+            plt.show(block=False)
+
+            line1.set_xdata(range(k+1))
+            line1.set_ydata(self.probabilities)
+            plt.xlim(0,k+1)
+            plt.ylim(0,self.probabilities[-1]*1.1)
+
+            fig.canvas.draw()
+            fig.canvas.flush_events()
+
+            # Slow way that works
+            '''
+            plt.clf()
+            plt.plot(range(len(self.probabilities)),self.probabilities)
+            plt.pause(0.1)
+            '''
+
+            '''
+            h1.set_ydata(self.probabilities)
+            print(h1.get_ydata())
+            h1.set_xdata(range(len(self.probabilities)))
+            print(h1.get_xdata())
+            plt.pause(1)
+            '''
+
+            # these are not needed if you use plt.ion()
+            #plt.draw()
+            #plt.show(block=False)
+            
+            #ax.plot(range(len(self.probabilities)),self.probabilities,label = 'Probability')
+            #plt.show()
+            #plt.pause(3)
+            #plt.draw()
 
             # Determine which state to pick, based on P
             if P >= random.random():
@@ -109,10 +182,18 @@ class SimulatedAnnealing():
 
             #CHANGE: retain best solution and return that when you quit always
 
-        print("finished simulated annealing...")
-        print("Final state: " + self.current_state.state_list)
-        print("Final state word: " + self.current_state.stateToFulltreeWord())
-        return self.current_state
+
+        print("Finished simulated annealing...")
+        print("Best state list: " + str(self.best_state.state_list))
+        best_state_word = self.best_state.stateToFulltreeWord()
+        print("Best state word: ")
+        best_state_word.printWord()
+        print("Best state score: " + str(self.best_score))
+        #print("Plot probability")
+        #fig = plt.figure()
+        #ax = fig.add_subplot(111)
+        #line1, = ax.plot(range(len(self.probabilities)+1),self.probabilities,label = 'Probability')
+        return self.best_state
         
                 
 
@@ -129,13 +210,15 @@ if __name__ == "__main__":
     manual_subtree_pickplace = createWord('-> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_found) [pick_up] )')
     manual_subtree_likelytarget = createWord('-> ( (likely_target_found) [go_to_likely_target] )')
     manual_subtree_randomwalk = createWord('-> ( [random_walk] )')
-    #known_subtree_words = [manual_subtree_report, manual_subtree_disarm, manual_subtree_pickplace, manual_subtree_likelytarget, manual_subtree_randomwalk]
-    known_subtree_words = [manual_subtree_disarm, manual_subtree_randomwalk]
+    known_subtree_words = [manual_subtree_report, manual_subtree_disarm, manual_subtree_pickplace, manual_subtree_likelytarget, manual_subtree_randomwalk]
+    ##known_subtree_words = [manual_subtree_disarm, manual_subtree_randomwalk]
     initial_state_list = []
     initial_state = State(initial_state_list, known_subtree_words)
-    initial_temperature = 1000
+    initial_temperature = 100000
     k_max = 1000
 
     simulated_annealing = SimulatedAnnealing(initial_state, initial_temperature, k_max)
 
     simulated_annealing.run()
+
+    probs = simulated_annealing.probabilities

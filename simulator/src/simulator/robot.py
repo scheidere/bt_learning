@@ -606,12 +606,13 @@ class Robot():
         wildlife_found = self.target_belief.class_y_found(World.CLASS_WILDLIFE)
         
         mine_found = self.target_belief.class_y_found(World.CLASS_MINE)
-        
+        #print('mine_found: ' + str(mine_found))
         self.nearest_mine_idx = self.target_belief.find_nearest_target(self.state.vertex_from_idx, World.CLASS_MINE)
         if self.nearest_mine_idx:
             is_armed = self.is_armed_array[self.nearest_mine_idx] #default is that they are always armed, unless they have been disarmed by robot
         else:
             is_armed = False
+        #print('is_armed: ' + str(is_armed))
 
         benign_object_found = self.target_belief.class_y_found(World.CLASS_BENIGN)
 
@@ -693,6 +694,7 @@ class Robot():
             self.planner_type = Robot.PLANNER_TYPE_SHORTEST
 
         elif 'disarm' in active_actions:
+            print('disarm is active')
             self.planner_type = Robot.PLANNER_TYPE_DISARM
         
         elif 'pick_up' in active_actions:

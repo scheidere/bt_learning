@@ -56,11 +56,20 @@ class Neighbors():
         # Check if no subtrees are present
         if len(self.state_list) == 0:
             return swap_list_of_neighbor_lists
-        swapped = list(itertools.permutations(self.state_list)) #list of tuples
-        swapped.remove(tuple(self.state_list))
-        # CHANGE: swap all possible PAIRS (use double for loop)
-        for tupl in swapped:
-            swap_list_of_neighbor_lists.append(list(tupl))
+
+        for i in range(len(self.state_list)):
+            for j in range(len(self.state_list)):
+                if i != j:
+                    # Then we have a unique pair
+                    new_list = copy.copy(self.state_list)
+                    new_list[i] = self.state_list[j]
+                    new_list[j] = self.state_list[i]
+                    if new_list not in swap_list_of_neighbor_lists:
+                        swap_list_of_neighbor_lists.append(new_list)
+        #swapped = list(itertools.permutations(self.state_list)) #list of tuples
+        #swapped.remove(tuple(self.state_list))
+        #for tupl in swapped:
+        #    swap_list_of_neighbor_lists.append(list(tupl))
 
         return swap_list_of_neighbor_lists
 
@@ -118,7 +127,7 @@ if __name__ == "__main__":
     manual_subtree_pickplace = createWord('-> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_found) [pick_up] )')
     manual_subtree_likelytarget = createWord('-> ( (likely_target_found) [go_to_likely_target] )')
     manual_subtree_randomwalk = createWord('-> ( [random_walk] )')
-    shortcut_words = [manual_subtree_report, manual_subtree_disarm, manual_subtree_pickplace] #, manual_subtree_likelytarget, manual_subtree_randomwalk]
+    shortcut_words = [manual_subtree_report, manual_subtree_disarm, manual_subtree_pickplace, manual_subtree_likelytarget, manual_subtree_randomwalk]
 
     initial_state_list = []
 
@@ -140,4 +149,4 @@ if __name__ == "__main__":
     list3 = neighbors.insertAll()
     #print(list3)
     neighbors_list = neighbors.getAllNeighbors()
-    #print(neighbors_list)
+    print(neighbors_list)
