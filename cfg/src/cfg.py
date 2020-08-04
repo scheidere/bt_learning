@@ -283,6 +283,49 @@ def exportBT(bt, include_nodes=None):
     new_word = Word(char_list)
     return new_word
 
+def getSubtreeIndices(bt, include_nodes):  
+    # Return list of indices denoting active subtrees in the given order 
+
+    # Setup a stack data structure (similar to nodes_worklist)
+    # Do this for both keeping track of nodes and for number of tabs
+    nodes_stack = []
+    level_stack = []
+    nodes_stack.append(bt.root) #push
+    level_stack.append(0)
+
+    # Current subtree index
+    subtree_index = 0
+    subtree_index_list = []
+    
+    # Do the traversal, using the stack to help
+    while len(nodes_stack) != 0:
+
+        # Pop a node off the stack
+        current_node = nodes_stack.pop() #pop
+        level = level_stack.pop()
+        # print(current_node.__class__.__name__)
+
+        #print("include_nodes: ", include_nodes)
+        #print("current node: ", current_node)
+        node_index = bt.nodes.index(current_node)
+        #print("node_index: ", node_index)
+        #print(len(include_nodes))
+        include_node = include_nodes[node_index]
+        
+        # Add all children to the stack
+        if level == 0:
+            for child_idx in reversed(range(len(current_node.children))):
+                nodes_stack.append(current_node.children[child_idx]) #push
+                level_stack.append(level+1)
+
+        if level == 1:
+            if include_node:
+                # Sequence (and hence subtree) is active
+                subtree_index_list.append(subtree_index)
+            subtree_index += 1
+
+    return subtree_index_list
+
 class ProductionRule():
     def __init__(self, input_word, output_word):
         self.input_word = input_word

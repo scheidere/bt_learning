@@ -58,8 +58,23 @@ class SimulatedAnnealing():
             return 0
 
         sim = UnderwaterSimulator()
-        score, target_reported, belief_distance, active_word = sim.generateReward(state_word, 200)  
+        score, target_reported, belief_distance, active_word, active_subtree_indices = sim.generateReward(state_word, 200)  
         print("Score: " + str(score))
+        print("active_word: ")
+        active_word.printWord()
+        #active_chars_pre = active_word.list
+        #print(active_chars_pre)
+
+        print('active_subtree_indices: ' + str(active_subtree_indices))
+        print('Pre-update state list: ' + str(state.state_list))
+        # Prune inactive subtrees, updating current state
+        state.activeIndicesToNewState(active_subtree_indices)
+        print('Updated state list, after pruning: ' + str(state.state_list))
+
+        # If the score is zero, the order might just be wrong
+        # Remove the inactive subtrees to allow for neighbors to be added potentially in the correct order
+        #if score == 0:
+        #    self.state_list = state.subtreeWordToNum()
 
         print("Best Score: " + str(self.best_score))
         if score > self.best_score:
@@ -75,8 +90,10 @@ class SimulatedAnnealing():
         '''
         print("Generate current state energy")
         energy_current = self.energy(current_state)
+        print("current energy: ", energy_current)
         print("Generate neighbor state energy")
         energy_neighbor = self.energy(neighbor_state)
+        print("neighbor energy: ", energy_neighbor)
 
         if energy_neighbor < energy_current:
             # New state is better, so pick it always
@@ -84,7 +101,14 @@ class SimulatedAnnealing():
         else:
             if temperature == 0:
                 temperature = 0.001
-            return math.exp(-(energy_neighbor - energy_current)/temperature)
+            P = math.exp(-(energy_neighbor - energy_current)/temperature)
+            print("In function P: ", P)
+    
+        return P
+
+    def findInactiveSubtrees(self, state):
+
+        pass
 
     def run(self):
 
@@ -126,9 +150,12 @@ class SimulatedAnnealing():
             # Generate neighbors of current state
             neighbors = Neighbors(self.current_state)
             list_of_neighbor_lists = neighbors.getAllNeighbors() # List of lists
+            print('Current state list: ', self.current_state.state_list)
+            print('Neighbors: ', list_of_neighbor_lists)
 
             # Pick a random neighbor
             neighbor_list = random.choice(list_of_neighbor_lists)
+            #print('Neighbor: ', neighbor_list)
             self.neighbor_state = State(neighbor_list, self.known_subtree_words)
 
             # Calculate probability of picking neighbor state
@@ -146,7 +173,7 @@ class SimulatedAnnealing():
             line1.set_xdata(range(k+1))
             line1.set_ydata(self.probabilities)
             plt.xlim(0,k+1)
-            plt.ylim(0,self.probabilities[-1]*1.1)
+            plt.ylim(0,1.1)
 
             fig.canvas.draw()
             fig.canvas.flush_events()
@@ -214,7 +241,7 @@ if __name__ == "__main__":
     ##known_subtree_words = [manual_subtree_disarm, manual_subtree_randomwalk]
     initial_state_list = []
     initial_state = State(initial_state_list, known_subtree_words)
-    initial_temperature = 100000
+    initial_temperature = 10
     k_max = 1000
 
     simulated_annealing = SimulatedAnnealing(initial_state, initial_temperature, k_max)

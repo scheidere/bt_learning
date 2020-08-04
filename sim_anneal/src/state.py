@@ -16,6 +16,15 @@ class State():
     def numToSubtreeWord(self, num):
         return self.known_subtree_words[num]
 
+    def subtreeWordToNum(self, word): #INCOMPLETE 
+
+        for i in range(len(self.known_subtree_words)):
+            subtree_word = self.known_subtree_words[i]
+            if word.printWord() == subtree_word.printWord():
+                return i
+
+        return None # Meaning the word is not a subtree 
+
     def stateToFulltreeWord(self):
         if len(self.state_list) == 0:
             return None
@@ -40,6 +49,16 @@ class State():
         state_word = Word(char_list)
         root, state_BT = state_word.createBT()
         return state_BT
+
+    def activeIndicesToNewState(self, active_indices):
+        # return edited version of current state, only including subtrees that were active
+        # active_indices is a list that denotes which subtrees were active in the order they appear in the tree,
+        # not the order in self.known_subtree_words
+
+        old_list = copy.copy(self.state_list)
+        self.state_list = [] 
+        for i in active_indices:
+            self.state_list.append(old_list[i])
 
 
 class Neighbors():
@@ -95,14 +114,16 @@ class Neighbors():
         Returns all new lists obtained by inserting all not-initially present numbers, 
         one per new list at all possible locations
         '''
+
         insert_list_of_neighbor_lists = []
         for i in range(len(self.known_subtree_words)):
             new_list = copy.copy(self.state_list)
             #print('new_list',new_list)
             if i not in self.state_list:
-                #print("i",i)
-                new_lists = [new_list[j:] + [i] + new_list[:j] for j in xrange(len(new_list),-1,-1)]
-                insert_list_of_neighbor_lists += new_lists
+
+                for j in range(len(new_list) + 1):
+                    new_new_list = new_list[:j] + [i] + new_list[j:]
+                    insert_list_of_neighbor_lists.append(new_new_list)
 
         return insert_list_of_neighbor_lists
 
@@ -129,7 +150,7 @@ if __name__ == "__main__":
     manual_subtree_randomwalk = createWord('-> ( [random_walk] )')
     shortcut_words = [manual_subtree_report, manual_subtree_disarm, manual_subtree_pickplace, manual_subtree_likelytarget, manual_subtree_randomwalk]
 
-    initial_state_list = []
+    initial_state_list = [1,4]
 
     state = State(initial_state_list, shortcut_words)
     state_BT = state.stateToBT()
@@ -147,6 +168,6 @@ if __name__ == "__main__":
     list2 = neighbors.deleteAll()
     #print(list2)
     list3 = neighbors.insertAll()
-    #print(list3)
+    print(list3)
     neighbors_list = neighbors.getAllNeighbors()
-    print(neighbors_list)
+    #print(neighbors_list)

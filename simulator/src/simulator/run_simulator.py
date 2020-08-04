@@ -80,8 +80,9 @@ class UnderwaterSimulator():
 
             # Get the Word of all active parts of the BT
             active_word = robot.bt_interface.generateActiveCFGWord()
+            active_subtree_indices = robot.bt_interface.getActiveSubtreeIndices()
 
-            return score, target_reported, belief_distance, active_word
+            return score, target_reported, belief_distance, active_word, active_subtree_indices
 
         except rospy.ROSInterruptException: pass
 

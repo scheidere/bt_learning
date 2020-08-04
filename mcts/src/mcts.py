@@ -268,7 +268,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
         #print('rollout_word')
         #rollout_word.printWord()
         # print("MCTS reward " + str(iter))
-        is_valid, rollout_reward, best_rollout_reward, rollout_active_words = reward(word = rollout_word, max_iterations=max_sim_iterations, underwater_simulator=underwater_simulator)
+        is_valid, rollout_reward, best_rollout_reward, rollout_active_words, active_subtree_indices = reward(word = rollout_word, max_iterations=max_sim_iterations, underwater_simulator=underwater_simulator)
 
         print("rollout_word")
         rollout_word.printWord()
