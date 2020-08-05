@@ -43,11 +43,11 @@ class UnderwaterSimulator():
 
         self.world.init_world(self.seed, do_test)
 
-    def update_worlds(self):
+    def update_worlds(self, seed):
 
-        self.world.randomize_targets() 
+        self.world.randomize_targets(seed) 
 
-    def generateReward(self, word, max_iterations):
+    def generateReward(self, word, max_iterations, seed=None):
 
         try:
             '''
@@ -58,7 +58,7 @@ class UnderwaterSimulator():
             '''
 
             # Re-randomize the worlds
-            self.update_worlds()
+            self.update_worlds(seed)
 
             # Create BT object from terminal BT CFG
             bt_root, bt = word.createBT()

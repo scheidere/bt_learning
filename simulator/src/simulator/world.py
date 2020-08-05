@@ -172,6 +172,14 @@ class World():
         # Setup sensor model
         self.sensor_model = SensorModel(self.config,self.num_nodes,self)
 
+        # Plot
+        fig = plt.figure(1)
+        ax = plt.gca()
+        self.plot_world(ax,[])
+        plt.show(block=False)
+        plt.draw()
+        plt.pause(0.0001)
+
     '''
     #old likelihood function we have replaced
     # it did not account for beyond sensor range -> 0
@@ -212,7 +220,12 @@ class World():
             return False
     '''
 
-    def randomize_targets(self):
+    def randomize_targets(self, seed=None):
+
+        # Repeatable randomness if seed set
+        if seed != None:
+            random.seed(seed)
+
         # Vertex classes - ground truth
         self.classes_y = np.array([]) # 0 - not target, 1 - wildlife/report, 2 - mine/disarm, 3 - benign/move
         for i in range(self.num_nodes):

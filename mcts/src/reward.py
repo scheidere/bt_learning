@@ -165,14 +165,14 @@ def reward(word, max_iterations, underwater_simulator): # multi-target case
 
     word.printWord()
 
-    num_simulations = 1
+    num_simulations = 5
     active_words = []
 
     if word.list:
         is_valid = True
         reward_sum = 0
         for i in xrange(num_simulations):
-            temp_reward, robot_reported, distance, active_word = underwater_simulator.generateReward(word, max_iterations)
+            temp_reward, robot_reported, distance, active_word = underwater_simulator.generateReward(word, max_iterations, i)
             active_words.append(active_word)
             print("Active word:")
             active_word.printWord()

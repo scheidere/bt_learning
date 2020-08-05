@@ -15,6 +15,12 @@ def get_graphviz(tree):
 
     gv = 'digraph G {\n'
 
+    # GRAEME: Change the separation between rows
+    # default I think is 0.5
+    # min is 0.02
+    gv += 'ranksep=0.1\n'
+
+
     counts = {bt.Condition: 0, bt.Action: 0, bt.Fallback: 0, bt.Sequence: 0, bt.Parallel: 0, bt.Decorator: 0}
     node_names = {}
     

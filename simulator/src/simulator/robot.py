@@ -365,7 +365,7 @@ class Robot():
         # Setup state belief
         # print("Setup state belief")
         self.state = []
-        random_start_vertex = self.get_next_random_number()
+        random_start_vertex = 0 #self.get_next_random_number()
         current_state = State(random_start_vertex) # start at a random vertex
         self.state = current_state
 

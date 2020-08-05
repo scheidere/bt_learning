@@ -13,13 +13,13 @@
 budget: 40
 exploration_exploitation_parameter: 1.0 # =1.0 is recommended. <1.0 more exploitation. >1.0 more exploration. 
 max_mcts_iterations: 200001 #change name to max_mcts_iterations ##you change this to make it run longer
-max_sim_iterations: 200 #iterations robot allows to move for before it gives up
+max_sim_iterations: 500 #iterations robot allows to move for before it gives up
 plot_search_tree: True
 plot_intermediate_results: True
-plot_intermediate_results_iterations: 50
+plot_intermediate_results_iterations: 100
 use_dag: True
 iterations_between_adding_best_edges: 200
-adding_best_edges_steps: 3
+adding_best_edges_steps: 4
 adding_nonzero_edges_steps: 3
 iterations_between_adding_production_rules: 10000
 max_ancestors: 1000 # number of ancestors allowed when looking back up the DAG
