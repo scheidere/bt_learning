@@ -23,7 +23,7 @@ import yaml
 import cProfile
 import pstats
 
-from run_simulator import UnderwaterSimulator
+from simulator.run_simulator import UnderwaterSimulator
 
 
 def run():

@@ -408,7 +408,8 @@ class Robot():
             rospy.loginfo("plotting robot world")
             self.plot_robot()
 
-
+        self.armed_mine_found_flag = False
+        self.mine_disarmed_flag = False
         # print("finished init")
 
     def setup_random_numbers(self, seed):
@@ -461,7 +462,7 @@ class Robot():
             self.bt_interface.tick_bt()
 
             active_actions = self.bt_interface.getActiveActions()
-            ###print("+++++++++++++++++++++++++active_actions", active_actions)
+            print("+++++++++++++++++++++++++active_actions", active_actions)
 
             # Stop episode if battery is dead
             # Battery_low criteria (10 without resurface - dead; 5+ after Full - low battery)
@@ -606,13 +607,17 @@ class Robot():
         wildlife_found = self.target_belief.class_y_found(World.CLASS_WILDLIFE)
         
         mine_found = self.target_belief.class_y_found(World.CLASS_MINE)
-        #print('mine_found: ' + str(mine_found))
+
+        print('mine_found: ' + str(mine_found))
         self.nearest_mine_idx = self.target_belief.find_nearest_target(self.state.vertex_from_idx, World.CLASS_MINE)
         if self.nearest_mine_idx:
             is_armed = self.is_armed_array[self.nearest_mine_idx] #default is that they are always armed, unless they have been disarmed by robot
         else:
             is_armed = False
-        #print('is_armed: ' + str(is_armed))
+        print('is_armed: ' + str(is_armed))
+
+        if mine_found and is_armed:
+            self.armed_mine_found_flag = True
 
         benign_object_found = self.target_belief.class_y_found(World.CLASS_BENIGN)
 
@@ -695,6 +700,7 @@ class Robot():
 
         elif 'disarm' in active_actions:
             print('disarm is active')
+            self.mine_disarmed_flag = True
             self.planner_type = Robot.PLANNER_TYPE_DISARM
         
         elif 'pick_up' in active_actions:
@@ -1019,8 +1025,13 @@ class RobotController():
                 no_move_count += 1
                 #print("no_move_count", no_move_count)
                 if no_move_count >= 10: 
-                    print("exiting due to robot not moving")
-                    #time.sleep(30)
+                    print("Exiting due to robot not moving")
+                    print("========Performing error check========")
+                    print('armed mine found flag', self.robot.armed_mine_found_flag)
+                    if self.robot.armed_mine_found_flag and not self.robot.mine_disarmed_flag:
+                        print('Armed mine found, but not disarmed')
+                        print('+++++++++++++ERROR FOUND+++++++++++++')
+                    time.sleep(30)
                     break
             else:
                 no_move_count = 0

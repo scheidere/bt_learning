@@ -80,8 +80,13 @@ class UnderwaterSimulator():
 
             # Get the Word of all active parts of the BT
             active_word = robot.bt_interface.generateActiveCFGWord()
+            print("active_word", active_word)
             active_subtree_indices = robot.bt_interface.getActiveSubtreeIndices()
+            print('active_subtree_indices', active_subtree_indices)
 
+            #test = [score,target_reported,belief_distance,active_word,active_subtree_indices]
+            print('generateReward output', score,target_reported,belief_distance,active_word,active_subtree_indices)
+            #print('number of outputs from generateReward', len(test))
             return score, target_reported, belief_distance, active_word, active_subtree_indices
 
         except rospy.ROSInterruptException: pass
@@ -119,8 +124,8 @@ if __name__ == "__main__":
     sim = UnderwaterSimulator()
     original_target_locations = copy.copy(sim.world.classes_y)
 
-    score, target_reported, belief_distance, active_word = sim.generateReward(word, 200)
-    print('1',sim.world.classes_y)
+    score, target_reported, belief_distance, active_word, active_subtree_indices = sim.generateReward(word, 200)
+    #print('1',sim.world.classes_y)
     '''
     print(original_target_locations == sim.world.classes_y)
     sim.world.classes_y = copy.copy(original_target_locations)
@@ -129,7 +134,13 @@ if __name__ == "__main__":
     print('2',sim.world.classes_y)
     print(original_target_locations == sim.world.classes_y)
     '''
-    print('manual with target_belief:')
-    print(score, target_reported, belief_distance, active_word)
+    #print('manual with target_belief:')
+    #print(score, target_reported, belief_distance, active_word)
     #print('manual without target_belief')
     #print(score2, target_reported2, belief_distance2, active_word2)
+
+    # Testing disarm subtree, looking for bug found during simulated annealing
+    for i in range(100):
+        print('Starting disarm subtree test ' + str(i))
+        score, target_reported, belief_distance, active_word, active_subtree_indices = sim.generateReward(word_disarm_random, 200)
+        print("Final score: " + str(score))
