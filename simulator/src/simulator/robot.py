@@ -1035,7 +1035,7 @@ class RobotController():
                     if self.robot.armed_mine_found_flag and not self.robot.mine_disarmed_flag:
                         print('Armed mine found, but not disarmed')
                         print('+++++++++++++ERROR FOUND+++++++++++++')
-                        time.sleep(10000)
+                        #time.sleep(10000)
                     break
             else:
                 no_move_count = 0

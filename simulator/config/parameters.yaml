@@ -1,15 +1,15 @@
-robot_plot: True #False
+robot_plot: False #False
 iteration_rate: 10 #0.5 #Hz
 scoring_statistics_frequency: 1 #Hz
 
 environment_size: [1000, 1000]
 num_nodes: 50 #300
-connection_radius: 0 #400 #100
+connection_radius: 400 #400 #100
 robot_speed: 200 # units of distance travelled between iterations #500
 sensor_range: 100 # distance robot is capable of sensing a target
 comms_range: 700 # distance beyond which the robot is unable to contact basestation
 num_classes: 4 # 3 types of targets, one class to represent vertices which are not targets
-prob_of_class0: 0.1 #0.90 # if 0.9 then ~90% of the vertices are not targets
+prob_of_class0: 0.9 #0.90 # if 0.9 then ~90% of the vertices are not targets
 TP: 0.95
 confidence_threshold: 0.75
 battery_low_threshold: 500

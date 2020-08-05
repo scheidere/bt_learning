@@ -17,8 +17,6 @@ from geometry_msgs.msg import Point
 
 import matplotlib.pyplot as plt
 
-
-
 from sensor_model import SensorModel
 from distance import distance
 
@@ -71,8 +69,15 @@ class World():
         self.surface_level = 0
 
     def init_world(self, seed1, do_test=True):
-        # create a blank world, PRM style
         random.seed(seed1) # for repeatable trials
+        self.init_world_once(do_test)
+        while not self.is_connected():
+            print("World graph is disconnected. Reinitializing...")
+            self.init_world_once(do_test)
+
+
+    def init_world_once(self, do_test=True):
+        # create a blank world, PRM style
         num_nodes = self.config["num_nodes"]
         connection_radius = self.config["connection_radius"]
         environment_size = self.config["environment_size"]
@@ -212,6 +217,47 @@ class World():
         else:
             return False
     '''
+
+    def is_open_set_empty(self, open_set):
+        for i in open_set:
+            if i == True:
+                return False
+        return True
+
+    def is_connected(self):
+        num_vertices = len(self.vertices)
+
+        open_set = [False] * num_vertices
+        closed_set = [False] *num_vertices
+
+        open_set[0] = True # Adding a vertex to open set, as our starting point
+
+        while not self.is_open_set_empty(open_set):
+
+
+            # find a vertex in open_set
+            v_current = open_set.index(True)
+
+            # remove it from the open set
+            open_set[v_current] = False
+
+            # add it to the closed set
+            closed_set[v_current] = True
+
+            # get the set of neighbours
+            neighbours = self.edge_adjacency_edge_lists[v_current]
+
+            # expand neighbouring nodes
+            for e in neighbours:
+                v_next = e.vertex_end_idx
+                if not closed_set[v_next] == True:
+                    # If not in closed set, add to open set
+                    open_set[v_next] = True
+
+        if False in closed_set: # you haven't visited at least one vertex
+            return False
+
+        return True
 
     def randomize_targets(self):
         # Vertex classes - ground truth
