@@ -489,6 +489,7 @@ class Robot():
             # Move
             # print("move")
             [new_vertex, distance_traveled, no_move] = self.move(action_sequence, distance_to_travel)
+
             if not no_move:
                 moved = True
             if no_move or distance_traveled == 0:
@@ -561,6 +562,7 @@ class Robot():
                     if successful_disarm:
                         self.target_belief.update_loc_class_0(self.nearest_mine_idx)
                         self.is_armed_array[self.nearest_mine_idx] = False # Check with Graeme DONE
+                        self.mine_disarmed_flag = True
                     else:
                         self.target_belief.update_loc_not_class_y(self.nearest_mine_idx, World.CLASS_MINE)
 
@@ -700,7 +702,6 @@ class Robot():
 
         elif 'disarm' in active_actions:
             print('disarm is active')
-            self.mine_disarmed_flag = True
             self.planner_type = Robot.PLANNER_TYPE_DISARM
         
         elif 'pick_up' in active_actions:
@@ -906,14 +907,16 @@ class Robot():
                 distance_traveled = distance_to_travel
         elif action_sequence:
             action = action_sequence[0]
-            if action == current_state.vertex_from_idx:
+            while action == current_state.vertex_from_idx:
                 # get the next action instead
-                if len(action_sequence) >= 1:
-                    action = action_sequence[1]
+                if len(action_sequence) >= 2:
+                    action_sequence = action_sequence[1:]
+                    action = action_sequence[0]
                 else:
                     distance_traveled = 0
                     no_move = True
                     rospy.logwarn("robot is idle since plan gives current index")
+                    break
 
             if not no_move:
                 # start moving to next vertex
@@ -1027,11 +1030,12 @@ class RobotController():
                 if no_move_count >= 10: 
                     print("Exiting due to robot not moving")
                     print("========Performing error check========")
-                    print('armed mine found flag', self.robot.armed_mine_found_flag)
+                    print('self.robot.armed_mine_found_flag', self.robot.armed_mine_found_flag)
+                    print('self.robot.mine_disarmed_flag', self.robot.mine_disarmed_flag)
                     if self.robot.armed_mine_found_flag and not self.robot.mine_disarmed_flag:
                         print('Armed mine found, but not disarmed')
                         print('+++++++++++++ERROR FOUND+++++++++++++')
-                    time.sleep(30)
+                        time.sleep(10000)
                     break
             else:
                 no_move_count = 0

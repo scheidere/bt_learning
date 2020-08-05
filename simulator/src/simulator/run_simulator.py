@@ -23,10 +23,10 @@ import copy
 
 
 class UnderwaterSimulator():
-    def __init__(self):
-        self.create_worlds()
+    def __init__(self, seed=None):
+        self.create_worlds(seed)
 
-    def create_worlds(self):
+    def create_worlds(self, seed):
 
         # Get the config file etc
         rospack = rospkg.RosPack()
@@ -37,7 +37,10 @@ class UnderwaterSimulator():
         self.num_robots = rospy.get_param('~num_robots')
         self.randomize_targets = self.config['randomize_targets']
         # seed = rospy.get_param('~seed')
-        self.seed = 0 #random.randint(0,20) # random environment
+        if seed:
+            self.seed = seed
+        else:
+            self.seed = 0 #random.randint(0,20) # random environment
 
         # Create the world
         self.world = World(self.config)
@@ -121,10 +124,10 @@ if __name__ == "__main__":
 
     word = createWord('?  (  ->  (  [random_walk]  )  ->  (  (wildlife_found)  ?  (  (in_comms)  [go_to_comms]  )  [report]  )  ->  (  (likely_target_found)  [go_to_likely_target]  )  ->  (  ?  (  <!>  (  (carrying_benign)  )  [take_to_drop_off]  )  (benign_found)  [pick_up]  )  ) ')
 
-    sim = UnderwaterSimulator()
-    original_target_locations = copy.copy(sim.world.classes_y)
+    # sim = UnderwaterSimulator()
+    # original_target_locations = copy.copy(sim.world.classes_y)
 
-    score, target_reported, belief_distance, active_word, active_subtree_indices = sim.generateReward(word, 200)
+    # score, target_reported, belief_distance, active_word, active_subtree_indices = sim.generateReward(word, 200)
     #print('1',sim.world.classes_y)
     '''
     print(original_target_locations == sim.world.classes_y)
@@ -140,7 +143,10 @@ if __name__ == "__main__":
     #print(score2, target_reported2, belief_distance2, active_word2)
 
     # Testing disarm subtree, looking for bug found during simulated annealing
-    for i in range(100):
-        print('Starting disarm subtree test ' + str(i))
+    for seed in range(100):
+        if rospy.is_shutdown():
+            break
+        print('Starting disarm subtree test ' + str(seed))
+        sim = UnderwaterSimulator(seed)
         score, target_reported, belief_distance, active_word, active_subtree_indices = sim.generateReward(word_disarm_random, 200)
         print("Final score: " + str(score))
