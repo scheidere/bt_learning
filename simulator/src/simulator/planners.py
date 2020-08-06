@@ -84,7 +84,7 @@ class PlannerShortestPath(Planner):
         # if find_nearest_target returned None (doesn't think it knows where any targets are)
         if self.vertex_goal_idx == None: # Check with Graeme
             rospy.logerr("PlannerShortestPath() goal vertex is None") #maybe just print it instead 
-            pause()           
+            #pause()           
 
 
     def plan(self, debug=False):

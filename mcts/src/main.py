@@ -8,6 +8,7 @@ Jan 2020
 
 from mcts import mcts
 from mcts_restarts import mcts_restarts
+from mcts_restarts_with_simulated_annealing import mcts_sim_anneal_switching
 from action import Action, printActionSequence
 from tree_node import countNodes
 # from plot_tree import plotTree
@@ -58,7 +59,8 @@ def run():
     max_sim_iterations = config["max_sim_iterations"]
     use_dag = config["use_dag"]
     
-    [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict] = mcts_restarts( cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config )    
+    #[solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict] = mcts_restarts( cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config )    
+    [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict, sim_anneal_best_word] = mcts_sim_anneal_switching( cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config )    
 
     # Display the tree
     ###printActionSequence(solution) #this is not set up for words instead of sequences for actions

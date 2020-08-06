@@ -135,7 +135,7 @@ class SimulatedAnnealing():
         ax = fig.add_subplot(111)
         #first_plot = True
 
-        for k in range(self.k_max):
+        for k in range(k_max):
 
             if rospy.is_shutdown(): 
                 # Return solution before closing

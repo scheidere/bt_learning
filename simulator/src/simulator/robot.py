@@ -462,7 +462,7 @@ class Robot():
             self.bt_interface.tick_bt()
 
             active_actions = self.bt_interface.getActiveActions()
-            print("+++++++++++++++++++++++++active_actions", active_actions)
+            #print("+++++++++++++++++++++++++active_actions", active_actions)
 
             # Stop episode if battery is dead
             # Battery_low criteria (10 without resurface - dead; 5+ after Full - low battery)
@@ -610,13 +610,13 @@ class Robot():
         
         mine_found = self.target_belief.class_y_found(World.CLASS_MINE)
 
-        print('mine_found: ' + str(mine_found))
+        #print('mine_found: ' + str(mine_found))
         self.nearest_mine_idx = self.target_belief.find_nearest_target(self.state.vertex_from_idx, World.CLASS_MINE)
         if self.nearest_mine_idx:
             is_armed = self.is_armed_array[self.nearest_mine_idx] #default is that they are always armed, unless they have been disarmed by robot
         else:
             is_armed = False
-        print('is_armed: ' + str(is_armed))
+        #print('is_armed: ' + str(is_armed))
 
         if mine_found and is_armed:
             self.armed_mine_found_flag = True
