@@ -94,6 +94,32 @@ class UnderwaterSimulator():
 
         except rospy.ROSInterruptException: pass
 
+def compare(word1, word2):
+    sim = UnderwaterSimulator()
+    original_target_locations = copy.copy(sim.world.classes_y)
+
+    score, target_reported, belief_distance, active_word, active_subtree_indices = sim.generateReward(word1, 200)
+    #print('1',sim.world.classes_y)
+    
+    #print(original_target_locations == sim.world.classes_y)
+    sim.world.classes_y = copy.copy(original_target_locations)
+    score2, target_reported2, belief_distance2, active_word2, active_subtree_indices2 = sim.generateReward(word2, 200)
+    #print('orig', original_target_locations)
+    #print('2',sim.world.classes_y)
+    #print(original_target_locations == sim.world.classes_y)
+    
+    #print('manual with target_belief:')
+    word1.printWord()
+    print('Score 1: ', score)
+    #print('manual without target_belief')
+    word2.printWord()
+    print('Score 2: ', score2)
+
+def test(word):
+    sim = UnderwaterSimulator()
+    score, target_reported, belief_distance, active_word, active_subtree_indices = sim.generateReward(word, 200)
+    word.printWord()
+    print('Score: ', score)
 
 
 
@@ -122,26 +148,18 @@ if __name__ == "__main__":
     word_pickdrop = createWord('? ( -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_object_found) [pick_up] ) -> ( [random_walk] ) )')
     word_disarm_random = createWord('? ( -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( [random_walk] ) )')
 
-    word = createWord('?  (  ->  (  [random_walk]  )  ->  (  (wildlife_found)  ?  (  (in_comms)  [go_to_comms]  )  [report]  )  ->  (  (likely_target_found)  [go_to_likely_target]  )  ->  (  ?  (  <!>  (  (carrying_benign)  )  [take_to_drop_off]  )  (benign_found)  [pick_up]  )  ) ')
+    #word = createWord('?  (  ->  (  [random_walk]  )  ->  (  (wildlife_found)  ?  (  (in_comms)  [go_to_comms]  )  [report]  )  ->  (  (likely_target_found)  [go_to_likely_target]  )  ->  (  ?  (  <!>  (  (carrying_benign)  )  [take_to_drop_off]  )  (benign_found)  [pick_up]  )  ) ')
 
-    # sim = UnderwaterSimulator()
-    # original_target_locations = copy.copy(sim.world.classes_y)
+    word1 = createWord('? ( -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( [random_walk] ) )')
+    word2 = createWord('? ( -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_object_found) [pick_up] ) -> ( [random_walk] ) )')
+     
+    compare(word1,word2)
 
-    # score, target_reported, belief_distance, active_word, active_subtree_indices = sim.generateReward(word, 200)
-    #print('1',sim.world.classes_y)
+    word = createWord('? ( -> [report] ? ( (wildlife_found) ) ? ( [go_to_comms] ) -> ( [random_walk] ) )')
+    test(word)
+
+
     '''
-    print(original_target_locations == sim.world.classes_y)
-    sim.world.classes_y = copy.copy(original_target_locations)
-    score2, target_reported2, belief_distance2, active_word2 = sim.generateReward(word_report, 2000)
-    print('orig', original_target_locations)
-    print('2',sim.world.classes_y)
-    print(original_target_locations == sim.world.classes_y)
-    '''
-    #print('manual with target_belief:')
-    #print(score, target_reported, belief_distance, active_word)
-    #print('manual without target_belief')
-    #print(score2, target_reported2, belief_distance2, active_word2)
-
     # Testing disarm subtree, looking for bug found during simulated annealing
     for seed in range(100):
         if rospy.is_shutdown():
@@ -150,3 +168,4 @@ if __name__ == "__main__":
         sim = UnderwaterSimulator(seed)
         score, target_reported, belief_distance, active_word, active_subtree_indices = sim.generateReward(word_disarm_random, 200)
         print("Final score: " + str(score))
+    '''

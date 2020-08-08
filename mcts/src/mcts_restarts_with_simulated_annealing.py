@@ -13,7 +13,6 @@ from cfg import Word, Character, CFG
 from sim_anneal import SimulatedAnnealing
 from state import State
 
-
 import rospy
 import rospkg
 import yaml
@@ -129,7 +128,7 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
             initial_state = State(initial_state_list, shortcut_words)
             initial_temperature = 1000
             k_max = 1000
-            sim_anneal = SimulatedAnnealing(initial_state, initial_temperature, k_max)
+            sim_anneal = SimulatedAnnealing(initial_state, initial_temperature, k_max, round)
             sim_anneal_best_word, score = sim_anneal.run()
 
             # Extract information to pass to the next round

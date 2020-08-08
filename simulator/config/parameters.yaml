@@ -15,4 +15,4 @@ confidence_threshold: 0.75
 battery_low_threshold: 500
 battery_dead_threshold: 1000
 
-randomize_targets: False #True
+randomize_targets: True #True
