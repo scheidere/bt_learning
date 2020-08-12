@@ -334,6 +334,8 @@ class Robot():
         self.robot_belief_idx = None #issue solved: used before do_iteration called in robot controller
         #self.communicate_observations = communicate_observations
 
+        ##self.nearest_mine_idx = None
+
         '''
         self.scoring_statistics = ScoringStatistics()
         self.scoring_statistics.robot_id = robot_id
@@ -702,6 +704,12 @@ class Robot():
 
         elif 'disarm' in active_actions:
             print('disarm is active')
+            print('Current vertex (vertex_from_idx): ' + str(self.state.vertex_from_idx))
+            print('Goal vertex (vertex_to_idx): ' + str(self.state.vertex_to_idx))
+            #if self.nearest_mine_idx != None:
+                #print('Closest mine (nearest_mine_idx): ' + str(self.nearest_mine_idx))
+            print('Actual target locations (mine = class 2): ')
+            print(self.known_world.classes_y)
             self.planner_type = Robot.PLANNER_TYPE_DISARM
         
         elif 'pick_up' in active_actions:

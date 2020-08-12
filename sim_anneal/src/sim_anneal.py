@@ -287,8 +287,12 @@ class SimulatedAnnealing():
                 self.current_state = self.neighbor_state
             # Otherwise the current state stays the same
 
+            '''
+            # Commenting out because when SA is killed it replaces shortcut_words with only the ones in its current tree
+            # This removes good subtrees too often from the shortcut_words list that the MCTS rounds learn
             if self.is_super_stagnant():
                 break #no point continuing if subtrees sucking is stopping it from being productive
+            '''
 
         print("Finished simulated annealing...")
         print("Best state list: " + str(self.best_state.state_list))
@@ -325,7 +329,7 @@ class SimulatedAnnealing():
         else:
             self.super_stagnant_best_score_count = 0
 
-        if self.super_stagnant_best_score_count >= 100:
+        if self.super_stagnant_best_score_count >= 200:
             print('Stopping due to lack of progress')
             self.super_stagnant_best_score_count = 0
             return True

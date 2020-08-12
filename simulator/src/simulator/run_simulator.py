@@ -119,6 +119,7 @@ def test(word):
     sim = UnderwaterSimulator()
     score, target_reported, belief_distance, active_word, active_subtree_indices = sim.generateReward(word, 200)
     word.printWord()
+    print(sim.world.classes_y)
     print('Score: ', score)
 
 
@@ -153,9 +154,11 @@ if __name__ == "__main__":
     word1 = createWord('? ( -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( [random_walk] ) )')
     word2 = createWord('? ( -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_object_found) [pick_up] ) -> ( [random_walk] ) )')
      
-    compare(word1,word2)
+    #compare(word1,word2)
 
-    word = createWord('? ( -> [report] ? ( (wildlife_found) ) ? ( [go_to_comms] ) -> ( [random_walk] ) )')
+    #word = createWord('? ( -> ( [report] ? ( (wildlife_found) ) ? ( [go_to_comms] ) ) -> ( [random_walk] ) )')
+    word = createWord('?  (  ->  (  ?  (  [report]  [go_to_comms]  )  ?  (  (at_surface)  )  <!>  (  (in_comms)  )  )  ->  (  ?  (  [random_walk]  )  )  ) ')
+    #test(word)
     test(word)
 
 

@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 
 import rospy
 
-def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config, shortcut_words=[] ):
+def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config, shortcut_words): #shortcut_words=[] ):
 
     ################################
     # Add shortcut words to the production rules
