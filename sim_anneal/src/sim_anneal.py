@@ -37,11 +37,14 @@ class SimulatedAnnealing():
         self.stagnant_best_score_count = 0
         self.super_stagnant_best_score_count = 0
         self.best_state_updated = True
-
+        self.best_words = []
+        self.best_word_scores = []
 
         # Create a single instance of the simulator so that you do not continuously recreate the world
         # To randomize targets, go to parameters.yaml in simulator
         self.underwater_simulator = UnderwaterSimulator()
+
+        self.do_plot = False
 
     def temperature(self, k): #needs to take in (k-1)/k_max
         # temp should start at max t and end at 0
@@ -91,6 +94,9 @@ class SimulatedAnnealing():
         if self.score > self.best_score:
             self.best_state = state #this might be wrong, not giving correct num at end
             self.best_score = self.score
+            self.best_word = self.best_state.stateToFulltreeWord()
+            self.best_words.append(self.best_word)
+            self.best_word_scores.append(self.best_score)
             self.best_state_updated = True
         else:
             self.best_state_updated = False
@@ -195,63 +201,66 @@ class SimulatedAnnealing():
             
             
             self.best_state_word = self.best_state.stateToFulltreeWord()
-            #plot score
-            if first_plot:
-                first_plot = False
+            
 
-                # Probability plot
-                plt.figure(100+self.round_num)
-                line1, = ax.plot(range(k+1),self.probabilities,label = 'probability')
-                plt.xlabel('SA Iterations')
-                plt.ylabel('Probability')
-                plt.legend(loc='best')
-                plt.show(block=False)
+            if self.do_plot:
+                #plot score
+                if first_plot:
+                    first_plot = False
 
-                # Score plot
-                plt.figure(101+self.round_num)
-                line21, = ax2.plot(range(k+1),self.best_scores,label = 'best reward') #plot
-                line22, = ax2.plot(range(k+1),self.avg_scores,label = 'average reward')
-                line23, = ax2.plot(range(k+1),self.scores,label = 'current reward')
-                plt.xlabel('SA Iterations')
-                plt.ylabel('Score')
-                title_string = ""
-                if self.best_state_word: # as long as word is not None
-                    title_string = self.best_state_word.toString()
-                fig_text = fig2.text(0.5, 0.9, title_string, ha='center',wrap=True)
-                
-                plt.legend(loc='best')
-                plt.show(block=False)
-                
-            else:
+                    # Probability plot
+                    plt.figure(100+self.round_num)
+                    line1, = ax.plot(range(k+1),self.probabilities,label = 'probability')
+                    plt.xlabel('SA Iterations')
+                    plt.ylabel('Probability')
+                    plt.legend(loc='best')
+                    plt.show(block=False)
 
-                # Probability plot
-                plt.figure(100+self.round_num)
-                line1.set_xdata(range(k+1))
-                line1.set_ydata(self.probabilities)
-                plt.xlim(0,k+1)
-                plt.ylim(0,1.1)
+                    # Score plot
+                    plt.figure(101+self.round_num)
+                    line21, = ax2.plot(range(k+1),self.best_scores,label = 'best reward') #plot
+                    line22, = ax2.plot(range(k+1),self.avg_scores,label = 'average reward')
+                    line23, = ax2.plot(range(k+1),self.scores,label = 'current reward')
+                    plt.xlabel('SA Iterations')
+                    plt.ylabel('Score')
+                    title_string = ""
+                    if self.best_state_word: # as long as word is not None
+                        title_string = self.best_state_word.toString()
+                    fig_text = fig2.text(0.5, 0.9, title_string, ha='center',wrap=True)
+                    
+                    plt.legend(loc='best')
+                    plt.show(block=False)
+                    
+                else:
 
-                fig.canvas.draw()
-                fig.canvas.flush_events()
+                    # Probability plot
+                    plt.figure(100+self.round_num)
+                    line1.set_xdata(range(k+1))
+                    line1.set_ydata(self.probabilities)
+                    plt.xlim(0,k+1)
+                    plt.ylim(0,1.1)
 
-                # Score plot
-                plt.figure(101+self.round_num)
-                line21.set_xdata(range(k+1))
-                line22.set_xdata(range(k+1))
-                line23.set_xdata(range(k+1))
-                line21.set_ydata(self.best_scores)
-                line22.set_ydata(self.avg_scores)
-                line23.set_ydata(self.scores)
-                plt.xlim(0,k+1)
-                plt.ylim(0,self.best_scores[-1]*1.1)
-                title_string = ""
-                if self.best_state_word: # as long as word is not None
-                    title_string = self.best_state_word.toString()
-                fig_text.set_text(title_string)
+                    fig.canvas.draw()
+                    fig.canvas.flush_events()
 
-                fig2.canvas.draw()
-                fig2.canvas.flush_events()
-                
+                    # Score plot
+                    plt.figure(101+self.round_num)
+                    line21.set_xdata(range(k+1))
+                    line22.set_xdata(range(k+1))
+                    line23.set_xdata(range(k+1))
+                    line21.set_ydata(self.best_scores)
+                    line22.set_ydata(self.avg_scores)
+                    line23.set_ydata(self.scores)
+                    plt.xlim(0,k+1)
+                    plt.ylim(0,self.best_scores[-1]*1.1)
+                    title_string = ""
+                    if self.best_state_word: # as long as word is not None
+                        title_string = self.best_state_word.toString()
+                    fig_text.set_text(title_string)
+
+                    fig2.canvas.draw()
+                    fig2.canvas.flush_events()
+                    
             
 
             # Slow way that works
@@ -287,12 +296,10 @@ class SimulatedAnnealing():
                 self.current_state = self.neighbor_state
             # Otherwise the current state stays the same
 
-            '''
-            # Commenting out because when SA is killed it replaces shortcut_words with only the ones in its current tree
-            # This removes good subtrees too often from the shortcut_words list that the MCTS rounds learn
+            # Stop if stuck for too long            
             if self.is_super_stagnant():
                 break #no point continuing if subtrees sucking is stopping it from being productive
-            '''
+            
 
         print("Finished simulated annealing...")
         print("Best state list: " + str(self.best_state.state_list))
@@ -304,7 +311,7 @@ class SimulatedAnnealing():
         #fig = plt.figure()
         #ax = fig.add_subplot(111)
         #line1, = ax.plot(range(len(self.probabilities)+1),self.probabilities,label = 'Probability')
-        return self.best_state.stateToFulltreeWord(), self.best_score #return best word 
+        return self.best_state.stateToFulltreeWord(), self.best_score, self.best_words, self.best_word_scores #return best word 
 
     def is_stagnant(self):
 

@@ -17,10 +17,11 @@ import rospy
 import rospkg
 import yaml
 
+
 def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config):
 
 
-    num_rounds = 6
+    num_rounds = 75
     iterations_per_round = 1000
 
     shortcut_words = []
@@ -31,12 +32,15 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
     #cfg_shortcuts_only.grammar = cfg_shortcuts_only.generateGrammarShortcutsOnly()
 
     # Initialize mcts_sa_output.txt
-    f = open("mcts_sa_output.txt", "w+")
+    f = open("mcts_sa_output.txt","w+")
+    print(f.read())
 
     # Do the rounds
     for round in xrange(num_rounds):
 
+        f.write("+++++++++++++++++++++++++\n")
         f.write("Results for round %d\n" % round)
+        f.write("+++++++++++++++++++++++++\n")
 
         print("====================================")
         print("====================================")
@@ -52,16 +56,18 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
             break
 
         max_mcts_iterations = iterations_per_round
-        if round in range(5): #do mcts first half, do sa second half (5 rounds each)
-        #if round in range(5) or round >= 5 and round%2==0: #run mcts for first 5 rounds then SA/MCTS alternating i.e. mcts = (0,1,2,3,4,6,8), sa = (5,7,9)
+        #if round in range(1):
+        #if round in range(5): #do mcts first half, do sa second half (5 rounds each)
+        if round in range(10) or round >= 10 and round%2==0: #ex. run mcts for first 5 rounds then SA/MCTS alternating i.e. mcts = (0,1,2,3,4,6,8), sa = (5,7,9)
         #if round%2==0 or len(shortcut_words) == 0: #alternating rounds
-            f.write("MCTS...")
+            f.write("MCTS...\n")
             print("Running MCTS round: ", round)
             cfg_copy = copy.deepcopy(cfg)
             shortcut_words_copy = copy.deepcopy(shortcut_words)
             [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict] = mcts( cfg_copy, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config, shortcut_words_copy )
             f.write("Best rollout: ")
-            f.write(str(best_rollout.printWord()))
+            f.write(best_rollout.toString())
+            f.write("\n")
 
             print('sequence at best node:')
             for soln in solution:
@@ -88,12 +94,14 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
             # Extract information to pass to the next round
             # shortcut_words = [] # comment this out to keep the previous words
             subtree_words = []
+
             for best_node in best_nodes_dict.values():
 
                 if best_node.average_evaluation_score > 0.0:
-                    
+
                     for best_rollout_active_word in best_node.best_rollout_active_words:
-                        subtree_words.extend(extract_subtrees(best_rollout_active_word))
+                        extracted_subtrees = extract_subtrees(best_rollout_active_word)
+                        subtree_words.extend(extracted_subtrees)
 
                     # For each subtree of node
                     for subtree_word in subtree_words:
@@ -135,45 +143,62 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
                 '''
             f.write("Shortcut words:\n")
             for word in shortcut_words:
-                f.write(str(word))
+                f.write(word.toString())
+                f.write("\n")
 
         else:
             print("Running SA round: ", round)
             f.write("Simulated annealing...\n")
             initial_state_list = []
             initial_state = State(initial_state_list, shortcut_words)
+
+            # Initialize state_list with best tree word, in list form, from mcts
+            mcts_best_word = best_node.best_rollout_active_words[-1] #last best tree word
+            initial_state.initial_state_list = initial_state.wordToList(mcts_best_word)
+
             initial_temperature = 1000
             k_max = 1000
             sim_anneal = SimulatedAnnealing(initial_state, initial_temperature, k_max, round)
-            sim_anneal_best_word, score = sim_anneal.run()
+            sim_anneal_best_word, score, sim_anneal_best_words, scores = sim_anneal.run()
+            print("++++++++++++++++++++++")
+            print("Sim anneal best words: " + str(sim_anneal_best_words) + "len = " + str(len(sim_anneal_best_words)))
+            print("Associated scores: " + str(scores) + "len = " + str(len(scores)))
+            print("++++++++++++++++++++++")
             f.write("Best word: ")
-            f.write(str(sim_anneal_best_word.printWord()))
+            f.write(sim_anneal_best_word.toString())
+            f.write("\n")
 
             # Extract information to pass to the next round
             shortcut_words = [] # comment this out to keep the previous words
             subtree_words = []
 
-            if score > 0.0:
-                
-                subtree_words.extend(extract_subtrees(sim_anneal_best_word))
+            for i in range(len(sim_anneal_best_words)):
+                sa_best_word = sim_anneal_best_words[i]
+                score = scores[i]
 
-                # For each subtree of node
-                for subtree_word in subtree_words:
+                if score > 0.0:
+                    
+                    extracted_subtrees = extract_subtrees(sa_best_word)
+                    subtree_words.extend(extracted_subtrees)
 
-                    subtree_word_already_shortcut = False
-                    for shortcut_word in shortcut_words:
-                        if shortcut_word.equal(subtree_word):
-                            subtree_word_already_shortcut = True
-                            break
+                    # For each subtree of node
+                    for subtree_word in subtree_words:
 
-                    if not subtree_word_already_shortcut:
+                        subtree_word_already_shortcut = False
+                        for shortcut_word in shortcut_words:
+                            if shortcut_word.equal(subtree_word):
+                                subtree_word_already_shortcut = True
+                                break
 
-                        # Create a new production rule (done in mcts.py given shortcut_words)
-                        shortcut_words.append(subtree_word)
+                        if not subtree_word_already_shortcut:
+
+                            # Create a new production rule (done in mcts.py given shortcut_words)
+                            shortcut_words.append(subtree_word)
 
             f.write("Shortcut words:\n")
             for word in shortcut_words:
-                f.write(str(word))
+                f.write(word.toString())
+                f.write("\n")
         
         
 

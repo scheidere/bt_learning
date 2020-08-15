@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import numpy as np 
-from cfg import Character, Word, createWord
+from cfg import Character, Word, createWord, extract_subtrees
 
 import itertools
 import copy
@@ -16,14 +16,22 @@ class State():
     def numToSubtreeWord(self, num):
         return self.known_subtree_words[num]
 
-    def subtreeWordToNum(self, word): #INCOMPLETE 
+    def subtreeWordToNum(self, input_subtree_word): #INCOMPLETE 
 
         for i in range(len(self.known_subtree_words)):
             subtree_word = self.known_subtree_words[i]
-            if word.printWord() == subtree_word.printWord():
+            if input_subtree_word.toString() == subtree_word.toString():
                 return i
 
-        return None # Meaning the word is not a subtree 
+    def wordToList(self, word):
+
+        word_num_list = []
+        subtrees = extract_subtrees(word)
+        for subtree in subtrees:
+            word_num_list.append(self.subtreeWordToNum(subtree))
+
+        return word_num_list
+
 
     def stateToFulltreeWord(self):
         if len(self.state_list) == 0:
@@ -60,7 +68,6 @@ class State():
         for i in active_indices:
             self.state_list.append(old_list[i])
 
-
 class Neighbors():
     def __init__(self, state):
         self.state = state
@@ -72,6 +79,7 @@ class Neighbors():
         Returns all new lists (a list of lists) obtained by swapping the order of the numbers
         '''
         swap_list_of_neighbor_lists = []
+
         # Check if no subtrees are present
         if len(self.state_list) == 0:
             return swap_list_of_neighbor_lists
@@ -97,6 +105,7 @@ class Neighbors():
         Returns all new lists obtained by removing an individual number
         '''
         delete_list_of_neighbor_lists = []
+
         #print('state_list',self.state_list)
         if len(self.state_list) == 0:
             return delete_list_of_neighbor_lists
@@ -152,6 +161,7 @@ if __name__ == "__main__":
 
     initial_state_list = [1,4]
 
+    # need to add probability distribution to test again
     state = State(initial_state_list, shortcut_words)
     state_BT = state.stateToBT()
     print(state_BT)
