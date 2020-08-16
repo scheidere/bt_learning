@@ -321,7 +321,7 @@ class SimulatedAnnealing():
         else:
             self.stagnant_best_score_count = 0
 
-        if self.stagnant_best_score_count >= 20:
+        if self.stagnant_best_score_count >= 100:
             print('Resetting current state to best state due to stagnance')
             self.stagnant_best_score_count = 0
             return True
@@ -336,7 +336,7 @@ class SimulatedAnnealing():
         else:
             self.super_stagnant_best_score_count = 0
 
-        if self.super_stagnant_best_score_count >= 200:
+        if self.super_stagnant_best_score_count >= 400:
             print('Stopping due to lack of progress')
             self.super_stagnant_best_score_count = 0
             return True
