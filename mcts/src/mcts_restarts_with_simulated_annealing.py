@@ -17,6 +17,8 @@ import rospy
 import rospkg
 import yaml
 
+import time
+
 
 def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config):
 

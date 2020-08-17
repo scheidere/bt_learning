@@ -26,6 +26,8 @@ import pstats
 
 from simulator.run_simulator import UnderwaterSimulator
 
+import time
+
 
 def run():
 
@@ -121,7 +123,12 @@ def run_profiler():
     p.sort_stats("cumulative").print_stats(50)
 
 if __name__ == "__main__":
+    start_time = time.time()
     run()
+    total_time = time.time() - start_time
+    print("RUNTIME: --- %s seconds ---" % (total_time))
+    print("RUNTIME: --- %s minutes ---" % (total_time)/60.0)
+    print("RUNTIME: --- %s hours ---" % (total_time)/360.0)
     # run_profiler()
     
     
