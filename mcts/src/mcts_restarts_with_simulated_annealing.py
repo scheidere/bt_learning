@@ -21,7 +21,7 @@ import yaml
 def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config):
 
 
-    num_rounds = 75
+    num_rounds = 15
     iterations_per_round = 1000
 
     shortcut_words = []

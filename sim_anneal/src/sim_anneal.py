@@ -44,7 +44,7 @@ class SimulatedAnnealing():
         # To randomize targets, go to parameters.yaml in simulator
         self.underwater_simulator = UnderwaterSimulator()
 
-        self.do_plot = False
+        self.do_plot = True
 
     def temperature(self, k): #needs to take in (k-1)/k_max
         # temp should start at max t and end at 0
