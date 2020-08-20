@@ -1,0 +1,1460 @@
++++++++++++++++++++++++++
+Results for round 0
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (is_armed) ? ( [disarm] ) ) -> ( ? ( [random_walk] ) ) )
+Shortcut words:
+-> ( (benign_object_found) [pick_up] )
+-> ( ? ( [random_walk] ) )
+-> ( (mine_found) ? ( [disarm] ) )
+-> ( [go_to_likely_target] )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( <!> ( (carrying_benign) ) [pick_up] )
++++++++++++++++++++++++++
+Results for round 1
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (is_armed) ? ( [disarm] ) ) -> ( (is_armed) ? ( [disarm] ) ) -> ( (benign_object_found) [pick_up] ) -> ( ? ( [random_walk] ) ) -> ( ? ( [go_to_likely_target] ) ) )
+Shortcut words:
+-> ( (benign_object_found) [pick_up] )
+-> ( ? ( [random_walk] ) )
+-> ( (mine_found) ? ( [disarm] ) )
+-> ( [go_to_likely_target] )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( <!> ( (carrying_benign) ) [pick_up] )
+-> ( [random_walk] )
+-> ( (mine_found) )
+-> ( [shortest_path] )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( (mine_found) [disarm] )
+-> ( (is_armed) )
+-> ( (battery_low) )
+-> ( ? ( [shortest_path] ) )
++++++++++++++++++++++++++
+Results for round 2
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (is_armed) ? ( [disarm] ) ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( ? ( [shortest_path] ) ) )
+Shortcut words:
+-> ( (benign_object_found) [pick_up] )
+-> ( ? ( [random_walk] ) )
+-> ( (mine_found) ? ( [disarm] ) )
+-> ( [go_to_likely_target] )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( <!> ( (carrying_benign) ) [pick_up] )
+-> ( [random_walk] )
+-> ( (mine_found) )
+-> ( [shortest_path] )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( (mine_found) [disarm] )
+-> ( (is_armed) )
+-> ( (battery_low) )
+-> ( ? ( [shortest_path] ) )
+-> ( <!> ( (likely_target_found) ) [go_to_likely_target] )
+-> ( <!> ( (is_armed) ) (mine_found) )
+-> ( (benign_object_found) )
++++++++++++++++++++++++++
+Results for round 3
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (mine_found) [disarm] ) -> ( (benign_object_found) [pick_up] ) -> ( ? ( [random_walk] ) ) )
+Shortcut words:
+-> ( (benign_object_found) [pick_up] )
+-> ( ? ( [random_walk] ) )
+-> ( (mine_found) ? ( [disarm] ) )
+-> ( [go_to_likely_target] )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( <!> ( (carrying_benign) ) [pick_up] )
+-> ( [random_walk] )
+-> ( (mine_found) )
+-> ( [shortest_path] )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( (mine_found) [disarm] )
+-> ( (is_armed) )
+-> ( (battery_low) )
+-> ( ? ( [shortest_path] ) )
+-> ( <!> ( (likely_target_found) ) [go_to_likely_target] )
+-> ( <!> ( (is_armed) ) (mine_found) )
+-> ( (benign_object_found) )
+-> ( <!> ( (in_comms) ) [go_to_comms] )
+-> ( ? ( (carrying_benign) [take_to_drop_off] ) )
++++++++++++++++++++++++++
+Results for round 4
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( <!> ( (is_armed) ) (mine_found) ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( [go_to_likely_target] ) )
+Shortcut words:
+-> ( (benign_object_found) [pick_up] )
+-> ( ? ( [random_walk] ) )
+-> ( (mine_found) ? ( [disarm] ) )
+-> ( [go_to_likely_target] )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( <!> ( (carrying_benign) ) [pick_up] )
+-> ( [random_walk] )
+-> ( (mine_found) )
+-> ( [shortest_path] )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( (mine_found) [disarm] )
+-> ( (is_armed) )
+-> ( (battery_low) )
+-> ( ? ( [shortest_path] ) )
+-> ( <!> ( (likely_target_found) ) [go_to_likely_target] )
+-> ( <!> ( (is_armed) ) (mine_found) )
+-> ( (benign_object_found) )
+-> ( <!> ( (in_comms) ) [go_to_comms] )
+-> ( ? ( (carrying_benign) [take_to_drop_off] ) )
+-> ( ? ( (benign_object_found) [take_to_drop_off] ) [pick_up] )
+-> ( ? ( <!> ( (is_armed) ) [disarm] ) ? ( (mine_found) ) )
++++++++++++++++++++++++++
+Results for round 5
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (benign_object_found) [pick_up] ) -> ( ? ( [shortest_path] ) ) -> ( (mine_found) ) -> ( (mine_found) [disarm] ) -> ( (mine_found) ? ( [disarm] ) ) -> ( ? ( (carrying_benign) [take_to_drop_off] ) ) )
+Shortcut words:
+-> ( (benign_object_found) [pick_up] )
+-> ( ? ( [random_walk] ) )
+-> ( (mine_found) ? ( [disarm] ) )
+-> ( [go_to_likely_target] )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( <!> ( (carrying_benign) ) [pick_up] )
+-> ( [random_walk] )
+-> ( (mine_found) )
+-> ( [shortest_path] )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( (mine_found) [disarm] )
+-> ( (is_armed) )
+-> ( (battery_low) )
+-> ( ? ( [shortest_path] ) )
+-> ( <!> ( (likely_target_found) ) [go_to_likely_target] )
+-> ( <!> ( (is_armed) ) (mine_found) )
+-> ( (benign_object_found) )
+-> ( <!> ( (in_comms) ) [go_to_comms] )
+-> ( ? ( (carrying_benign) [take_to_drop_off] ) )
+-> ( ? ( (benign_object_found) [take_to_drop_off] ) [pick_up] )
+-> ( ? ( <!> ( (is_armed) ) [disarm] ) ? ( (mine_found) ) )
+-> ( [report] ? ( [go_to_comms] ) )
+-> ( (carrying_benign) )
+-> ( ? ( <!> ( (mine_found) ) [disarm] ) )
++++++++++++++++++++++++++
+Results for round 6
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (is_armed) ? ( [disarm] ) ) -> ( <!> ( (is_armed) ) (mine_found) ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( ? ( [random_walk] ) ) -> ( <!> ( (battery_low) ) [resurface] ) -> ( <!> ( (in_comms) ) [go_to_comms] ) -> ( [report] ? ( [go_to_comms] ) ) )
+Shortcut words:
+-> ( (benign_object_found) [pick_up] )
+-> ( ? ( [random_walk] ) )
+-> ( (mine_found) ? ( [disarm] ) )
+-> ( [go_to_likely_target] )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( <!> ( (carrying_benign) ) [pick_up] )
+-> ( [random_walk] )
+-> ( (mine_found) )
+-> ( [shortest_path] )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( (mine_found) [disarm] )
+-> ( (is_armed) )
+-> ( (battery_low) )
+-> ( ? ( [shortest_path] ) )
+-> ( <!> ( (likely_target_found) ) [go_to_likely_target] )
+-> ( <!> ( (is_armed) ) (mine_found) )
+-> ( (benign_object_found) )
+-> ( <!> ( (in_comms) ) [go_to_comms] )
+-> ( ? ( (carrying_benign) [take_to_drop_off] ) )
+-> ( ? ( (benign_object_found) [take_to_drop_off] ) [pick_up] )
+-> ( ? ( <!> ( (is_armed) ) [disarm] ) ? ( (mine_found) ) )
+-> ( [report] ? ( [go_to_comms] ) )
+-> ( (carrying_benign) )
+-> ( ? ( <!> ( (mine_found) ) [disarm] ) )
+-> ( ? ( <!> ( (benign_object_found) ) ) (carrying_benign) )
+-> ( (at_surface) ? ( <!> ( (battery_low) ) ) )
+-> ( ? ( (benign_object_found) [take_to_drop_off] ) )
++++++++++++++++++++++++++
+Results for round 7
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( ? ( <!> ( (is_armed) ) [disarm] ) ? ( (mine_found) ) ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( ? ( [shortest_path] ) ) )
+Shortcut words:
+-> ( (benign_object_found) [pick_up] )
+-> ( ? ( [random_walk] ) )
+-> ( (mine_found) ? ( [disarm] ) )
+-> ( [go_to_likely_target] )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( <!> ( (carrying_benign) ) [pick_up] )
+-> ( [random_walk] )
+-> ( (mine_found) )
+-> ( [shortest_path] )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( (mine_found) [disarm] )
+-> ( (is_armed) )
+-> ( (battery_low) )
+-> ( ? ( [shortest_path] ) )
+-> ( <!> ( (likely_target_found) ) [go_to_likely_target] )
+-> ( <!> ( (is_armed) ) (mine_found) )
+-> ( (benign_object_found) )
+-> ( <!> ( (in_comms) ) [go_to_comms] )
+-> ( ? ( (carrying_benign) [take_to_drop_off] ) )
+-> ( ? ( (benign_object_found) [take_to_drop_off] ) [pick_up] )
+-> ( ? ( <!> ( (is_armed) ) [disarm] ) ? ( (mine_found) ) )
+-> ( [report] ? ( [go_to_comms] ) )
+-> ( (carrying_benign) )
+-> ( ? ( <!> ( (mine_found) ) [disarm] ) )
+-> ( ? ( <!> ( (benign_object_found) ) ) (carrying_benign) )
+-> ( (at_surface) ? ( <!> ( (battery_low) ) ) )
+-> ( ? ( (benign_object_found) [take_to_drop_off] ) )
+-> ( (at_surface) ? ( (wildlife_found) [go_to_comms] ) )
+-> ( ? ( <!> ( (is_armed) ) ) ? ( (mine_found) ) )
+-> ( [take_to_drop_off] )
+-> ( (is_armed) ? ( <!> ( (mine_found) ) [disarm] ) )
++++++++++++++++++++++++++
+Results for round 8
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (is_armed) ? ( [disarm] ) ) -> ( (benign_object_found) [pick_up] ) -> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) ) -> ( ? ( (carrying_benign) [take_to_drop_off] ) ) )
+Shortcut words:
+-> ( (benign_object_found) [pick_up] )
+-> ( ? ( [random_walk] ) )
+-> ( (mine_found) ? ( [disarm] ) )
+-> ( [go_to_likely_target] )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( <!> ( (carrying_benign) ) [pick_up] )
+-> ( [random_walk] )
+-> ( (mine_found) )
+-> ( [shortest_path] )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( (mine_found) [disarm] )
+-> ( (is_armed) )
+-> ( (battery_low) )
+-> ( ? ( [shortest_path] ) )
+-> ( <!> ( (likely_target_found) ) [go_to_likely_target] )
+-> ( <!> ( (is_armed) ) (mine_found) )
+-> ( (benign_object_found) )
+-> ( <!> ( (in_comms) ) [go_to_comms] )
+-> ( ? ( (carrying_benign) [take_to_drop_off] ) )
+-> ( ? ( (benign_object_found) [take_to_drop_off] ) [pick_up] )
+-> ( ? ( <!> ( (is_armed) ) [disarm] ) ? ( (mine_found) ) )
+-> ( [report] ? ( [go_to_comms] ) )
+-> ( (carrying_benign) )
+-> ( ? ( <!> ( (mine_found) ) [disarm] ) )
+-> ( ? ( <!> ( (benign_object_found) ) ) (carrying_benign) )
+-> ( (at_surface) ? ( <!> ( (battery_low) ) ) )
+-> ( ? ( (benign_object_found) [take_to_drop_off] ) )
+-> ( (at_surface) ? ( (wildlife_found) [go_to_comms] ) )
+-> ( ? ( <!> ( (is_armed) ) ) ? ( (mine_found) ) )
+-> ( [take_to_drop_off] )
+-> ( (is_armed) ? ( <!> ( (mine_found) ) [disarm] ) )
+-> ( ? ( (carrying_benign) ) )
+-> ( (likely_target_found) ? ( [go_to_likely_target] ) )
+-> ( [go_to_comms] )
+-> ( ? ( [pick_up] ) )
++++++++++++++++++++++++++
+Results for round 9
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (is_armed) ? ( [disarm] ) ) -> ( ? ( [random_walk] ) ) )
+Shortcut words:
+-> ( (benign_object_found) [pick_up] )
+-> ( ? ( [random_walk] ) )
+-> ( (mine_found) ? ( [disarm] ) )
+-> ( [go_to_likely_target] )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( <!> ( (carrying_benign) ) [pick_up] )
+-> ( [random_walk] )
+-> ( (mine_found) )
+-> ( [shortest_path] )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( (mine_found) [disarm] )
+-> ( (is_armed) )
+-> ( (battery_low) )
+-> ( ? ( [shortest_path] ) )
+-> ( <!> ( (likely_target_found) ) [go_to_likely_target] )
+-> ( <!> ( (is_armed) ) (mine_found) )
+-> ( (benign_object_found) )
+-> ( <!> ( (in_comms) ) [go_to_comms] )
+-> ( ? ( (carrying_benign) [take_to_drop_off] ) )
+-> ( ? ( (benign_object_found) [take_to_drop_off] ) [pick_up] )
+-> ( ? ( <!> ( (is_armed) ) [disarm] ) ? ( (mine_found) ) )
+-> ( [report] ? ( [go_to_comms] ) )
+-> ( (carrying_benign) )
+-> ( ? ( <!> ( (mine_found) ) [disarm] ) )
+-> ( ? ( <!> ( (benign_object_found) ) ) (carrying_benign) )
+-> ( (at_surface) ? ( <!> ( (battery_low) ) ) )
+-> ( ? ( (benign_object_found) [take_to_drop_off] ) )
+-> ( (at_surface) ? ( (wildlife_found) [go_to_comms] ) )
+-> ( ? ( <!> ( (is_armed) ) ) ? ( (mine_found) ) )
+-> ( [take_to_drop_off] )
+-> ( (is_armed) ? ( <!> ( (mine_found) ) [disarm] ) )
+-> ( ? ( (carrying_benign) ) )
+-> ( (likely_target_found) ? ( [go_to_likely_target] ) )
+-> ( [go_to_comms] )
+-> ( ? ( [pick_up] ) )
++++++++++++++++++++++++++
+Results for round 10
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( (mine_found) [disarm] ) -> ( ? ( <!> ( (benign_object_found) ) ) (carrying_benign) ) -> ( ? ( <!> ( (benign_object_found) ) ) (carrying_benign) ) -> ( ? ( [shortest_path] ) ) -> ( (carrying_benign) ) -> ( <!> ( (likely_target_found) ) [go_to_likely_target] ) -> ( ? ( [shortest_path] ) ) -> ( <!> ( (is_armed) ) (mine_found) ) )
+Shortcut words:
+-> ( (benign_object_found) [pick_up] )
+-> ( ? ( [random_walk] ) )
+-> ( (mine_found) ? ( [disarm] ) )
+-> ( [go_to_likely_target] )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( <!> ( (carrying_benign) ) [pick_up] )
+-> ( [random_walk] )
+-> ( (mine_found) )
+-> ( [shortest_path] )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( (mine_found) [disarm] )
+-> ( (is_armed) )
+-> ( (battery_low) )
+-> ( ? ( [shortest_path] ) )
+-> ( <!> ( (likely_target_found) ) [go_to_likely_target] )
+-> ( <!> ( (is_armed) ) (mine_found) )
+-> ( (benign_object_found) )
+-> ( <!> ( (in_comms) ) [go_to_comms] )
+-> ( ? ( (carrying_benign) [take_to_drop_off] ) )
+-> ( ? ( (benign_object_found) [take_to_drop_off] ) [pick_up] )
+-> ( ? ( <!> ( (is_armed) ) [disarm] ) ? ( (mine_found) ) )
+-> ( [report] ? ( [go_to_comms] ) )
+-> ( (carrying_benign) )
+-> ( ? ( <!> ( (mine_found) ) [disarm] ) )
+-> ( ? ( <!> ( (benign_object_found) ) ) (carrying_benign) )
+-> ( (at_surface) ? ( <!> ( (battery_low) ) ) )
+-> ( ? ( (benign_object_found) [take_to_drop_off] ) )
+-> ( (at_surface) ? ( (wildlife_found) [go_to_comms] ) )
+-> ( ? ( <!> ( (is_armed) ) ) ? ( (mine_found) ) )
+-> ( [take_to_drop_off] )
+-> ( (is_armed) ? ( <!> ( (mine_found) ) [disarm] ) )
+-> ( ? ( (carrying_benign) ) )
+-> ( (likely_target_found) ? ( [go_to_likely_target] ) )
+-> ( [go_to_comms] )
+-> ( ? ( [pick_up] ) )
+-> ( <!> ( (wildlife_found) ) <!> ( (in_comms) ) ? ( [go_to_comms] ) [report] )
+-> ( (at_surface) [resurface] )
++++++++++++++++++++++++++
+Results for round 11
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( ? ( (carrying_benign) ) ) -> ( ? ( [go_to_likely_target] ) ) )
+Shortcut words:
+-> ( (is_armed) ? ( <!> ( (mine_found) ) [disarm] ) )
+-> ( <!> ( (wildlife_found) ) <!> ( (in_comms) ) ? ( [go_to_comms] ) [report] )
+-> ( ? ( (carrying_benign) [take_to_drop_off] ) )
+-> ( (carrying_benign) )
+-> ( ? ( [shortest_path] ) )
+-> ( (benign_object_found) [pick_up] )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( ? ( <!> ( (is_armed) ) [disarm] ) ? ( (mine_found) ) )
+-> ( ? ( <!> ( (is_armed) ) ) ? ( (mine_found) ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( (battery_low) )
+-> ( (at_surface) ? ( <!> ( (battery_low) ) ) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( [shortest_path] )
+-> ( ? ( (carrying_benign) ) )
++++++++++++++++++++++++++
+Results for round 12
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( [random_walk] ) )
+Shortcut words:
+-> ( (is_armed) ? ( <!> ( (mine_found) ) [disarm] ) )
+-> ( <!> ( (wildlife_found) ) <!> ( (in_comms) ) ? ( [go_to_comms] ) [report] )
+-> ( ? ( (carrying_benign) [take_to_drop_off] ) )
+-> ( (carrying_benign) )
+-> ( ? ( [shortest_path] ) )
+-> ( (benign_object_found) [pick_up] )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( ? ( <!> ( (is_armed) ) [disarm] ) ? ( (mine_found) ) )
+-> ( ? ( <!> ( (is_armed) ) ) ? ( (mine_found) ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( (battery_low) )
+-> ( (at_surface) ? ( <!> ( (battery_low) ) ) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( [shortest_path] )
+-> ( ? ( (carrying_benign) ) )
+-> ( [random_walk] )
+-> ( (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( [go_to_likely_target] )
+-> ( ? ( (at_surface) [resurface] ) ? ( <!> ( (battery_low) ) ) )
++++++++++++++++++++++++++
+Results for round 13
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( ? ( <!> ( (is_armed) ) [disarm] ) ? ( (mine_found) ) ) -> ( (is_armed) ? ( [disarm] ) ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) ) -> ( [shortest_path] ) )
+Shortcut words:
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( [random_walk] )
+-> ( <!> ( (wildlife_found) ) <!> ( (in_comms) ) ? ( [go_to_comms] ) [report] )
+-> ( ? ( <!> ( (is_armed) ) ) ? ( (mine_found) ) )
+-> ( (is_armed) ? ( <!> ( (mine_found) ) [disarm] ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( (battery_low) )
+-> ( ? ( <!> ( (is_armed) ) [disarm] ) ? ( (mine_found) ) )
+-> ( [go_to_likely_target] )
+-> ( (benign_object_found) [pick_up] )
+-> ( (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( ? ( [shortest_path] ) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( [shortest_path] )
+-> ( (carrying_benign) )
++++++++++++++++++++++++++
+Results for round 14
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( ? ( <!> ( (is_armed) ) [disarm] ) ? ( (mine_found) ) ) -> ( ? ( [shortest_path] ) ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) )
+Shortcut words:
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( [random_walk] )
+-> ( <!> ( (wildlife_found) ) <!> ( (in_comms) ) ? ( [go_to_comms] ) [report] )
+-> ( ? ( <!> ( (is_armed) ) ) ? ( (mine_found) ) )
+-> ( (is_armed) ? ( <!> ( (mine_found) ) [disarm] ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( (battery_low) )
+-> ( ? ( <!> ( (is_armed) ) [disarm] ) ? ( (mine_found) ) )
+-> ( [go_to_likely_target] )
+-> ( (benign_object_found) [pick_up] )
+-> ( (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( ? ( [shortest_path] ) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( [shortest_path] )
+-> ( (carrying_benign) )
+-> ( (at_surface) ? ( [report] ) )
+-> ( ? ( [disarm] ) )
+-> ( (at_surface) ? ( (battery_low) [resurface] ) )
+-> ( ? ( [random_walk] ) )
++++++++++++++++++++++++++
+Results for round 15
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( (benign_object_found) [pick_up] ) -> ( (is_armed) ? ( <!> ( (mine_found) ) [disarm] ) ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( ? ( [shortest_path] ) ) )
+Shortcut words:
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( [random_walk] )
+-> ( (benign_object_found) [pick_up] )
+-> ( (is_armed) ? ( <!> ( (mine_found) ) [disarm] ) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( ? ( [random_walk] ) )
+-> ( ? ( <!> ( (is_armed) ) [disarm] ) ? ( (mine_found) ) )
+-> ( ? ( <!> ( (is_armed) ) ) ? ( (mine_found) ) )
+-> ( [shortest_path] )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( <!> ( (wildlife_found) ) <!> ( (in_comms) ) ? ( [go_to_comms] ) [report] )
+-> ( ? ( [shortest_path] ) )
++++++++++++++++++++++++++
+Results for round 16
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (is_armed) ? ( [disarm] ) ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( [random_walk] ) -> ( ? ( [shortest_path] ) ) )
+Shortcut words:
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( [random_walk] )
+-> ( (benign_object_found) [pick_up] )
+-> ( (is_armed) ? ( <!> ( (mine_found) ) [disarm] ) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( ? ( [random_walk] ) )
+-> ( ? ( <!> ( (is_armed) ) [disarm] ) ? ( (mine_found) ) )
+-> ( ? ( <!> ( (is_armed) ) ) ? ( (mine_found) ) )
+-> ( [shortest_path] )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( <!> ( (wildlife_found) ) <!> ( (in_comms) ) ? ( [go_to_comms] ) [report] )
+-> ( ? ( [shortest_path] ) )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( (mine_found) ? ( [disarm] ) )
+-> ( ? ( (battery_low) [resurface] ) )
++++++++++++++++++++++++++
+Results for round 17
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( ? ( <!> ( (is_armed) ) ) ? ( (mine_found) ) ) -> ( (benign_object_found) [pick_up] ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( ? ( [random_walk] ) ) )
+Shortcut words:
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( ? ( <!> ( (is_armed) ) ) ? ( (mine_found) ) )
+-> ( (is_armed) ? ( <!> ( (mine_found) ) [disarm] ) )
+-> ( ? ( [shortest_path] ) )
+-> ( ? ( <!> ( (is_armed) ) [disarm] ) ? ( (mine_found) ) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( [random_walk] )
+-> ( (benign_object_found) [pick_up] )
+-> ( ? ( [random_walk] ) )
++++++++++++++++++++++++++
+Results for round 18
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (mine_found) [disarm] ) -> ( ? ( [random_walk] ) ) -> ( (is_armed) ? ( <!> ( (mine_found) ) [disarm] ) ) -> ( ? ( [disarm] ) ) )
+Shortcut words:
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( ? ( <!> ( (is_armed) ) ) ? ( (mine_found) ) )
+-> ( (is_armed) ? ( <!> ( (mine_found) ) [disarm] ) )
+-> ( ? ( [shortest_path] ) )
+-> ( ? ( <!> ( (is_armed) ) [disarm] ) ? ( (mine_found) ) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( [random_walk] )
+-> ( (benign_object_found) [pick_up] )
+-> ( ? ( [random_walk] ) )
+-> ( (is_armed) )
+-> ( (mine_found) [disarm] )
+-> ( ? ( [resurface] ) )
+-> ( [shortest_path] )
++++++++++++++++++++++++++
+Results for round 19
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( (is_armed) ? ( <!> ( (mine_found) ) [disarm] ) ) -> ( (benign_object_found) [pick_up] ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( ? ( [shortest_path] ) ) )
+Shortcut words:
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( ? ( [random_walk] ) )
+-> ( (benign_object_found) [pick_up] )
+-> ( (mine_found) [disarm] )
+-> ( (is_armed) )
+-> ( (is_armed) ? ( <!> ( (mine_found) ) [disarm] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( ? ( [shortest_path] ) )
++++++++++++++++++++++++++
+Results for round 20
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (mine_found) [disarm] ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( ? ( [random_walk] ) ) )
+Shortcut words:
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( ? ( [random_walk] ) )
+-> ( (benign_object_found) [pick_up] )
+-> ( (mine_found) [disarm] )
+-> ( (is_armed) )
+-> ( (is_armed) ? ( <!> ( (mine_found) ) [disarm] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( ? ( [shortest_path] ) )
+-> ( <!> ( (at_surface) ) ? ( [go_to_comms] ) )
+-> ( (benign_object_found) )
+-> ( [shortest_path] )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( ? ( [resurface] ) )
++++++++++++++++++++++++++
+Results for round 21
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( (mine_found) [disarm] ) -> ( (is_armed) ? ( [disarm] ) ) -> ( (benign_object_found) ) -> ( [shortest_path] ) )
+Shortcut words:
+-> ( <!> ( (at_surface) ) ? ( [go_to_comms] ) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( [shortest_path] )
+-> ( (is_armed) ? ( <!> ( (mine_found) ) [disarm] ) )
+-> ( ? ( [random_walk] ) )
+-> ( (benign_object_found) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( (mine_found) [disarm] )
++++++++++++++++++++++++++
+Results for round 22
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (is_armed) ? ( [disarm] ) ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( ? ( [shortest_path] ) ) -> ( (is_armed) ? ( [disarm] ) ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( ? ( [shortest_path] ) ) -> ( (is_armed) ? ( [disarm] ) ) )
+Shortcut words:
+-> ( <!> ( (at_surface) ) ? ( [go_to_comms] ) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( [shortest_path] )
+-> ( (is_armed) ? ( <!> ( (mine_found) ) [disarm] ) )
+-> ( ? ( [random_walk] ) )
+-> ( (benign_object_found) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( (mine_found) [disarm] )
+-> ( (at_surface) (battery_low) )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( [go_to_likely_target] )
+-> ( [random_walk] )
+-> ( (is_armed) )
+-> ( ? ( [shortest_path] ) )
+-> ( <!> ( (wildlife_found) ) (in_comms) )
++++++++++++++++++++++++++
+Results for round 23
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( (is_armed) ? ( [disarm] ) ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( [random_walk] ) )
+Shortcut words:
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( [random_walk] )
+-> ( (is_armed) ? ( [disarm] ) )
++++++++++++++++++++++++++
+Results for round 24
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( (is_armed) ? ( [disarm] ) ) -> ( [random_walk] ) -> ( ? ( [random_walk] ) ) )
+Shortcut words:
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( [random_walk] )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( [go_to_likely_target] )
+-> ( ? ( [random_walk] ) )
+-> ( (is_armed) [disarm] )
+-> ( ? ( [shortest_path] ) )
++++++++++++++++++++++++++
+Results for round 25
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( (is_armed) [disarm] ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( (is_armed) ? ( [disarm] ) ) -> ( [random_walk] ) )
+Shortcut words:
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( (is_armed) [disarm] )
+-> ( ? ( [random_walk] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( [random_walk] )
++++++++++++++++++++++++++
+Results for round 26
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (is_armed) ? ( [disarm] ) ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( [random_walk] ) )
+Shortcut words:
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( (is_armed) [disarm] )
+-> ( ? ( [random_walk] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( [random_walk] )
+-> ( ? ( (likely_target_found) [go_to_likely_target] ) )
+-> ( [go_to_likely_target] )
+-> ( (is_armed) )
+-> ( (in_comms) )
+-> ( ? ( [shortest_path] ) )
+-> ( ? ( [resurface] ) )
+-> ( ? ( (in_comms) [report] ) ? ( [go_to_comms] ) )
++++++++++++++++++++++++++
+Results for round 27
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( (is_armed) ? ( [disarm] ) ) -> ( (is_armed) [disarm] ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( ? ( [shortest_path] ) ) )
+Shortcut words:
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( (is_armed) )
+-> ( ? ( (likely_target_found) [go_to_likely_target] ) )
+-> ( (in_comms) )
+-> ( (is_armed) [disarm] )
+-> ( [go_to_likely_target] )
+-> ( ? ( [random_walk] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( [random_walk] )
+-> ( ? ( [shortest_path] ) )
++++++++++++++++++++++++++
+Results for round 28
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (is_armed) [disarm] ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( ? ( [random_walk] ) ) )
+Shortcut words:
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( (is_armed) )
+-> ( ? ( (likely_target_found) [go_to_likely_target] ) )
+-> ( (in_comms) )
+-> ( (is_armed) [disarm] )
+-> ( [go_to_likely_target] )
+-> ( ? ( [random_walk] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( [random_walk] )
+-> ( ? ( [shortest_path] ) )
+-> ( (benign_object_found) ? ( [take_to_drop_off] ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( ? ( [resurface] ) )
++++++++++++++++++++++++++
+Results for round 29
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( (is_armed) ? ( [disarm] ) ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( (benign_object_found) ? ( [take_to_drop_off] ) ) -> ( [random_walk] ) )
+Shortcut words:
+-> ( (in_comms) )
+-> ( (benign_object_found) ? ( [take_to_drop_off] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( ? ( [shortest_path] ) )
+-> ( (is_armed) [disarm] )
+-> ( (is_armed) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( [random_walk] )
++++++++++++++++++++++++++
+Results for round 30
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( ? ( [shortest_path] ) ) -> ( [go_to_likely_target] ) -> ( (is_armed) ? ( [disarm] ) ) )
+Shortcut words:
+-> ( (in_comms) )
+-> ( (benign_object_found) ? ( [take_to_drop_off] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( ? ( [shortest_path] ) )
+-> ( (is_armed) [disarm] )
+-> ( (is_armed) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( [random_walk] )
+-> ( ? ( (likely_target_found) [go_to_likely_target] ) )
+-> ( <!> ( (benign_object_found) ) [take_to_drop_off] )
+-> ( ? ( <!> ( (likely_target_found) ) [go_to_likely_target] ) )
+-> ( ? ( [random_walk] ) )
+-> ( [shortest_path] )
++++++++++++++++++++++++++
+Results for round 31
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( (is_armed) [disarm] ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( ? ( [shortest_path] ) ) )
+Shortcut words:
+-> ( (is_armed) [disarm] )
+-> ( ? ( (likely_target_found) [go_to_likely_target] ) )
+-> ( (in_comms) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( ? ( [random_walk] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( [shortest_path] )
+-> ( ? ( [shortest_path] ) )
++++++++++++++++++++++++++
+Results for round 32
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( ? ( [shortest_path] ) ) -> ( <!> ( (at_surface) ) ? ( [go_to_comms] ) ) )
+Shortcut words:
+-> ( (is_armed) [disarm] )
+-> ( ? ( (likely_target_found) [go_to_likely_target] ) )
+-> ( (in_comms) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( ? ( [random_walk] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( [shortest_path] )
+-> ( ? ( [shortest_path] ) )
+-> ( (benign_object_found) [pick_up] )
+-> ( ? ( <!> ( (benign_object_found) ) ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( (likely_target_found) ? ( [go_to_likely_target] ) )
+-> ( [random_walk] )
+-> ( (battery_low) )
+-> ( ? ( <!> ( (benign_object_found) ) ) (carrying_benign) )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( [go_to_likely_target] )
++++++++++++++++++++++++++
+Results for round 33
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( (benign_object_found) [pick_up] ) -> ( (is_armed) [disarm] ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( [go_to_likely_target] ) )
+Shortcut words:
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( (battery_low) )
+-> ( [random_walk] )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( (benign_object_found) [pick_up] )
+-> ( [shortest_path] )
+-> ( (is_armed) [disarm] )
+-> ( ? ( <!> ( (benign_object_found) ) ) (carrying_benign) )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( ? ( [random_walk] ) )
+-> ( [go_to_likely_target] )
++++++++++++++++++++++++++
+Results for round 34
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (is_armed) [disarm] ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( [shortest_path] ) -> ( <!> ( (mine_found) ) ? ( (is_armed) [disarm] ) ) )
+Shortcut words:
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( (battery_low) )
+-> ( [random_walk] )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( (benign_object_found) [pick_up] )
+-> ( [shortest_path] )
+-> ( (is_armed) [disarm] )
+-> ( ? ( <!> ( (benign_object_found) ) ) (carrying_benign) )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( ? ( [random_walk] ) )
+-> ( [go_to_likely_target] )
+-> ( ? ( [go_to_comms] ) )
+-> ( (benign_object_found) )
+-> ( ? ( [shortest_path] ) )
++++++++++++++++++++++++++
+Results for round 35
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( (is_armed) [disarm] ) -> ( (benign_object_found) [pick_up] ) -> ( (is_armed) ? ( [disarm] ) ) -> ( (benign_object_found) ) -> ( ? ( [random_walk] ) ) )
+Shortcut words:
+-> ( (benign_object_found) [pick_up] )
+-> ( [shortest_path] )
+-> ( (battery_low) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( (is_armed) [disarm] )
+-> ( ? ( [shortest_path] ) )
+-> ( (benign_object_found) )
+-> ( ? ( [random_walk] ) )
++++++++++++++++++++++++++
+Results for round 36
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( (is_armed) [disarm] ) -> ( (benign_object_found) [pick_up] ) -> ( [shortest_path] ) -> ( ? ( [shortest_path] ) ) )
+Shortcut words:
+-> ( (benign_object_found) [pick_up] )
+-> ( [shortest_path] )
+-> ( (battery_low) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( (is_armed) [disarm] )
+-> ( ? ( [shortest_path] ) )
+-> ( (benign_object_found) )
+-> ( ? ( [random_walk] ) )
+-> ( (at_surface) [resurface] )
++++++++++++++++++++++++++
+Results for round 37
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( (benign_object_found) [pick_up] ) -> ( (is_armed) ? ( [disarm] ) ) -> ( (battery_low) ) -> ( ? ( [random_walk] ) ) )
+Shortcut words:
+-> ( (is_armed) [disarm] )
+-> ( ? ( [shortest_path] ) )
+-> ( (benign_object_found) [pick_up] )
+-> ( [shortest_path] )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( ? ( [random_walk] ) )
+-> ( (battery_low) )
++++++++++++++++++++++++++
+Results for round 38
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( (battery_low) ) -> ( (is_armed) [disarm] ) -> ( ? ( [random_walk] ) ) )
+Shortcut words:
+-> ( (is_armed) [disarm] )
+-> ( ? ( [shortest_path] ) )
+-> ( (benign_object_found) [pick_up] )
+-> ( [shortest_path] )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( ? ( [random_walk] ) )
+-> ( (battery_low) )
+-> ( [go_to_likely_target] )
+-> ( (benign_object_found) ? ( [pick_up] ) )
++++++++++++++++++++++++++
+Results for round 39
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( (battery_low) ) -> ( (is_armed) ? ( [disarm] ) ) -> ( ? ( [shortest_path] ) ) )
+Shortcut words:
+-> ( (benign_object_found) [pick_up] )
+-> ( [go_to_likely_target] )
+-> ( [shortest_path] )
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( (battery_low) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( ? ( [random_walk] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( (is_armed) [disarm] )
+-> ( ? ( [shortest_path] ) )
++++++++++++++++++++++++++
+Results for round 40
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (is_armed) [disarm] ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( ? ( [shortest_path] ) ) )
+Shortcut words:
+-> ( (benign_object_found) [pick_up] )
+-> ( [go_to_likely_target] )
+-> ( [shortest_path] )
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( (battery_low) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( ? ( [random_walk] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( (is_armed) [disarm] )
+-> ( ? ( [shortest_path] ) )
+-> ( (at_surface) <!> ( (in_comms) ) ? ( [report] ) ? ( <!> ( (wildlife_found) ) ) [go_to_comms] )
+-> ( (benign_object_found) )
+-> ( [random_walk] )
+-> ( [resurface] )
++++++++++++++++++++++++++
+Results for round 41
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( (benign_object_found) ? ( [pick_up] ) ) -> ( (is_armed) ? ( [disarm] ) ) -> ( (is_armed) [disarm] ) -> ( (battery_low) ) -> ( [random_walk] ) )
+Shortcut words:
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( ? ( [random_walk] ) )
+-> ( (benign_object_found) [pick_up] )
+-> ( (is_armed) [disarm] )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( (battery_low) )
+-> ( ? ( [shortest_path] ) )
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( [random_walk] )
++++++++++++++++++++++++++
+Results for round 42
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( (is_armed) ? ( [disarm] ) ) -> ( ? ( [shortest_path] ) ) )
+Shortcut words:
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( ? ( [random_walk] ) )
+-> ( (benign_object_found) [pick_up] )
+-> ( (is_armed) [disarm] )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( (battery_low) )
+-> ( ? ( [shortest_path] ) )
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( [random_walk] )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( ? ( (benign_object_found) [take_to_drop_off] ) )
++++++++++++++++++++++++++
+Results for round 43
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( ? ( [random_walk] ) ) )
+Shortcut words:
+-> ( (benign_object_found) [pick_up] )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( (is_armed) [disarm] )
+-> ( ? ( [shortest_path] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( ? ( [random_walk] ) )
++++++++++++++++++++++++++
+Results for round 44
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( ? ( [shortest_path] ) ) -> ( (benign_object_found) ? ( [pick_up] ) ) -> ( ? ( <!> ( (wildlife_found) ) [go_to_comms] ) [report] ) -> ( (benign_object_found) [pick_up] ) )
+Shortcut words:
+-> ( (benign_object_found) [pick_up] )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( (is_armed) [disarm] )
+-> ( ? ( [shortest_path] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( ? ( [random_walk] ) )
+-> ( [shortest_path] )
++++++++++++++++++++++++++
+Results for round 45
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( (benign_object_found) [pick_up] ) -> ( (is_armed) ? ( [disarm] ) ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( ? ( [random_walk] ) ) )
+Shortcut words:
+-> ( (is_armed) [disarm] )
+-> ( ? ( [random_walk] ) )
+-> ( (benign_object_found) [pick_up] )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( ? ( [shortest_path] ) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( [shortest_path] )
++++++++++++++++++++++++++
+Results for round 46
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (benign_object_found) [pick_up] ) -> ( (is_armed) [disarm] ) -> ( ? ( [shortest_path] ) ) -> ( ? ( (in_comms) (at_surface) [go_to_comms] ) ? ( [report] ) ) )
+Shortcut words:
+-> ( (is_armed) [disarm] )
+-> ( ? ( [random_walk] ) )
+-> ( (benign_object_found) [pick_up] )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( ? ( [shortest_path] ) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( [shortest_path] )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( ? ( <!> ( (benign_object_found) ) ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( [random_walk] )
+-> ( ? ( [resurface] ) )
++++++++++++++++++++++++++
+Results for round 47
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( (is_armed) ? ( [disarm] ) ) -> ( (benign_object_found) [pick_up] ) -> ( ? ( <!> ( (benign_object_found) ) ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) ) -> ( (is_armed) [disarm] ) -> ( ? ( [shortest_path] ) ) )
+Shortcut words:
+-> ( ? ( <!> ( (benign_object_found) ) ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( (is_armed) [disarm] )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( [shortest_path] )
+-> ( (benign_object_found) [pick_up] )
+-> ( ? ( [random_walk] ) )
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( [random_walk] )
+-> ( ? ( [shortest_path] ) )
++++++++++++++++++++++++++
+Results for round 48
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( [random_walk] ) -> ( (benign_object_found) ? ( [pick_up] ) ) -> ( ? ( <!> ( (benign_object_found) ) ) (carrying_benign) ) )
+Shortcut words:
+-> ( ? ( <!> ( (benign_object_found) ) ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( (is_armed) [disarm] )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( [shortest_path] )
+-> ( (benign_object_found) [pick_up] )
+-> ( ? ( [random_walk] ) )
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( [random_walk] )
+-> ( ? ( [shortest_path] ) )
+-> ( (is_armed) (mine_found) ? ( [disarm] ) )
+-> ( (benign_object_found) )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( [go_to_likely_target] )
+-> ( ? ( [take_to_drop_off] ) )
++++++++++++++++++++++++++
+Results for round 49
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( (benign_object_found) ? ( [pick_up] ) ) -> ( (is_armed) (mine_found) ? ( [disarm] ) ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( [shortest_path] ) )
+Shortcut words:
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( (is_armed) [disarm] )
+-> ( ? ( [take_to_drop_off] ) )
+-> ( (is_armed) (mine_found) ? ( [disarm] ) )
+-> ( [shortest_path] )
++++++++++++++++++++++++++
+Results for round 50
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( ? ( [shortest_path] ) ) -> ( ? ( [resurface] ) ) -> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) ) )
+Shortcut words:
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( (is_armed) [disarm] )
+-> ( ? ( [take_to_drop_off] ) )
+-> ( (is_armed) (mine_found) ? ( [disarm] ) )
+-> ( [shortest_path] )
+-> ( ? ( [random_walk] ) )
+-> ( (is_armed) )
+-> ( [go_to_likely_target] )
+-> ( ? ( <!> ( (benign_object_found) ) ) (carrying_benign) )
+-> ( [go_to_comms] )
+-> ( ? ( [shortest_path] ) )
++++++++++++++++++++++++++
+Results for round 51
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( ? ( <!> ( (benign_object_found) ) ) (carrying_benign) ) -> ( (is_armed) [disarm] ) -> ( ? ( [random_walk] ) ) )
+Shortcut words:
+-> ( ? ( <!> ( (benign_object_found) ) ) (carrying_benign) )
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( (is_armed) [disarm] )
+-> ( ? ( [random_walk] ) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( ? ( [shortest_path] ) )
+-> ( [shortest_path] )
++++++++++++++++++++++++++
+Results for round 52
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (is_armed) [disarm] ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( ? ( [shortest_path] ) ) -> ( (mine_found) ? ( [disarm] ) ) -> ( (benign_object_found) ? ( [pick_up] ) ) )
+Shortcut words:
+-> ( ? ( <!> ( (benign_object_found) ) ) (carrying_benign) )
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( (is_armed) [disarm] )
+-> ( ? ( [random_walk] ) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( ? ( [shortest_path] ) )
+-> ( [shortest_path] )
+-> ( (benign_object_found) )
+-> ( ? ( [disarm] ) )
+-> ( [random_walk] )
++++++++++++++++++++++++++
+Results for round 53
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( ? ( <!> ( (benign_object_found) ) ) (carrying_benign) ) -> ( ? ( [disarm] ) ) )
+Shortcut words:
+-> ( ? ( <!> ( (benign_object_found) ) ) (carrying_benign) )
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( ? ( [shortest_path] ) )
+-> ( (is_armed) [disarm] )
+-> ( [shortest_path] )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( ? ( [disarm] ) )
++++++++++++++++++++++++++
+Results for round 54
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) ) -> ( ? ( <!> ( (is_armed) ) <!> ( (mine_found) ) [disarm] ) ) -> ( ? ( <!> ( (at_surface) ) [resurface] ) ? ( <!> ( (battery_low) ) ) ) )
+Shortcut words:
+-> ( ? ( <!> ( (benign_object_found) ) ) (carrying_benign) )
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( ? ( [shortest_path] ) )
+-> ( (is_armed) [disarm] )
+-> ( [shortest_path] )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) (carrying_benign) ? ( [take_to_drop_off] ) )
+-> ( ? ( [disarm] ) )
+-> ( ? ( <!> ( (is_armed) ) <!> ( (mine_found) ) [disarm] ) )
+-> ( (is_armed) )
+-> ( ? ( <!> ( (mine_found) ) [disarm] ) ? ( (is_armed) ) )
+-> ( (benign_object_found) )
+-> ( ? ( [random_walk] ) )
+-> ( [go_to_likely_target] )
+-> ( (at_surface) )
+-> ( ? ( <!> ( (benign_object_found) ) <!> ( (carrying_benign) ) ) [pick_up] )
+-> ( [random_walk] )
++++++++++++++++++++++++++
+Results for round 55
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( (is_armed) [disarm] ) -> ( (benign_object_found) ? ( [pick_up] ) ) -> ( [go_to_likely_target] ) )
+Shortcut words:
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( (at_surface) )
+-> ( ? ( <!> ( (benign_object_found) ) <!> ( (carrying_benign) ) ) [pick_up] )
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( ? ( [shortest_path] ) )
+-> ( ? ( <!> ( (mine_found) ) [disarm] ) ? ( (is_armed) ) )
+-> ( (is_armed) [disarm] )
+-> ( [go_to_likely_target] )
++++++++++++++++++++++++++
+Results for round 56
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (is_armed) [disarm] ) -> ( (is_armed) [disarm] ) -> ( ? ( [shortest_path] ) ) )
+Shortcut words:
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( (at_surface) )
+-> ( ? ( <!> ( (benign_object_found) ) <!> ( (carrying_benign) ) ) [pick_up] )
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( ? ( [shortest_path] ) )
+-> ( ? ( <!> ( (mine_found) ) [disarm] ) ? ( (is_armed) ) )
+-> ( (is_armed) [disarm] )
+-> ( [go_to_likely_target] )
+-> ( ? ( [go_to_comms] ) )
+-> ( ? ( <!> ( (is_armed) ) ) ? ( (mine_found) ) )
+-> ( (battery_low) )
+-> ( ? ( <!> ( (mine_found) ) ) ? ( (is_armed) ) )
+-> ( (is_armed) )
+-> ( [random_walk] )
+-> ( [resurface] )
+-> ( ? ( [random_walk] ) )
++++++++++++++++++++++++++
+Results for round 57
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( (benign_object_found) ? ( [pick_up] ) ) -> ( ? ( <!> ( (mine_found) ) [disarm] ) ? ( (is_armed) ) ) -> ( (is_armed) [disarm] ) -> ( [go_to_likely_target] ) )
+Shortcut words:
+-> ( ? ( <!> ( (mine_found) ) [disarm] ) ? ( (is_armed) ) )
+-> ( ? ( [shortest_path] ) )
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( (is_armed) [disarm] )
+-> ( [go_to_likely_target] )
++++++++++++++++++++++++++
+Results for round 58
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( ? ( <!> ( (mine_found) ) [disarm] ) ? ( (is_armed) ) ) -> ( (benign_object_found) ? ( [pick_up] ) ) -> ( [shortest_path] ) )
+Shortcut words:
+-> ( ? ( <!> ( (mine_found) ) [disarm] ) ? ( (is_armed) ) )
+-> ( ? ( [shortest_path] ) )
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( (is_armed) [disarm] )
+-> ( [go_to_likely_target] )
+-> ( (benign_object_found) )
+-> ( (is_armed) )
+-> ( ? ( [random_walk] ) )
+-> ( (likely_target_found) [go_to_likely_target] )
+-> ( ? ( <!> ( (mine_found) ) ) ? ( (is_armed) ) )
+-> ( [go_to_comms] )
+-> ( [shortest_path] )
+-> ( <!> ( (at_surface) ) [resurface] )
++++++++++++++++++++++++++
+Results for round 59
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( ? ( <!> ( (mine_found) ) [disarm] ) ? ( (is_armed) ) ) -> ( (benign_object_found) ? ( [pick_up] ) ) -> ( ? ( <!> ( (mine_found) ) ) ? ( (is_armed) ) ) -> ( (is_armed) [disarm] ) -> ( (is_armed) ) -> ( ? ( [random_walk] ) ) )
+Shortcut words:
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( ? ( [random_walk] ) )
+-> ( ? ( <!> ( (mine_found) ) [disarm] ) ? ( (is_armed) ) )
+-> ( ? ( [shortest_path] ) )
+-> ( [shortest_path] )
+-> ( (is_armed) [disarm] )
+-> ( (is_armed) )
+-> ( ? ( <!> ( (mine_found) ) ) ? ( (is_armed) ) )
++++++++++++++++++++++++++
+Results for round 60
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (is_armed) [disarm] ) -> ( (benign_object_found) ? ( [pick_up] ) ) -> ( ? ( <!> ( (mine_found) ) ) ? ( (is_armed) ) ) -> ( [shortest_path] ) )
+Shortcut words:
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( ? ( [random_walk] ) )
+-> ( ? ( <!> ( (mine_found) ) [disarm] ) ? ( (is_armed) ) )
+-> ( ? ( [shortest_path] ) )
+-> ( [shortest_path] )
+-> ( (is_armed) [disarm] )
+-> ( (is_armed) )
+-> ( ? ( <!> ( (mine_found) ) ) ? ( (is_armed) ) )
+-> ( [go_to_likely_target] )
+-> ( [report] ? ( [go_to_comms] ) )
+-> ( <!> ( (at_surface) ) ? ( [resurface] ) )
++++++++++++++++++++++++++
+Results for round 61
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( (benign_object_found) ? ( [pick_up] ) ) -> ( (is_armed) [disarm] ) -> ( ? ( <!> ( (mine_found) ) ) ? ( (is_armed) ) ) -> ( ? ( <!> ( (mine_found) ) [disarm] ) ? ( (is_armed) ) ) -> ( [shortest_path] ) )
+Shortcut words:
+-> ( ? ( <!> ( (mine_found) ) [disarm] ) ? ( (is_armed) ) )
+-> ( [go_to_likely_target] )
+-> ( (is_armed) [disarm] )
+-> ( ? ( <!> ( (mine_found) ) ) ? ( (is_armed) ) )
+-> ( (is_armed) )
+-> ( [shortest_path] )
+-> ( (benign_object_found) ? ( [pick_up] ) )
++++++++++++++++++++++++++
+Results for round 62
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (is_armed) [disarm] ) -> ( (benign_object_found) ? ( [pick_up] ) ) -> ( [shortest_path] ) )
+Shortcut words:
+-> ( ? ( <!> ( (mine_found) ) [disarm] ) ? ( (is_armed) ) )
+-> ( [go_to_likely_target] )
+-> ( (is_armed) [disarm] )
+-> ( ? ( <!> ( (mine_found) ) ) ? ( (is_armed) ) )
+-> ( (is_armed) )
+-> ( [shortest_path] )
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( ? ( [shortest_path] ) )
+-> ( <!> ( (in_comms) ) ? ( [go_to_comms] ) ? ( [report] ) )
+-> ( ? ( [random_walk] ) )
+-> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) )
+-> ( ? ( (likely_target_found) [go_to_likely_target] ) )
++++++++++++++++++++++++++
+Results for round 63
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( (is_armed) [disarm] ) -> ( (benign_object_found) ? ( [pick_up] ) ) -> ( (is_armed) ) -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( ? ( [random_walk] ) ) )
+Shortcut words:
+-> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) )
+-> ( ? ( <!> ( (mine_found) ) ) ? ( (is_armed) ) )
+-> ( [shortest_path] )
+-> ( (is_armed) [disarm] )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( ? ( <!> ( (mine_found) ) [disarm] ) ? ( (is_armed) ) )
+-> ( ? ( [shortest_path] ) )
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( ? ( (likely_target_found) [go_to_likely_target] ) )
+-> ( ? ( [random_walk] ) )
+-> ( (is_armed) )
++++++++++++++++++++++++++
+Results for round 64
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( (benign_object_found) ? ( [pick_up] ) ) -> ( [shortest_path] ) )
+Shortcut words:
+-> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) )
+-> ( ? ( <!> ( (mine_found) ) ) ? ( (is_armed) ) )
+-> ( [shortest_path] )
+-> ( (is_armed) [disarm] )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( ? ( <!> ( (mine_found) ) [disarm] ) ? ( (is_armed) ) )
+-> ( ? ( [shortest_path] ) )
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( ? ( (likely_target_found) [go_to_likely_target] ) )
+-> ( ? ( [random_walk] ) )
+-> ( (is_armed) )
+-> ( (benign_object_found) )
+-> ( [go_to_likely_target] )
+-> ( ? ( [report] ) ? ( (wildlife_found) ) <!> ( (at_surface) ) ? ( [go_to_comms] ) )
+-> ( ? ( [take_to_drop_off] ) )
+-> ( ? ( <!> ( (at_surface) ) ) (battery_low) )
++++++++++++++++++++++++++
+Results for round 65
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( ? ( [report] ) ? ( (wildlife_found) ) <!> ( (at_surface) ) ? ( [go_to_comms] ) ) -> ( (is_armed) [disarm] ) -> ( ? ( <!> ( (at_surface) ) ) (battery_low) ) -> ( (benign_object_found) ? ( [pick_up] ) ) -> ( [go_to_likely_target] ) )
+Shortcut words:
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( [go_to_likely_target] )
+-> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) )
+-> ( ? ( [report] ) ? ( (wildlife_found) ) <!> ( (at_surface) ) ? ( [go_to_comms] ) )
+-> ( (is_armed) [disarm] )
+-> ( ? ( <!> ( (at_surface) ) ) (battery_low) )
++++++++++++++++++++++++++
+Results for round 66
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (is_armed) [disarm] ) -> ( (is_armed) [disarm] ) -> ( ? ( [shortest_path] ) ) )
+Shortcut words:
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( [go_to_likely_target] )
+-> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) )
+-> ( ? ( [report] ) ? ( (wildlife_found) ) <!> ( (at_surface) ) ? ( [go_to_comms] ) )
+-> ( (is_armed) [disarm] )
+-> ( ? ( <!> ( (at_surface) ) ) (battery_low) )
+-> ( ? ( [random_walk] ) )
+-> ( ? ( [shortest_path] ) )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( (in_comms) )
+-> ( (is_armed) )
++++++++++++++++++++++++++
+Results for round 67
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( (benign_object_found) ? ( [pick_up] ) ) -> ( (is_armed) [disarm] ) -> ( ? ( [report] ) ? ( (wildlife_found) ) <!> ( (at_surface) ) ? ( [go_to_comms] ) ) -> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) ) -> ( [go_to_likely_target] ) )
+Shortcut words:
+-> ( (in_comms) )
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( (is_armed) [disarm] )
+-> ( (is_armed) )
+-> ( [go_to_likely_target] )
+-> ( ? ( [report] ) ? ( (wildlife_found) ) <!> ( (at_surface) ) ? ( [go_to_comms] ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
++++++++++++++++++++++++++
+Results for round 68
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( ? ( [report] ) ? ( (wildlife_found) ) <!> ( (at_surface) ) ? ( [go_to_comms] ) ) -> ( (is_armed) [disarm] ) -> ( ? ( [random_walk] ) ) )
+Shortcut words:
+-> ( (in_comms) )
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( (is_armed) [disarm] )
+-> ( (is_armed) )
+-> ( [go_to_likely_target] )
+-> ( ? ( [report] ) ? ( (wildlife_found) ) <!> ( (at_surface) ) ? ( [go_to_comms] ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( ? ( [random_walk] ) )
+-> ( (benign_object_found) )
+-> ( [shortest_path] )
+-> ( <!> ( (at_surface) ) ? ( [resurface] ) )
+-> ( ? ( [shortest_path] ) )
++++++++++++++++++++++++++
+Results for round 69
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( (benign_object_found) ? ( [pick_up] ) ) -> ( (benign_object_found) ) -> ( <!> ( (at_surface) ) ? ( [resurface] ) ) -> ( (is_armed) [disarm] ) )
+Shortcut words:
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( ? ( [random_walk] ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( ? ( [report] ) ? ( (wildlife_found) ) <!> ( (at_surface) ) ? ( [go_to_comms] ) )
+-> ( [shortest_path] )
+-> ( (benign_object_found) )
+-> ( <!> ( (at_surface) ) ? ( [resurface] ) )
+-> ( (is_armed) [disarm] )
++++++++++++++++++++++++++
+Results for round 70
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (is_armed) [disarm] ) -> ( ? ( [random_walk] ) ) -> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) ) -> ( <!> ( (is_armed) ) [disarm] ) )
+Shortcut words:
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( ? ( [random_walk] ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( ? ( [report] ) ? ( (wildlife_found) ) <!> ( (at_surface) ) ? ( [go_to_comms] ) )
+-> ( [shortest_path] )
+-> ( (benign_object_found) )
+-> ( <!> ( (at_surface) ) ? ( [resurface] ) )
+-> ( (is_armed) [disarm] )
+-> ( <!> ( (likely_target_found) ) )
+-> ( ? ( [shortest_path] ) )
+-> ( [random_walk] )
++++++++++++++++++++++++++
+Results for round 71
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( (is_armed) [disarm] ) -> ( (benign_object_found) ? ( [pick_up] ) ) -> ( (benign_object_found) ) -> ( ? ( [report] ) ? ( (wildlife_found) ) <!> ( (at_surface) ) ? ( [go_to_comms] ) ) -> ( <!> ( (at_surface) ) ? ( [resurface] ) ) -> ( ? ( [random_walk] ) ) )
+Shortcut words:
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( ? ( [shortest_path] ) )
+-> ( <!> ( (at_surface) ) ? ( [resurface] ) )
+-> ( ? ( [random_walk] ) )
+-> ( ? ( [report] ) ? ( (wildlife_found) ) <!> ( (at_surface) ) ? ( [go_to_comms] ) )
+-> ( [random_walk] )
+-> ( (is_armed) [disarm] )
+-> ( <!> ( (likely_target_found) ) )
+-> ( (benign_object_found) )
++++++++++++++++++++++++++
+Results for round 72
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (benign_object_found) ? ( [pick_up] ) ) -> ( ? ( [report] ) ? ( (wildlife_found) ) <!> ( (at_surface) ) ? ( [go_to_comms] ) ) -> ( ? ( [shortest_path] ) ) -> ( ? ( (benign_object_found) [pick_up] ) ? ( [take_to_drop_off] ) ) )
+Shortcut words:
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( ? ( [shortest_path] ) )
+-> ( <!> ( (at_surface) ) ? ( [resurface] ) )
+-> ( ? ( [random_walk] ) )
+-> ( ? ( [report] ) ? ( (wildlife_found) ) <!> ( (at_surface) ) ? ( [go_to_comms] ) )
+-> ( [random_walk] )
+-> ( (is_armed) [disarm] )
+-> ( <!> ( (likely_target_found) ) )
+-> ( (benign_object_found) )
+-> ( [shortest_path] )
+-> ( (mine_found) [disarm] )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( <!> ( (at_surface) ) ? ( <!> ( (in_comms) ) ) ? ( (wildlife_found) ) [report] )
+-> ( (is_armed) ? ( [disarm] ) )
++++++++++++++++++++++++++
+Results for round 73
++++++++++++++++++++++++++
+Simulated annealing...
+Best word: ? ( -> ( (is_armed) [disarm] ) -> ( ? ( [report] ) ? ( (wildlife_found) ) <!> ( (at_surface) ) ? ( [go_to_comms] ) ) -> ( (benign_object_found) ? ( [pick_up] ) ) -> ( ? ( [shortest_path] ) ) )
+Shortcut words:
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( [shortest_path] )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( <!> ( (at_surface) ) ? ( [resurface] ) )
+-> ( <!> ( (at_surface) ) ? ( <!> ( (in_comms) ) ) ? ( (wildlife_found) ) [report] )
+-> ( <!> ( (likely_target_found) ) )
+-> ( ? ( [random_walk] ) )
+-> ( (mine_found) [disarm] )
+-> ( (is_armed) [disarm] )
+-> ( ? ( [report] ) ? ( (wildlife_found) ) <!> ( (at_surface) ) ? ( [go_to_comms] ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( ? ( [shortest_path] ) )
++++++++++++++++++++++++++
+Results for round 74
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (is_armed) [disarm] ) -> ( ? ( [random_walk] ) ) )
+Shortcut words:
+-> ( (benign_object_found) ? ( [pick_up] ) )
+-> ( [shortest_path] )
+-> ( (is_armed) ? ( [disarm] ) )
+-> ( <!> ( (at_surface) ) ? ( [resurface] ) )
+-> ( <!> ( (at_surface) ) ? ( <!> ( (in_comms) ) ) ? ( (wildlife_found) ) [report] )
+-> ( <!> ( (likely_target_found) ) )
+-> ( ? ( [random_walk] ) )
+-> ( (mine_found) [disarm] )
+-> ( (is_armed) [disarm] )
+-> ( ? ( [report] ) ? ( (wildlife_found) ) <!> ( (at_surface) ) ? ( [go_to_comms] ) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( ? ( [shortest_path] ) )
+-> ( ? ( [go_to_likely_target] ) )
+-> ( ? ( [report] ) ? ( (wildlife_found) ) [go_to_comms] )
+-> ( [take_to_drop_off] )
+-> ( ? ( [disarm] ) )
+-> ( ? ( [resurface] ) )
+-> ( [report] ? ( (wildlife_found) ) ? ( [go_to_comms] ) )
+-> ( [random_walk] )

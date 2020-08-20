@@ -62,11 +62,15 @@ def run():
     use_dag = config["use_dag"]
     
     #[solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict] = mcts_restarts( cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config )    
-    [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict, sim_anneal_best_word] = mcts_sim_anneal_switching( cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config )    
+    final_best_word, final_best_word_score = mcts_sim_anneal_switching( cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config )    
 
     # Display the tree
     ###printActionSequence(solution) #this is not set up for words instead of sequences for actions
     
+    print('Final best word:')
+    final_best_word.printWord()
+
+    '''
     print('sequence at best node:')
     for soln in solution:
         soln.printWord()
@@ -88,6 +92,7 @@ def run():
     print('best_rollout_active_words at best_rollout_node:')
     for best_rollout_active_word in best_rollout_node.best_rollout_active_words:
         best_rollout_active_word.printWord()
+    '''
 
     # OLD plotting function -- does not work for these cfg trees
     #plotTree(list_of_all_nodes, winner, action_set, False, budget, 1, exploration_exploitation_parameter)
@@ -127,8 +132,8 @@ if __name__ == "__main__":
     run()
     total_time = time.time() - start_time
     print("RUNTIME: --- %s seconds ---" % (total_time))
-    print("RUNTIME: --- %s minutes ---" % (total_time)/60.0)
-    print("RUNTIME: --- %s hours ---" % (total_time)/360.0)
+    print("RUNTIME: --- %s minutes ---" % str((total_time)/60.0))
+    print("RUNTIME: --- %s hours ---" % str((total_time)/360.0))
     # run_profiler()
     
     

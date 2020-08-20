@@ -652,7 +652,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
     best_rollout = best_node.best_rollout
     winner = best_node
 
-    return [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict]
+    return [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict, best_reward]
 
 
 '''

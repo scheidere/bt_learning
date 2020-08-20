@@ -23,8 +23,8 @@ import time
 def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config):
 
 
-    num_rounds = 75
-    iterations_per_round = 1000
+    num_rounds = 5
+    iterations_per_round = 200
 
     shortcut_words = []
 
@@ -57,16 +57,18 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
         if rospy.is_shutdown():
             break
 
+        overall_best_word_score = 0
+
         max_mcts_iterations = iterations_per_round
         #if round in range(1):
         #if round in range(5): #do mcts first half, do sa second half (5 rounds each)
-        if round in range(10) or round >= 10 and round%2==0: #ex. run mcts for first 5 rounds then SA/MCTS alternating i.e. mcts = (0,1,2,3,4,6,8), sa = (5,7,9)
+        if round in range(4) or round > 4 and round%2==0 or len(shortcut_words) == 0: #ex. run mcts for first 5 rounds then SA/MCTS alternating i.e. mcts = (0,1,2,3,4,6,8), sa = (5,7,9)
         #if round%2==0 or len(shortcut_words) == 0: #alternating rounds
             f.write("MCTS...\n")
             print("Running MCTS round: ", round)
             cfg_copy = copy.deepcopy(cfg)
             shortcut_words_copy = copy.deepcopy(shortcut_words)
-            [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict] = mcts( cfg_copy, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config, shortcut_words_copy )
+            [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict, best_reward] = mcts( cfg_copy, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config, shortcut_words_copy )
             f.write("Best rollout: ")
             f.write(best_rollout.toString())
             f.write("\n")
@@ -81,6 +83,7 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
             print('best_rollout_active_words at best node:')
             for best_rollout_active_word in winner.best_rollout_active_words:
                 best_rollout_active_word.printWord()
+                active_best_rollout = best_rollout_active_word
 
             print('sequence at best_rollout_node:')
             for soln in best_rollout_node.sequence:
@@ -92,6 +95,25 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
             print('best_rollout_active_words at best_rollout_node:')
             for best_rollout_active_word in best_rollout_node.best_rollout_active_words:
                 best_rollout_active_word.printWord()
+
+            print('best_reward from best_rollout: %s' % best_reward )
+            
+
+            prev_round_best_word = active_best_rollout
+            intermediate_best_word_score = best_reward*100 #so scaling in the same for mcts and sa
+
+            # Keep track of current best tree (of the entire search)
+            if intermediate_best_word_score > overall_best_word_score:
+                overall_best_word = active_best_rollout # this is just the active part
+                overall_best_word_score = intermediate_best_word_score
+                print("CURRENT OVERALL BEST WORD (active parts only): ")
+                overall_best_word.printWord()
+                print("REWARD: %s" % overall_best_word_score)
+                f.write("CURRENT OVERALL BEST WORD (active parts only): ")
+                f.write(overall_best_word.toString())
+                f.write("\n")
+                f.write("REWARD: %s" % overall_best_word_score)
+                f.write("\n")
 
             # Extract information to pass to the next round
             # shortcut_words = [] # comment this out to keep the previous words
@@ -155,11 +177,16 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
             initial_state = State(initial_state_list, shortcut_words)
 
             # Initialize state_list with best tree word, in list form, from mcts
-            mcts_best_word = best_node.best_rollout_active_words[-1] #last best tree word
-            initial_state.initial_state_list = initial_state.wordToList(mcts_best_word)
+            #old way #mcts_best_word = best_node.best_rollout_active_words[-1] #last best tree word
+            #initial_state.initial_state_list = initial_state.wordToList(mcts_best_word)
+            initial_state.initial_state_list = initial_state.wordToList(prev_round_best_word)
+            f.write("Test to see if SA gets current best word as starting point...\n")
+            initial_word = initial_state.stateToFulltreeWord()
+            f.write("Initial SA state word (checking for test): %s\n" % initial_word.toString())
+
 
             initial_temperature = 1000
-            k_max = 1000
+            k_max = 200
             sim_anneal = SimulatedAnnealing(initial_state, initial_temperature, k_max, round)
             sim_anneal_best_word, score, sim_anneal_best_words, scores = sim_anneal.run()
             print("++++++++++++++++++++++")
@@ -169,6 +196,24 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
             f.write("Best word: ")
             f.write(sim_anneal_best_word.toString())
             f.write("\n")
+            f.write("Best word score: %d\n" % score)
+
+            prev_round_best_word = sim_anneal_best_word # to give back to initialize consecutive SA rounds
+            intermediate_best_word_score = score
+
+            if intermediate_best_word_score > overall_best_word_score:
+                # Keep track of current best tree (of the entire search)
+                overall_best_word = sim_anneal_best_word # should already be active because active update happens in sim_anneal.energy()
+                overall_best_word_score = intermediate_best_word_score
+                print("CURRENT OVERALL BEST WORD (active parts only): ")
+                overall_best_word.printWord()
+                print("REWARD: %s" % overall_best_word_score)
+                f.write("CURRENT OVERALL BEST WORD (active parts only): ")
+                f.write(overall_best_word.toString())
+                f.write("\n")
+                f.write("REWARD: %s" % overall_best_word_score)
+                f.write("\n")
+            
 
             # Extract information to pass to the next round
             shortcut_words = [] # comment this out to keep the previous words
@@ -235,4 +280,5 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
 
         
     f.close()
-    return [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict, sim_anneal_best_word]
+    #return [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict, sim_anneal_best_word]
+    return overall_best_word, overall_best_word_score

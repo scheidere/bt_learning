@@ -1,0 +1,82 @@
++++++++++++++++++++++++++
+Results for round 0
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (mine_found) [disarm] ) -> ( (benign_object_found) (carrying_benign) ? ( [take_to_drop_off] [pick_up] ) ) -> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) ) )
+CURRENT OVERALL BEST WORD (active parts only): ? ( -> ( (mine_found) [disarm] ) -> ( (benign_object_found) ) -> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) ) )
+REWARD: 3.0
+Shortcut words:
+-> ( (mine_found) [disarm] )
+-> ( (benign_object_found) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( [report] ? ( [go_to_comms] ) )
++++++++++++++++++++++++++
+Results for round 1
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (mine_found) [disarm] ) -> ( ? ( [random_walk] ) ) -> ( (benign_object_found) ) )
+CURRENT OVERALL BEST WORD (active parts only): ? ( -> ( (mine_found) [disarm] ) -> ( ? ( [random_walk] ) ) )
+REWARD: 15.0
+Shortcut words:
+-> ( (mine_found) [disarm] )
+-> ( (benign_object_found) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( [report] ? ( [go_to_comms] ) )
+-> ( ? ( [shortest_path] ) )
+-> ( ? ( [random_walk] ) )
+-> ( [take_to_drop_off] )
++++++++++++++++++++++++++
+Results for round 2
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( (mine_found) [disarm] ) -> ( ? ( [random_walk] ) ) -> ( [report] ? ( [go_to_comms] ) ) )
+CURRENT OVERALL BEST WORD (active parts only): ? ( -> ( (mine_found) [disarm] ) -> ( ? ( [random_walk] ) ) )
+REWARD: 21.0
+Shortcut words:
+-> ( (mine_found) [disarm] )
+-> ( (benign_object_found) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( [report] ? ( [go_to_comms] ) )
+-> ( ? ( [shortest_path] ) )
+-> ( ? ( [random_walk] ) )
+-> ( [take_to_drop_off] )
+-> ( <!> ( (likely_target_found) ) [go_to_likely_target] )
+-> ( (is_armed) [disarm] )
+-> ( [shortest_path] )
++++++++++++++++++++++++++
+Results for round 3
++++++++++++++++++++++++++
+MCTS...
+Best rollout: ? ( -> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) ) -> ( ? ( [report] [go_to_comms] ) <!> ( (wildlife_found) ) ) )
+CURRENT OVERALL BEST WORD (active parts only): ? ( -> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) ) -> ( ? ( [report] ) <!> ( (wildlife_found) ) ) )
+REWARD: 6.0
+Shortcut words:
+-> ( (mine_found) [disarm] )
+-> ( (benign_object_found) )
+-> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) )
+-> ( [report] ? ( [go_to_comms] ) )
+-> ( ? ( [shortest_path] ) )
+-> ( ? ( [random_walk] ) )
+-> ( [take_to_drop_off] )
+-> ( <!> ( (likely_target_found) ) [go_to_likely_target] )
+-> ( (is_armed) [disarm] )
+-> ( [shortest_path] )
+-> ( ? ( [report] ) <!> ( (wildlife_found) ) )
+-> ( (is_armed) )
++++++++++++++++++++++++++
+Results for round 4
++++++++++++++++++++++++++
+Simulated annealing...
+Test to see if SA gets current best word as starting point...
+Initial SA state list: ? ( -> ( <!> ( (likely_target_found) ) ? ( [go_to_likely_target] ) ) -> ( ? ( [report] ) <!> ( (wildlife_found) ) ) )
+Best word: ? ( -> ( (is_armed) [disarm] ) -> ( [shortest_path] ) )
+Best word score: 24
+CURRENT OVERALL BEST WORD (active parts only): ? ( -> ( (is_armed) [disarm] ) -> ( [shortest_path] ) )
+REWARD: 24
+Shortcut words:
+-> ( (mine_found) [disarm] )
+-> ( <!> ( (likely_target_found) ) [go_to_likely_target] )
+-> ( ? ( [report] ) <!> ( (wildlife_found) ) )
+-> ( ? ( [shortest_path] ) )
+-> ( (is_armed) [disarm] )
+-> ( [shortest_path] )
