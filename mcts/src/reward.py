@@ -156,10 +156,7 @@ def reward(word, max_iterations, underwater_simulator): # single target case
 
     return is_valid, reward
 '''
-def reward(word, max_iterations, underwater_simulator): # multi-target case
-
-    min_reward = 0
-    max_reward = 100 # Our tree gets 75 on average # or avg_num_targets_in_world * max_reward_per_target
+def reward(word, max_iterations, underwater_simulator, min_reward, max_reward): # multi-target case
 
     best_temp_reward = 0 # Check with Graeme
 

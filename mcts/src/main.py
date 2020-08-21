@@ -68,7 +68,10 @@ def run():
     ###printActionSequence(solution) #this is not set up for words instead of sequences for actions
     
     print('Final best word:')
-    final_best_word.printWord()
+    if final_best_word:
+        final_best_word.printWord()
+    else:
+        print(final_best_word) #should be None in this case (to account for when no trees have score > 0 in a round)
 
     '''
     print('sequence at best node:')

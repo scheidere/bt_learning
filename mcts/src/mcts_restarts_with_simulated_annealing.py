@@ -23,8 +23,11 @@ import time
 def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config):
 
 
-    num_rounds = 5
-    iterations_per_round = 200
+    num_rounds = 100
+    iterations_per_round = 1000
+
+    min_reward = config['min_reward']
+    max_reward = config['max_reward']
 
     shortcut_words = []
 
@@ -34,7 +37,7 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
     #cfg_shortcuts_only.grammar = cfg_shortcuts_only.generateGrammarShortcutsOnly()
 
     # Initialize mcts_sa_output.txt
-    f = open("mcts_sa_output.txt","w+")
+    f = open("/home/scheidee/mcts_sa_output/mcts_sa_output.txt","w+")
     print(f.read())
 
     # Do the rounds
@@ -58,11 +61,12 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
             break
 
         overall_best_word_score = 0
+        overall_best_word = None
 
         max_mcts_iterations = iterations_per_round
         #if round in range(1):
         #if round in range(5): #do mcts first half, do sa second half (5 rounds each)
-        if round in range(4) or round > 4 and round%2==0 or len(shortcut_words) == 0: #ex. run mcts for first 5 rounds then SA/MCTS alternating i.e. mcts = (0,1,2,3,4,6,8), sa = (5,7,9)
+        if round in range(10) or round > 10 and round%2==0 or len(shortcut_words) == 0: #ex. run mcts for first 5 rounds then SA/MCTS alternating i.e. mcts = (0,1,2,3,4,6,8), sa = (5,7,9)
         #if round%2==0 or len(shortcut_words) == 0: #alternating rounds
             f.write("MCTS...\n")
             print("Running MCTS round: ", round)
@@ -100,7 +104,8 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
             
 
             prev_round_best_word = active_best_rollout
-            intermediate_best_word_score = best_reward*100 #so scaling in the same for mcts and sa
+            best_reward = float(best_reward*(max_reward - min_reward)) + float(min_reward) # reverse normalization, to match sa scale
+            intermediate_best_word_score = best_reward
 
             # Keep track of current best tree (of the entire search)
             if intermediate_best_word_score > overall_best_word_score:
@@ -179,14 +184,17 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
             # Initialize state_list with best tree word, in list form, from mcts
             #old way #mcts_best_word = best_node.best_rollout_active_words[-1] #last best tree word
             #initial_state.initial_state_list = initial_state.wordToList(mcts_best_word)
-            initial_state.initial_state_list = initial_state.wordToList(prev_round_best_word)
+            f.write("TESTING TESTING TESTING - prev_round_best_word\n")
+            f.write(prev_round_best_word.toString())
+            f.write("\n")
+            initial_state.state_list = initial_state.wordToList(prev_round_best_word)
             f.write("Test to see if SA gets current best word as starting point...\n")
             initial_word = initial_state.stateToFulltreeWord()
             f.write("Initial SA state word (checking for test): %s\n" % initial_word.toString())
 
 
             initial_temperature = 1000
-            k_max = 200
+            k_max = 1000
             sim_anneal = SimulatedAnnealing(initial_state, initial_temperature, k_max, round)
             sim_anneal_best_word, score, sim_anneal_best_words, scores = sim_anneal.run()
             print("++++++++++++++++++++++")

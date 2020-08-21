@@ -28,7 +28,6 @@ class SimulatedAnnealing():
         self.round_num = round_num #for plotting
 
         self.best_state = initial_state #initially
-        self.best_score = -self.energy(self.best_state)
         self.probabilities = [] #for plotting
         self.iterations = [] #for plotting
         self.best_scores = []
@@ -43,6 +42,7 @@ class SimulatedAnnealing():
         # Create a single instance of the simulator so that you do not continuously recreate the world
         # To randomize targets, go to parameters.yaml in simulator
         self.underwater_simulator = UnderwaterSimulator()
+        self.best_score = 0 #-self.energy(self.best_state)
 
         self.do_plot = True
 

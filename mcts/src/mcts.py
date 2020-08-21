@@ -63,6 +63,8 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
     iterations_between_adding_production_rules = config['iterations_between_adding_production_rules']
     probability_skip_unpicked_child_words = config['probability_skip_unpicked_child_words']
     max_ancestors = config['max_ancestors']
+    min_reward = config['min_reward']
+    max_reward = config['max_reward']
 
     
 
@@ -268,7 +270,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
         #print('rollout_word')
         #rollout_word.printWord()
         # print("MCTS reward " + str(iter))
-        is_valid, rollout_reward, best_rollout_reward, rollout_active_words, active_subtree_indices = reward(word = rollout_word, max_iterations=max_sim_iterations, underwater_simulator=underwater_simulator)
+        is_valid, rollout_reward, best_rollout_reward, rollout_active_words, active_subtree_indices = reward(word = rollout_word, max_iterations=max_sim_iterations, underwater_simulator=underwater_simulator, min_reward = min_reward, max_reward = max_reward)
 
         print("rollout_word")
         rollout_word.printWord()
