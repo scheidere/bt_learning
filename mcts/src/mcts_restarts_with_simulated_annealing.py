@@ -23,7 +23,7 @@ import time
 def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config):
 
 
-    num_rounds = 100
+    num_rounds = 15
     iterations_per_round = 1000
 
     min_reward = config['min_reward']
@@ -37,11 +37,13 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
     #cfg_shortcuts_only.grammar = cfg_shortcuts_only.generateGrammarShortcutsOnly()
 
     # Initialize mcts_sa_output.txt
-    f = open("/home/scheidee/mcts_sa_output/mcts_sa_output.txt","w+")
+    f = open("/home/scheidee/mcts_sa_output/mcts_sa_output.txt","w+") #overall output file, can't load while running
     print(f.read())
 
     # Do the rounds
     for round in xrange(num_rounds):
+
+        f1 = open("/home/scheidee/mcts_sa_output/mcts_sa_output_thru_round" + str(round) + ".txt","w+")
 
         f.write("+++++++++++++++++++++++++\n")
         f.write("Results for round %d\n" % round)
@@ -66,9 +68,10 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
         max_mcts_iterations = iterations_per_round
         #if round in range(1):
         #if round in range(5): #do mcts first half, do sa second half (5 rounds each)
-        if round in range(10) or round > 10 and round%2==0 or len(shortcut_words) == 0: #ex. run mcts for first 5 rounds then SA/MCTS alternating i.e. mcts = (0,1,2,3,4,6,8), sa = (5,7,9)
+        if round in range(5) or round > 5 and round%2==0 or len(shortcut_words) == 0: #ex. run mcts for first 5 rounds then SA/MCTS alternating i.e. mcts = (0,1,2,3,4,6,8), sa = (5,7,9)
         #if round%2==0 or len(shortcut_words) == 0: #alternating rounds
             f.write("MCTS...\n")
+            f1.write("MCTS...\n")
             print("Running MCTS round: ", round)
             cfg_copy = copy.deepcopy(cfg)
             shortcut_words_copy = copy.deepcopy(shortcut_words)
@@ -76,6 +79,9 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
             f.write("Best rollout: ")
             f.write(best_rollout.toString())
             f.write("\n")
+            f1.write("Best rollout: ")
+            f1.write(best_rollout.toString())
+            f1.write("\n")
 
             print('sequence at best node:')
             for soln in solution:
@@ -119,10 +125,20 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
                 f.write("\n")
                 f.write("REWARD: %s" % overall_best_word_score)
                 f.write("\n")
+                f1.write("CURRENT OVERALL BEST WORD (active parts only): ")
+                f1.write(overall_best_word.toString())
+                f1.write("\n")
+                f1.write("REWARD: %s" % overall_best_word_score)
+                f1.write("\n")
 
             # Extract information to pass to the next round
             # shortcut_words = [] # comment this out to keep the previous words
             subtree_words = []
+
+            # Reset shortcut_words after a certain number of rounds
+            if round > 5 and round/5 == 0:
+                f.write("Resetting shortcut_words")
+                shortcut_words = []
 
             for best_node in best_nodes_dict.values():
 
@@ -171,13 +187,18 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
                     time.sleep(.1)
                 '''
             f.write("Shortcut words:\n")
+            f1.write("Shortcut words:\n")
             for word in shortcut_words:
                 f.write(word.toString())
                 f.write("\n")
+                f1.write(word.toString())
+                f1.write("\n")
 
         else:
             print("Running SA round: ", round)
             f.write("Simulated annealing...\n")
+            f1.write("Simulated annealing...\n")
+
             initial_state_list = []
             initial_state = State(initial_state_list, shortcut_words)
 
@@ -187,11 +208,15 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
             f.write("TESTING TESTING TESTING - prev_round_best_word\n")
             f.write(prev_round_best_word.toString())
             f.write("\n")
+            f1.write("TESTING TESTING TESTING - prev_round_best_word\n")
+            f1.write(prev_round_best_word.toString())
+            f1.write("\n")
             initial_state.state_list = initial_state.wordToList(prev_round_best_word)
             f.write("Test to see if SA gets current best word as starting point...\n")
+            f1.write("Test to see if SA gets current best word as starting point...\n")
             initial_word = initial_state.stateToFulltreeWord()
             f.write("Initial SA state word (checking for test): %s\n" % initial_word.toString())
-
+            f1.write("Initial SA state word (checking for test): %s\n" % initial_word.toString())
 
             initial_temperature = 1000
             k_max = 1000
@@ -205,6 +230,10 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
             f.write(sim_anneal_best_word.toString())
             f.write("\n")
             f.write("Best word score: %d\n" % score)
+            f1.write("Best word: ")
+            f1.write(sim_anneal_best_word.toString())
+            f1.write("\n")
+            f1.write("Best word score: %d\n" % score)
 
             prev_round_best_word = sim_anneal_best_word # to give back to initialize consecutive SA rounds
             intermediate_best_word_score = score
@@ -221,11 +250,21 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
                 f.write("\n")
                 f.write("REWARD: %s" % overall_best_word_score)
                 f.write("\n")
+                f1.write("CURRENT OVERALL BEST WORD (active parts only): ")
+                f1.write(overall_best_word.toString())
+                f1.write("\n")
+                f1.write("REWARD: %s" % overall_best_word_score)
+                f1.write("\n")
             
 
             # Extract information to pass to the next round
-            shortcut_words = [] # comment this out to keep the previous words
+            #shortcut_words = [] # comment this out to keep the previous words
             subtree_words = []
+
+            # Reset shortcut_words after a certain number of rounds
+            if round > 5 and round/5 == 0:
+                f.write("Resetting shortcut_words")
+                shortcut_words = []
 
             for i in range(len(sim_anneal_best_words)):
                 sa_best_word = sim_anneal_best_words[i]
@@ -251,9 +290,12 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
                             shortcut_words.append(subtree_word)
 
             f.write("Shortcut words:\n")
+            f1.write("Shortcut words:\n")
             for word in shortcut_words:
                 f.write(word.toString())
                 f.write("\n")
+                f1.write(word.toString())
+                f1.write("\n")
         
         
 
@@ -285,6 +327,8 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
         print("All shortcut words:")
         for word in shortcut_words:
             word.printWord()
+
+        f1.close()
 
         
     f.close()
