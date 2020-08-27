@@ -45,7 +45,8 @@ def mcts_restarts(cfg, budget, max_mcts_iterations, exploration_exploitation_par
             break
 
         max_mcts_iterations = iterations_per_round
-        if round%2==0 or len(shortcut_words) == 0:
+        #if round%2==0 or len(shortcut_words) == 0:
+        if round in range(5) or round > 5 and round%2==0 or len(shortcut_words) == 0:
             cfg_copy = copy.deepcopy(cfg)
         else:
             cfg_copy = copy.deepcopy(cfg_shortcuts_only)

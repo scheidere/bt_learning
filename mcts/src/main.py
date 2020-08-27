@@ -136,7 +136,7 @@ if __name__ == "__main__":
     total_time = time.time() - start_time
     print("RUNTIME: --- %s seconds ---" % (total_time))
     print("RUNTIME: --- %s minutes ---" % str((total_time)/60.0))
-    print("RUNTIME: --- %s hours ---" % str((total_time)/360.0))
+    print("RUNTIME: --- %s hours ---" % str((total_time)/3600.0))
     # run_profiler()
     
     

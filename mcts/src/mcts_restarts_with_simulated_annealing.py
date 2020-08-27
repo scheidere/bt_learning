@@ -24,12 +24,15 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
 
 
     num_rounds = 15
-    iterations_per_round = 1000
+    iterations_per_round = 200
 
     min_reward = config['min_reward']
     max_reward = config['max_reward']
 
     shortcut_words = []
+
+    overall_best_word_score = 0
+    overall_best_word = None
 
     # cfg.grammar = cfg.generateGrammarGuidedStructureGroupsOneSequence()
 
@@ -62,8 +65,8 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
         if rospy.is_shutdown():
             break
 
-        overall_best_word_score = 0
-        overall_best_word = None
+        #overall_best_word_score = 0 #wrong place
+        #overall_best_word = None
 
         max_mcts_iterations = iterations_per_round
         #if round in range(1):
@@ -112,6 +115,13 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
             prev_round_best_word = active_best_rollout
             best_reward = float(best_reward*(max_reward - min_reward)) + float(min_reward) # reverse normalization, to match sa scale
             intermediate_best_word_score = best_reward
+            print("++++++++++++++++++++++++++++++++++")
+            print("intermediate_best_word_score: %s\n" % intermediate_best_word_score)
+            f.write("intermediate_best_word_score: %s\n" % intermediate_best_word_score)
+            print("++++++++++++++++++++++++++++++++++")
+            print("overall_best_word_score before check: %s\n" % overall_best_word_score)
+            f.write("overall_best_word_score before check: %s\n" % overall_best_word_score)
+            print("++++++++++++++++++++++++++++++++++")
 
             # Keep track of current best tree (of the entire search)
             if intermediate_best_word_score > overall_best_word_score:
@@ -119,16 +129,16 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
                 overall_best_word_score = intermediate_best_word_score
                 print("CURRENT OVERALL BEST WORD (active parts only): ")
                 overall_best_word.printWord()
-                print("REWARD: %s" % overall_best_word_score)
+                print("OVERALL BEST WORD REWARD: %s" % overall_best_word_score)
                 f.write("CURRENT OVERALL BEST WORD (active parts only): ")
                 f.write(overall_best_word.toString())
                 f.write("\n")
-                f.write("REWARD: %s" % overall_best_word_score)
+                f.write("OVERALL BEST WORD REWARD: %s" % overall_best_word_score)
                 f.write("\n")
                 f1.write("CURRENT OVERALL BEST WORD (active parts only): ")
                 f1.write(overall_best_word.toString())
                 f1.write("\n")
-                f1.write("REWARD: %s" % overall_best_word_score)
+                f1.write("OVERALL BEST WORD REWARD: %s" % overall_best_word_score)
                 f1.write("\n")
 
             # Extract information to pass to the next round
@@ -219,7 +229,7 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
             f1.write("Initial SA state word (checking for test): %s\n" % initial_word.toString())
 
             initial_temperature = 1000
-            k_max = 1000
+            k_max = 200
             sim_anneal = SimulatedAnnealing(initial_state, initial_temperature, k_max, round)
             sim_anneal_best_word, score, sim_anneal_best_words, scores = sim_anneal.run()
             print("++++++++++++++++++++++")
@@ -237,6 +247,13 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
 
             prev_round_best_word = sim_anneal_best_word # to give back to initialize consecutive SA rounds
             intermediate_best_word_score = score
+            print("++++++++++++++++++++++++++++++++++")
+            print("intermediate_best_word_score: %s\n" % intermediate_best_word_score)
+            f.write("intermediate_best_word_score: %s\n" % intermediate_best_word_score)
+            print("++++++++++++++++++++++++++++++++++")
+            print("overall_best_word_score before check: %s\n" % overall_best_word_score)
+            f.write("overall_best_word_score: %s\n" % overall_best_word_score)
+            print("++++++++++++++++++++++++++++++++++")
 
             if intermediate_best_word_score > overall_best_word_score:
                 # Keep track of current best tree (of the entire search)
@@ -244,16 +261,16 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
                 overall_best_word_score = intermediate_best_word_score
                 print("CURRENT OVERALL BEST WORD (active parts only): ")
                 overall_best_word.printWord()
-                print("REWARD: %s" % overall_best_word_score)
+                print("OVERALL BEST WORD REWARD: %s" % overall_best_word_score)
                 f.write("CURRENT OVERALL BEST WORD (active parts only): ")
                 f.write(overall_best_word.toString())
                 f.write("\n")
-                f.write("REWARD: %s" % overall_best_word_score)
+                f.write("OVERALL BEST WORD REWARD: %s" % overall_best_word_score)
                 f.write("\n")
                 f1.write("CURRENT OVERALL BEST WORD (active parts only): ")
                 f1.write(overall_best_word.toString())
                 f1.write("\n")
-                f1.write("REWARD: %s" % overall_best_word_score)
+                f1.write("OVERALL BEST WORD REWARD: %s" % overall_best_word_score)
                 f1.write("\n")
             
 
