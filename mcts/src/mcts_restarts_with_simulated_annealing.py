@@ -23,7 +23,7 @@ import time
 def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config):
 
 
-    num_rounds = 15
+    num_rounds = 5
     iterations_per_round = 200
 
     min_reward = config['min_reward']
@@ -65,14 +65,11 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
         if rospy.is_shutdown():
             break
 
-        #overall_best_word_score = 0 #wrong place
-        #overall_best_word = None
-
         max_mcts_iterations = iterations_per_round
         #if round in range(1):
         #if round in range(5): #do mcts first half, do sa second half (5 rounds each)
-        if round in range(5) or round > 5 and round%2==0 or len(shortcut_words) == 0: #ex. run mcts for first 5 rounds then SA/MCTS alternating i.e. mcts = (0,1,2,3,4,6,8), sa = (5,7,9)
-        #if round%2==0 or len(shortcut_words) == 0: #alternating rounds
+        #if round in range(5) or round > 5 and round%2==0 or len(shortcut_words) == 0: #ex. run mcts for first 5 rounds then SA/MCTS alternating i.e. mcts = (0,1,2,3,4,6,8), sa = (5,7,9)
+        if round%2==0 or len(shortcut_words) == 0: #alternating rounds
             f.write("MCTS...\n")
             f1.write("MCTS...\n")
             print("Running MCTS round: ", round)
@@ -345,9 +342,21 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
         for word in shortcut_words:
             word.printWord()
 
+        f1.write("===========================\n")    
+        f1.write("OVERALL_BEST_WORD: \n")
+        if overall_best_word != None:
+            f1.write(overall_best_word.toString()+'\n')
+        else:
+            f1.write("overall_best_word is None\n")
+        f1.write("OVERALL_BEST_WORD_SCORE: %s\n" % overall_best_word_score)
+        f1.write("===========================\n")
         f1.close()
 
-        
+    f.write("===========================\n")    
+    f.write("OVERALL_BEST_WORD: \n")
+    f.write(overall_best_word.toString()+'\n')
+    f.write("OVERALL_BEST_WORD_SCORE: %s\n" % overall_best_word_score)
+    f.write("===========================\n")    
     f.close()
     #return [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict, sim_anneal_best_word]
     return overall_best_word, overall_best_word_score
