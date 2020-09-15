@@ -94,13 +94,13 @@ class UnderwaterSimulator():
 
         except rospy.ROSInterruptException: pass
 
-def compare(word1, word2):
+def compare(word1, word2, sim_iterations):
     sim = UnderwaterSimulator()
     original_target_locations = copy.copy(sim.world.classes_y)
 
     #print("1 before",sim.world.classes_y)
     #print('orig', original_target_locations)
-    score, target_reported, belief_distance, active_word, active_subtree_indices = sim.generateReward(word1, 200)
+    score, target_reported, belief_distance, active_word, active_subtree_indices = sim.generateReward(word1, sim_iterations)
     #print('1',sim.world.classes_y)
     
     #print(original_target_locations == sim.world.classes_y)
@@ -110,7 +110,7 @@ def compare(word1, word2):
     
     #print('2 before', sim.world.classes_y)
     #print('orig', original_target_locations)
-    score2, target_reported2, belief_distance2, active_word2, active_subtree_indices2 = sim.generateReward(word2, 200)
+    score2, target_reported2, belief_distance2, active_word2, active_subtree_indices2 = sim.generateReward(word2, sim_iterations)
     #print('orig', original_target_locations)
     #print('2',sim.world.classes_y)
     #print(original_target_locations == sim.world.classes_y)
@@ -124,7 +124,7 @@ def compare(word1, word2):
 
 def test(word):
     sim = UnderwaterSimulator()
-    score, target_reported, belief_distance, active_word, active_subtree_indices = sim.generateReward(word, 200)
+    score, target_reported, belief_distance, active_word, active_subtree_indices = sim.generateReward(word, sim_iterations)
     word.printWord()
     print(sim.world.classes_y)
     print('Score: ', score)
@@ -151,6 +151,8 @@ if __name__ == "__main__":
 
     word_manual = createWord('? ( -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_object_found) [pick_up] ) -> ( (likely_target_found) [go_to_likely_target] ) -> ( [shortest_path] ) )') #-> ( [shortest_path] ) )') #-> ( [random_walk] ) )')
     word_manual2 = createWord('? ( -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_object_found) [pick_up] ) -> ( [go_to_likely_target] ) )') #-> ( [shortest_path] ) )') #-> ( [random_walk] ) )')
+    word_manual3 = createWord('? ( -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_object_found) [pick_up] ) -> ( [go_to_new_vertex] ) )') #-> ( [shortest_path] ) )') #-> ( [random_walk] ) )')
+    word_manual4 = createWord('? ( -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_object_found) [pick_up] ) -> ( [shortest_path] ) )') #-> ( [shortest_path] ) )') #-> ( [random_walk] ) )')
     word_no_likelytarget = createWord('? ( -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_object_found) [pick_up] ) -> ( [random_walk] ) )')
     word_even_test = createWord('? ( -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_object_found) [pick_up] )  -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( [random_walk] ) )')
     word_report = createWord('? ( -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( [random_walk] ) )')
@@ -162,10 +164,11 @@ if __name__ == "__main__":
     #word1 = createWord('? ( -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( [random_walk] ) )')
     #word2 = createWord('? ( -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_object_found) [pick_up] ) -> ( [random_walk] ) )')
     
-    word1 = word_manual2
-    word2 = createWord('? ( -> ( (wildlife_found) ? ( [report] ) ? ( [go_to_comms] ) ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) ? ( (carrying_benign) ) ? ( [take_to_drop_off] ) ) -> ( (mine_found) [disarm] ) -> ( ? ( [go_to_likely_target] ) ) )')
+    word1 = word_manual4
+    word2 = word_manual3
+    #word2 = createWord('? ( -> ( (wildlife_found) ? ( [report] ) ? ( [go_to_comms] ) ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) ? ( (carrying_benign) ) ? ( [take_to_drop_off] ) ) -> ( (mine_found) [disarm] ) -> ( ? ( [go_to_likely_target] ) ) )')
 
-    compare(word1,word2)
+    compare(word1,word2,200)
 
     #word = createWord('? ( -> ( [report] ? ( (wildlife_found) ) ? ( [go_to_comms] ) ) -> ( [random_walk] ) )')
     #word = createWord('?  (  ->  (  ?  (  [report]  [go_to_comms]  )  ?  (  (at_surface)  )  <!>  (  (in_comms)  )  )  ->  (  ?  (  [random_walk]  )  )  ) ')

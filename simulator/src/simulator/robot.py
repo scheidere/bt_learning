@@ -321,6 +321,7 @@ class Robot():
     PLANNER_TYPE_DROPOFF = 6
     PLANNER_TYPE_DISARM = 7
     PLANNER_TYPE_PICKUP = 8
+    PLANNER_TYPE_COVERAGE = 9
 
     def __init__(self, config, robot_id, num_robots, seed, bt, max_iterations, world):
 
@@ -386,6 +387,10 @@ class Robot():
 
         num_vertices = len(self.known_world.vertices)
 
+        # Initialize visit_tracker for coverage planner
+        self.visit_tracker = np.zeros(num_vertices)
+        print('VISIT TRACKER: ', self.visit_tracker)
+
         # create sensor model
         # moved within world instead
         # self.sensor_model = SensorModel(config,num_vertices,self.known_world)
@@ -399,8 +404,6 @@ class Robot():
         self.basestation_scorer = Scorer(self.known_world, max_iterations)
 
         self.drop_off_idx = self.known_world.drop_off_idx
-
-
 
         # plot
         # print("plot")
@@ -572,6 +575,9 @@ class Robot():
                 detection_list = self.target_belief.get_all_detections() 
                 self.basestation_scorer.detection_reward(detection_list) #give scorer +1 for all newly detected vertices in detection_list if detection is correct
 
+                # Update visit tracker
+                #if self.planner_type == Robot.PLANNER_TYPE_COVERAGE:
+                self.visit_tracker[x] = 1 # Update any vertex the robot has been to from 0 to 1 in the tracker
             
             # Condition checks
             self.condition_updates()
@@ -693,6 +699,9 @@ class Robot():
         elif 'go_to_likely_target' in active_actions:
             self.planner_type = Robot.PLANNER_TYPE_PEAKBELIEF
 
+        elif 'go_to_new_vertex' in active_actions:
+            self.planner_type = Robot.PLANNER_TYPE_COVERAGE
+
         elif 'take_to_drop_off' in active_actions:
             self.planner_type = Robot.PLANNER_TYPE_DROPOFF
 
@@ -742,6 +751,11 @@ class Robot():
                     self.bt_interface.setActionStatusRunning(action)
                 else:
                     self.bt_interface.setActionStatusSuccess(action)
+            elif action == 'go_to_new_vertex':
+                if self.planner_type == Robot.PLANNER_TYPE_COVERAGE:
+                    self.bt_interface.setActionStatusRunning(action)
+                else:
+                    self.bt_interface.setActionStatusSuccess(action)
             elif action == 'take_to_drop_off':
                 if self.planner_type == Robot.PLANNER_TYPE_DROPOFF:
                     self.bt_interface.setActionStatusRunning(action)
@@ -788,6 +802,14 @@ class Robot():
             planner = planners.PlannerPeakBelief(self, self.known_world)
 
             planner.set_parameters(self.state.vertex_from_idx, self.target_belief)
+
+            action_sequence = planner.plan(debug)
+            return action_sequence
+
+        elif self.planner_type == Robot.PLANNER_TYPE_COVERAGE:
+            planner = planners.PlannerCoverage(self, self.known_world)
+
+            planner.set_parameters(self.state.vertex_from_idx)
 
             action_sequence = planner.plan(debug)
             return action_sequence

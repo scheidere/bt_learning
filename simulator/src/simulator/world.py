@@ -140,7 +140,8 @@ class World():
                 self.prior[i] = self.prob_of_other_classes
 
 
-        self.randomize_targets()  
+        self.randomize_targets() 
+        self.inclusive_randomize_targets() # ensure one of each target type
 
         # Define single random drop-off location (on surface) per world
         temp = random.randint(0,len(self.vertices)-1)
@@ -259,6 +260,22 @@ class World():
 
         return True
 
+    def target_inclusion_test(self):
+        target_inclusion_test_list = np.zeros(self.num_classes - 1) #minus 1 for the void of target class (i.e. 0)
+        for vertex_class in self.classes_y:
+            if vertex_class == 1:
+                target_inclusion_test_list[0] = 1
+            elif vertex_class == 2:
+                target_inclusion_test_list[1] = 1
+            elif vertex_class == 3:
+                target_inclusion_test_list[2] = 1
+
+        if 0 in target_inclusion_test_list: #one target type not included, so we should randomize again
+            return False
+
+        return True
+
+
     def randomize_targets(self):
         # Vertex classes - ground truth
         self.classes_y = np.array([]) # 0 - not target, 1 - wildlife/report, 2 - mine/disarm, 3 - benign/move
@@ -266,6 +283,12 @@ class World():
             self.classes_y = np.append(self.classes_y,np.random.choice(a= len(self.prior),p = self.prior))
         #print("classes_y",self.classes_y.shape) 
         #self.original_classes = self.classes_y
+
+    def inclusive_randomize_targets(self):
+        while not self.target_inclusion_test():
+            self.randomize_targets()
+
+
 
     def disarm_target(self, vertex_idx, scorer):
         if self.classes_y[vertex_idx] == World.CLASS_MINE:

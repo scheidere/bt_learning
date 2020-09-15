@@ -192,6 +192,40 @@ class PlannerShortestPath(Planner):
                     min_idx = i
         return min_idx
 
+class PlannerCoverage(PlannerShortestPath):
+
+    def set_parameters(self, vertex_start_idx):
+        self.vertex_start_idx = vertex_start_idx
+
+        # visit_tracker same size as classes_y, initially 0's to denote unvisited, 1 once visited
+        # Should come from robot class since robot knows where it has been
+        unvisited_indices = []
+        for idx in range(len(self.robot.visit_tracker)):
+                if self.robot.visit_tracker[idx] == 0:
+                    unvisited_indices.append(idx)
+
+        print("unvisited_indices", unvisited_indices)
+        print("length of unvisited_indices", len(unvisited_indices))
+        print("visit tracker", self.robot.visit_tracker)
+        # Choose randomly from unvisited list
+        if len(unvisited_indices) > 0:
+            self.vertex_goal_idx = random.choice(unvisited_indices)
+            print("goal idx",self.vertex_goal_idx)
+            #print("before visit update: ", self.robot.visit_tracker)
+            #self.robot.visit_tracker[self.vertex_goal_idx] = 1 # mark as visited ??? Need to do this in robot.py
+            #print("after visit update: ", self.robot.visit_tracker)
+        else:
+            self.vertex_goal_idx = random.randint(0,self.world.num_nodes - 1) # random_walk once visited everywhere
+
+        while self.vertex_start_idx == self.vertex_goal_idx:
+            self.vertex_goal_idx = random.randint(0,self.world.num_nodes - 1) # random_walk once visited everywhere
+
+        # if find_nearest_target returned None (doesn't think it knows where any targets are)
+        if self.vertex_goal_idx == None: # Check with Graeme
+            rospy.logerr("PlannerShortestPath() goal vertex is None") #maybe just print it instead 
+            #pause()           
+
+
 class PlannerPeakBelief(PlannerShortestPath):
     # find shortest path from robot current location to vertex with highest probability of being target
 
