@@ -900,7 +900,7 @@ class CFG():
     
     def generateGrammar(self): 
         
-        return self.generateGrammarGuidedStructureGroupsWithPlannerCheat()
+        return self.generateGrammarGuidedStructureGroupsWithPlannerCheatNoCrossover()
 
     def generateGeneticGrammar(self):
 
@@ -1691,6 +1691,201 @@ class CFG():
         # Star denotes crossover has not yet been applied
         input_word = createWord("S")
         output_word = createWord("? ( sequence add_sequence -> ( [go_to_new_vertex] ) ) *")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = createWord("sequence add_sequence")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = createWord("sequence")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        for g_idx in xrange(num_groups):
+
+            g = groups[g_idx]
+            s = str(g_idx)
+
+            # Convert generic sequence to a sequence of a particular group
+            input_word = createWord("sequence")
+            output_word = createWord("sequence"+s)
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("sequence"+s)
+            output_word = createWord(["->", "(", "A"+s, "children_r"+s, ")"])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("sequence"+s)
+            output_word = createWord(["->","(","children_l"+s,"A"+s, ")"])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("sequence"+s)
+            output_word = createWord(["->","(","fallback"+s,"children_r"+s, ")"])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("sequence"+s)
+            output_word = createWord(["->","(","children_l"+s,"fallback"+s, ")"])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("fallback"+s)
+            output_word = createWord(["?","(","A"+s,"level3_r"+s, ")"])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("children_r"+s)
+            output_word = createWord(["A"+s, "children_r"+s])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("children_r"+s)
+            output_word = createWord(["fallback"+s, "children_r"+s])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("children_r"+s)
+            output_word = createWord("A"+s)
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("children_r"+s)
+            output_word = createWord("fallback"+s)
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("children_l"+s)
+            output_word = createWord(["children_l"+s,"fallback"+s])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            # Only do the following if there are conditions in this group
+            if len(g["conditions"]) > 0:
+
+                input_word = createWord("fallback"+s)
+                output_word = createWord(["?", "(", "level3_l"+s, "A"+s, ")"])
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                input_word = createWord("children_l"+s)
+                output_word = createWord(["children_l"+s, "CorD"+s])
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                input_word = createWord("children_l"+s)
+                output_word = createWord("CorD"+s)
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                input_word = createWord("level3_l"+s)
+                output_word = createWord(["level3_l"+s,"CorD"+s])
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                input_word = createWord("level3_l"+s)
+                output_word = createWord("CorD"+s)
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                input_word = createWord("CorD"+s)
+                output_word = createWord("C"+s)
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                input_word = createWord("CorD"+s)
+                output_word = createWord(["<!>", "(", "C"+s, ")"])
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                for condition in g["conditions"]:
+                    condition_string = '(' + condition + ')'
+                    input_word = Word([Character("C"+s)])
+                    output_word = Word([Character(condition_string)]) #'()'
+                    production_rule = ProductionRule(input_word, output_word)
+                    production_rule_list.append(production_rule)
+
+            input_word = createWord("children_l"+s)
+            output_word = createWord("fallback"+s)
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("level3_r"+s)
+            output_word = createWord(["A"+s,"level3_r"+s])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("level3_r"+s)
+            output_word = createWord("A"+s)
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            for action in g["actions"]:
+                action_string = '[' + action + ']'
+                input_word = Word([Character("A"+s)])
+                output_word = Word([Character(action_string)]) #'[]'
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+            
+
+        return production_rule_list
+
+    def generateGrammarGuidedStructureGroupsWithPlannerCheatNoCrossover(self):
+
+        '''
+        Same as generateGrammarGuidedStructure, but with groups
+        Only actions and conditions in the same group are allowed within the same sequence subtree
+
+        This CFG results in the following guided (or forced) structure
+        ?
+        -> -> -> ...
+        ? A C
+        A C
+        '''
+
+        # Create empty production rule list
+        production_rule_list = []
+        # list_actions,list_conditions = getActionsConditions()
+        groups = getActionsConditionsGroups()
+        num_groups = len(groups)
+
+        '''
+        input_word = createWord("S")
+        output_word = createWord("? ( add_sequence sequence add_sequence )")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = createWord("add_sequence sequence add_sequence")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = createWord("sequence")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = Word([])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+        '''
+        '''
+        input_word = createWord("S")
+        output_word = createWord("? ( sequence add_sequence )")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+        '''
+
+        # Star denotes crossover has not yet been applied
+        input_word = createWord("S")
+        output_word = createWord("? ( sequence add_sequence -> ( [go_to_new_vertex] ) ) ") #*") removed * to prevent crossover
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
