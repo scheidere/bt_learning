@@ -133,10 +133,15 @@ def run_profiler():
 if __name__ == "__main__":
     start_time = time.time()
     run()
+    #f = open("/home/scheidee/mcts_sa_output/mcts_sa_output.txt","w+")
     total_time = time.time() - start_time
     print("RUNTIME: --- %s seconds ---" % (total_time))
     print("RUNTIME: --- %s minutes ---" % str((total_time)/60.0))
     print("RUNTIME: --- %s hours ---" % str((total_time)/3600.0))
+    #f.write("RUNTIME: --- %s seconds ---\n" % (total_time))
+    #f.write("RUNTIME: --- %s minutes ---\n" % str((total_time)/60.0))
+    #f.write("RUNTIME: --- %s hours ---\n" % str((total_time)/3600.0))
+    #f.close()
     # run_profiler()
     
     

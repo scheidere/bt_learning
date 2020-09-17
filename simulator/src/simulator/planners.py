@@ -197,8 +197,11 @@ class PlannerCoverage(PlannerShortestPath):
     def set_parameters(self, vertex_start_idx):
         self.vertex_start_idx = vertex_start_idx
 
+        # Replaced logic below with check in dijkstra's to ensure planning to NEAREST unvisited location
+        '''
         # visit_tracker same size as classes_y, initially 0's to denote unvisited, 1 once visited
         # Should come from robot class since robot knows where it has been
+
         unvisited_indices = []
         for idx in range(len(self.robot.visit_tracker)):
                 if self.robot.visit_tracker[idx] == 0:
@@ -224,7 +227,87 @@ class PlannerCoverage(PlannerShortestPath):
         if self.vertex_goal_idx == None: # Check with Graeme
             rospy.logerr("PlannerShortestPath() goal vertex is None") #maybe just print it instead 
             #pause()           
+        '''
 
+    def plan(self, debug=False):
+        #rospy.loginfo("PlannerShortestPath plan()")
+        #debug = True
+        try: 
+            self.vertex_start_idx
+        except AttributeError:
+            rospy.logerr("set_parameters() for dijkstras needs to be called")
+            return None
+
+        # rospy.loginfo("Calling dijkstras")
+        [distance, path] = self.dijkstras(debug)
+        if len(path) > 1:
+            path = path[1:]
+            return path
+        else:
+            #rospy.logwarn("no path to goal, or goal has been reached")
+            return None
+
+    def dijkstras(self, debug=False):
+        num_vertices = len(self.world.vertices)
+        dist_to_go = [sys.maxint] * num_vertices
+        prev = [-1] * num_vertices
+        dist_to_go[self.vertex_start_idx] = 0
+
+        if debug:
+            print(self.vertex_start_idx)
+
+        open_set = [True] * num_vertices
+
+        #iteration_count = 0 # for debugging
+
+        while not self.is_open_set_empty(open_set):
+
+            #iteration_count = iteration_count + 1
+            #rospy.logwarn("dijkstra iteration_count: " + str(iteration_count))
+
+            # find the vertex in open_set that has minimum dist_to_go
+            v_current = self.find_min_vertex(dist_to_go, open_set)
+
+            # check if vertex has not been visited, and if so that is the goal
+            # i.e. the goal is the shortest path to any vertex that has not been visited (i.e. 0 in tracker)
+            if self.robot.visit_tracker[v_current] == 0:
+                if debug:
+                    print('vertex in comms',v_current,self.world.vertices[v_current].position)
+
+                break
+
+            # remove it from the open set
+            open_set[v_current] = False
+
+            # get the set of neighbours
+            neighbours = self.get_neighbours(v_current)
+
+            # expand neighbouring nodes
+            for e in neighbours:
+                v_next = e.vertex_end_idx
+                if open_set[v_next] == True:
+                    alternative_distance = dist_to_go[v_current] + e.cost
+                    if alternative_distance < dist_to_go[v_next]:
+                        dist_to_go[v_next] = alternative_distance
+                        prev[v_next] = v_current
+
+        # backtrack to find path and distance
+        path = []
+        v = v_current
+        d = dist_to_go[v]
+        if debug:
+            print('distance to go',d)
+        if debug:
+            print "dijkstra goal: " + str(v_current)
+            print(v,self.vertex_start_idx)
+            print('prev',prev[v])
+        if prev[v] >= 0 or v == self.vertex_start_idx:
+            while v >= 0:
+                path.insert(0, v)
+                v = prev[v]
+        if debug:
+            print path
+        return [d, path] 
 
 class PlannerPeakBelief(PlannerShortestPath):
     # find shortest path from robot current location to vertex with highest probability of being target

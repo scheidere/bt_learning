@@ -1690,7 +1690,7 @@ class CFG():
 
         # Star denotes crossover has not yet been applied
         input_word = createWord("S")
-        output_word = createWord("? ( sequence add_sequence -> ( [random_walk] ) ) *")
+        output_word = createWord("? ( sequence add_sequence -> ( [go_to_new_vertex] ) ) *")
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
