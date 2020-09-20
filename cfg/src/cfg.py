@@ -247,8 +247,9 @@ def exportBT(bt, include_nodes=None):
         current_node = nodes_stack.pop() #pop
         level = level_stack.pop()
         # print(current_node.__class__.__name__)
-
-        if include_nodes == None:
+        
+        node_index = bt.nodes.index(current_node)
+        if include_nodes == None or node_index == len(include_nodes) - 1: #trying to recreate bug
             include_node = True
         else:
             #print("include_nodes: ", include_nodes)

@@ -20,13 +20,21 @@ class State():
 
         for i in range(len(self.known_subtree_words)):
             subtree_word = self.known_subtree_words[i]
+            print('known subtree word', subtree_word.toString())
             if input_subtree_word.toString() == subtree_word.toString():
                 return i
+        print('return None since subtree was not known')
+        print('input subtree word', input_subtree_word.toString())
 
-    def wordToList(self, word):
+    def wordToList(self, word): # THIS MAY BE THE CULPRIT for the state_list = [None] related error
 
         word_num_list = []
         subtrees = extract_subtrees(word)
+        print('testing wordToList')
+        print('subtrees extracted',subtrees)
+        for subtree in subtrees:
+            print('extracted subtree', subtree.toString())
+        print('known_subtree_words', self.known_subtree_words)
         for subtree in subtrees:
             word_num_list.append(self.subtreeWordToNum(subtree))
 
@@ -34,8 +42,12 @@ class State():
 
 
     def stateToFulltreeWord(self):
+        print('stateToFulltreeWord TESTING\n')
+        print('len(state_list)', len(self.state_list))
         if len(self.state_list) == 0:
+            print("Return None since len is 0, no word to return")
             return None
+        print('state_list', self.state_list)
         char_list = []
         char_list.append(Character("?"))
         char_list.append(Character("("))

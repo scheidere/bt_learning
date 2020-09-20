@@ -142,11 +142,20 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
             # shortcut_words = [] # comment this out to keep the previous words
             subtree_words = []
 
+            # Add the subtrees from the overall_best_word
+            if overall_best_word_score > 0:
+
+                extracted_subtrees = extract_subtrees(overall_best_word)
+                subtree_words.extend(extracted_subtrees)
+
             # Reset shortcut_words after a certain number of rounds
-            if round > 5 and round/5 == 0:
+            if round > 5 and round%5 == 0:
                 f.write("Resetting shortcut_words")
                 shortcut_words = []
 
+            # Add overall_best_word so that those subtrees become shortcuts and you can initialize SA round with overall_best_word
+            #if overall_best_word_score > 0:
+                #best_nodes_dict['overall_best_word'] = overall_best_word
             for best_node in best_nodes_dict.values():
 
                 if best_node.average_evaluation_score > 0.0:
@@ -168,6 +177,7 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
 
                             # Create a new production rule (done in mcts.py given shortcut_words)
                             shortcut_words.append(subtree_word)
+            
 
             # Plot it
             plot_search_tree = config["plot_search_tree"]
@@ -218,7 +228,13 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
             f1.write("TESTING TESTING TESTING - prev_round_best_word\n")
             f1.write(prev_round_best_word.toString())
             f1.write("\n")
-            initial_state.state_list = initial_state.wordToList(prev_round_best_word)
+            print("TESTING TESTING TESTING - prev_round_best_word\n")
+            print(prev_round_best_word.toString())
+            if overall_best_word_score > 0:
+                print('Initializing SA with overall best word...')
+                print('Overall best word: ', overall_best_word.toString())
+                initial_state.state_list = initial_state.wordToList(overall_best_word)
+            print('initial_state.state_list',initial_state.state_list)
             f.write("Test to see if SA gets current best word as starting point...\n")
             f1.write("Test to see if SA gets current best word as starting point...\n")
             initial_word = initial_state.stateToFulltreeWord()
@@ -276,10 +292,14 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
             subtree_words = []
 
             # Reset shortcut_words after a certain number of rounds
-            if round > 5 and round/5 == 0:
+            if round > 5 and round%5 == 0:
                 f.write("Resetting shortcut_words")
                 shortcut_words = []
 
+            # Include overall_best_word to make sure the associated subtrees are shortcuts
+            if overall_best_word_score > 0:
+                sim_anneal_best_words.append(overall_best_word)
+                scores.append(overall_best_word_score)
             for i in range(len(sim_anneal_best_words)):
                 sa_best_word = sim_anneal_best_words[i]
                 score = scores[i]

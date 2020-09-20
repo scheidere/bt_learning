@@ -46,6 +46,20 @@ class SimulatedAnnealing():
 
         self.do_plot = True
 
+        self.fixed_planner_subtree_num = None
+
+        # it seems that the fixed planner is not guaranteed to be in the known_subtree_words list
+        self.fixed_planner_subtree_word = createWord('-> ( [go_to_new_vertex] )')
+        for i in range(len(self.known_subtree_words)):
+            word = self.known_subtree_words[i]
+            if word.equal(self.fixed_planner_subtree_word):
+                self.fixed_planner_subtree_num = i
+                break
+        if not self.fixed_planner_subtree_num: #meaning it was not included in known_subtree_words
+            # Add the "cheat" as a shortcut contained in known_subtree_words
+            self.known_subtree_words.append(self.fixed_planner_subtree_word)
+            self.fixed_planner_subtree_num = len(self.known_subtree_words)-1
+
     def temperature(self, k): #needs to take in (k-1)/k_max
         # temp should start at max t and end at 0
         # need to scale it
@@ -80,9 +94,11 @@ class SimulatedAnnealing():
         #print(active_chars_pre)
 
         print('active_subtree_indices: ' + str(active_subtree_indices))
+        print('DOES IT PRINT HERE???')
         print('Pre-update state list: ' + str(state.state_list))
         # Prune inactive subtrees, updating current state
         state.activeIndicesToNewState(active_subtree_indices)
+        print('DOES IT PRINT AFTER ACTIVE UPDATE FOR STATE?')
         print('Updated state list, after pruning: ' + str(state.state_list))
 
         # If the score is zero, the order might just be wrong
@@ -182,7 +198,22 @@ class SimulatedAnnealing():
 
             # Pick a random neighbor
             neighbor_list = random.choice(list_of_neighbor_lists)
-            #print('Neighbor: ', neighbor_list)
+            print('Neighbor: ', neighbor_list)
+            print('Index of cheat subtree: ', self.fixed_planner_subtree_num)
+
+            # Ensure "cheat", i.e. the fixed planner subtree, is at the end of neighbor list, and no where else
+            for i in range(len(neighbor_list)):
+                print('i',i)
+                print('neighbor_list[i]', neighbor_list[i])
+                if neighbor_list[i] == self.fixed_planner_subtree_num:
+                    # Then we have found the cheat in the tree, and will remove it for simpliity
+                    print('removing')
+                    neighbor_list.remove(self.fixed_planner_subtree_num)
+                    break #b/c you have changed length so loop will break due to index out of range
+
+            # Add "cheat" subtree to right side of neighbor BT
+            neighbor_list.append(self.fixed_planner_subtree_num)
+
             self.neighbor_state = State(neighbor_list, self.known_subtree_words)
 
             # Calculate probability of picking neighbor state
