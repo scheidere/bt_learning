@@ -23,8 +23,8 @@ import time
 def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config):
 
 
-    num_rounds = 15
-    iterations_per_round = 200
+    num_rounds = 100
+    iterations_per_round = 1000
 
     min_reward = config['min_reward']
     max_reward = config['max_reward']
@@ -33,6 +33,8 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
 
     overall_best_word_score = 0
     overall_best_word = None
+
+    initial_round_threshold = 10 # number of rounds
 
     # cfg.grammar = cfg.generateGrammarGuidedStructureGroupsOneSequence()
 
@@ -68,7 +70,7 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
         max_mcts_iterations = iterations_per_round
         #if round in range(1):
         #if round in range(5): #do mcts first half, do sa second half (5 rounds each)
-        if round in range(5) or round > 5 and round%2==0 or len(shortcut_words) == 0: #ex. run mcts for first 5 rounds then SA/MCTS alternating i.e. mcts = (0,1,2,3,4,6,8), sa = (5,7,9)
+        if round in range(initial_round_threshold) or round > initial_round_threshold and round%2==0 or len(shortcut_words) == 0: #ex. run mcts for first 5 rounds then SA/MCTS alternating i.e. mcts = (0,1,2,3,4,6,8), sa = (5,7,9)
         #if round%2==0 or len(shortcut_words) == 0: #alternating rounds
             f.write("MCTS...\n")
             f1.write("MCTS...\n")
@@ -77,41 +79,48 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
             shortcut_words_copy = copy.deepcopy(shortcut_words)
             [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict, best_reward] = mcts( cfg_copy, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config, shortcut_words_copy )
             f.write("Best rollout: ")
-            f.write(best_rollout.toString())
-            f.write("\n")
-            f1.write("Best rollout: ")
-            f1.write(best_rollout.toString())
-            f1.write("\n")
+            if best_rollout:
+                f.write(best_rollout.toString())
+                f.write("\n")
+                f1.write("Best rollout: ")
+                f1.write(best_rollout.toString())
+                f1.write("\n")
 
-            print('sequence at best node:')
-            for soln in solution:
-                soln.printWord()
+                print('sequence at best node:')
+                for soln in solution:
+                    soln.printWord()
             
-            print('best_rollout at best node:')
-            best_rollout.printWord()
+                print('best_rollout at best node:')
+                best_rollout.printWord()
 
-            print('best_rollout_active_words at best node:')
-            for best_rollout_active_word in winner.best_rollout_active_words:
-                best_rollout_active_word.printWord()
-                active_best_rollout = best_rollout_active_word
+                print('best_rollout_active_words at best node:')
+                for best_rollout_active_word in winner.best_rollout_active_words:
+                    best_rollout_active_word.printWord()
+                    active_best_rollout = best_rollout_active_word
 
-            print('sequence at best_rollout_node:')
-            for soln in best_rollout_node.sequence:
-                soln.printWord()
+                print('sequence at best_rollout_node:')
+                for soln in best_rollout_node.sequence:
+                    soln.printWord()
 
-            print('best_rollout at best_rollout_node:')    
-            best_rollout_node.best_rollout.printWord()
+                print('best_rollout at best_rollout_node:')    
+                best_rollout_node.best_rollout.printWord()
 
-            print('best_rollout_active_words at best_rollout_node:')
-            for best_rollout_active_word in best_rollout_node.best_rollout_active_words:
-                best_rollout_active_word.printWord()
+                print('best_rollout_active_words at best_rollout_node:')
+                for best_rollout_active_word in best_rollout_node.best_rollout_active_words:
+                    best_rollout_active_word.printWord()
 
-            print('best_reward from best_rollout: %s' % best_reward )
-            
+                print('best_reward from best_rollout: %s' % best_reward )
+                
 
-            prev_round_best_word = active_best_rollout
-            best_reward = float(best_reward*(max_reward - min_reward)) + float(min_reward) # reverse normalization, to match sa scale
-            intermediate_best_word_score = best_reward
+                prev_round_best_word = active_best_rollout
+                best_reward = float(best_reward*(max_reward - min_reward)) + float(min_reward) # reverse normalization, to match sa scale
+                intermediate_best_word_score = best_reward
+            else:
+                print('Not printing results because best_rollout is None')
+                prev_round_best_word = None
+                intermediate_best_word_score = 0
+
+
             print("++++++++++++++++++++++++++++++++++")
             print("intermediate_best_word_score: %s\n" % intermediate_best_word_score)
             f.write("intermediate_best_word_score: %s\n" % intermediate_best_word_score)
@@ -149,7 +158,7 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
                 subtree_words.extend(extracted_subtrees)
 
             # Reset shortcut_words after a certain number of rounds
-            if round > 5 and round%5 == 0:
+            if round > initial_round_threshold and round%initial_round_threshold == 0:
                 f.write("Resetting shortcut_words")
                 shortcut_words = []
 
@@ -242,7 +251,7 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
             f1.write("Initial SA state word (checking for test): %s\n" % initial_word.toString())
 
             initial_temperature = 1000
-            k_max = 200
+            k_max = 1000
             sim_anneal = SimulatedAnnealing(initial_state, initial_temperature, k_max, round)
             sim_anneal_best_word, score, sim_anneal_best_words, scores = sim_anneal.run()
             print("++++++++++++++++++++++")
@@ -292,7 +301,7 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
             subtree_words = []
 
             # Reset shortcut_words after a certain number of rounds
-            if round > 5 and round%5 == 0:
+            if round > initial_round_threshold and round%initial_round_threshold == 0:
                 f.write("Resetting shortcut_words")
                 shortcut_words = []
 
