@@ -157,10 +157,13 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
                 extracted_subtrees = extract_subtrees(overall_best_word)
                 subtree_words.extend(extracted_subtrees)
 
+            '''
+            #COMMENTING THIS OUT BECAUSE SHORTCUTS WERE EMPTY AFTER ROUND 20
             # Reset shortcut_words after a certain number of rounds
             if round > initial_round_threshold and round%initial_round_threshold == 0:
-                f.write("Resetting shortcut_words")
+                f.write("Resetting shortcut_words\n")
                 shortcut_words = []
+            '''
 
             # Add overall_best_word so that those subtrees become shortcuts and you can initialize SA round with overall_best_word
             #if overall_best_word_score > 0:
@@ -300,10 +303,13 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
             #shortcut_words = [] # comment this out to keep the previous words
             subtree_words = []
 
+            '''
+            #COMMENTING THIS OUT BECAUSE SHORTCUTS WERE EMPTY AFTER ROUND 20
             # Reset shortcut_words after a certain number of rounds
             if round > initial_round_threshold and round%initial_round_threshold == 0:
-                f.write("Resetting shortcut_words")
+                f.write("Resetting shortcut_words\n")
                 shortcut_words = []
+            '''
 
             # Include overall_best_word to make sure the associated subtrees are shortcuts
             if overall_best_word_score > 0:
