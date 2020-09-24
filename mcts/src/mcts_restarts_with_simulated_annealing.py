@@ -41,14 +41,16 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
     #cfg_shortcuts_only = CFG()
     #cfg_shortcuts_only.grammar = cfg_shortcuts_only.generateGrammarShortcutsOnly()
 
+    start_time = int(time.time()*1000) #milliseconds
+
     # Initialize mcts_sa_output.txt
-    f = open("/home/scheidee/mcts_sa_output/mcts_sa_output.txt","w+") #overall output file, can't load while running
+    f = open("/home/scheidee/Desktop/bt_learning_output/" + str(start_time) + "mcts_sa_output.txt","w+") #overall output file, can't load while running
     print(f.read())
 
     # Do the rounds
     for round in xrange(num_rounds):
 
-        f1 = open("/home/scheidee/mcts_sa_output/mcts_sa_output_thru_round" + str(round) + ".txt","w+")
+        f1 = open("/home/scheidee/Desktop/bt_learning_output/" + str(start_time) + "mcts_sa_output_thru_round" + str(round) + ".txt","w+")
 
         f.write("+++++++++++++++++++++++++\n")
         f.write("Results for round %d\n" % round)
@@ -190,6 +192,16 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
                             # Create a new production rule (done in mcts.py given shortcut_words)
                             shortcut_words.append(subtree_word)
             
+            # The subtrees found in this round of mcts should be in subtree_words regardless of frequency of appearance
+            f.write("Subtrees extracted from all best trees in this round of mcts\n")
+            f1.write("Subtrees extracted from all best trees in this round of mcts\n")
+            for word in subtree_words:
+                f.write(word.toString())
+                f.write("\n")
+                f1.write(word.toString())
+                f1.write("\n")
+            f.write("Not all of these will be added to shortcut_words if there is redundancy")
+            f1.write("Not all of these will be added to shortcut_words if there is redundancy")
 
             # Plot it
             plot_search_tree = config["plot_search_tree"]
@@ -337,6 +349,17 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
 
                             # Create a new production rule (done in mcts.py given shortcut_words)
                             shortcut_words.append(subtree_word)
+
+            # The subtrees found in this round of mcts should be in subtree_words regardless of frequency of appearance
+            f.write("Subtrees extracted from all best trees in this round of mcts\n")
+            f1.write("Subtrees extracted from all best trees in this round of mcts\n")
+            for word in subtree_words:
+                f.write(word.toString())
+                f.write("\n")
+                f1.write(word.toString())
+                f1.write("\n")
+            f.write("Not all of these will be added to shortcut_words if there is redundancy")
+            f1.write("Not all of these will be added to shortcut_words if there is redundancy")
 
             f.write("Shortcut words:\n")
             f1.write("Shortcut words:\n")
