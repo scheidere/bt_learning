@@ -717,8 +717,8 @@ class Robot():
             print('Goal vertex (vertex_to_idx): ' + str(self.state.vertex_to_idx))
             #if self.nearest_mine_idx != None:
                 #print('Closest mine (nearest_mine_idx): ' + str(self.nearest_mine_idx))
-            print('Actual target locations (mine = class 2): ')
-            print(self.known_world.classes_y)
+            #print('Actual target locations (mine = class 2): ')
+            #print(self.known_world.classes_y)
             self.planner_type = Robot.PLANNER_TYPE_DISARM
         
         elif 'pick_up' in active_actions:

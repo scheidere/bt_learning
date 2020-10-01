@@ -44,7 +44,7 @@ class SimulatedAnnealing():
         self.underwater_simulator = UnderwaterSimulator()
         self.best_score = 0 #-self.energy(self.best_state)
 
-        self.do_plot = True
+        self.do_plot = False
 
         self.fixed_planner_subtree_num = None
 
@@ -74,7 +74,7 @@ class SimulatedAnnealing():
             self.T = -self.initial_temperature*step + self.initial_temperature
         return self.T
 
-    def energy(self, state):
+    def energy(self, state, iteration):
         '''
         Goal function: lower energy is better
         Generate reward using simulator, reverse sign b/c lower energy is better
@@ -114,21 +114,22 @@ class SimulatedAnnealing():
             self.best_words.append(self.best_word)
             self.best_word_scores.append(self.best_score)
             self.best_state_updated = True
+            self.iteration_best_was_found = iteration
         else:
             self.best_state_updated = False
 
         return -self.score
 
-    def probability(self, current_state, neighbor_state, temperature):
+    def probability(self, current_state, neighbor_state, temperature, iteration):
         '''
         Acceptance probability function:
         Probability of moving to new state given current state
         '''
         print("Generate current state energy")
-        energy_current = self.energy(current_state)
+        energy_current = self.energy(current_state, iteration)
         print("current energy: ", energy_current)
         print("Generate neighbor state energy")
-        energy_neighbor = self.energy(neighbor_state)
+        energy_neighbor = self.energy(neighbor_state, iteration)
         print("neighbor energy: ", energy_neighbor)
 
         if energy_neighbor < energy_current:
@@ -217,7 +218,7 @@ class SimulatedAnnealing():
             self.neighbor_state = State(neighbor_list, self.known_subtree_words)
 
             # Calculate probability of picking neighbor state
-            P = self.probability(self.current_state, self.neighbor_state, self.T)
+            P = self.probability(self.current_state, self.neighbor_state, self.T, k)
             print("Probability: " + str(P))
             self.probabilities.append(P)
             print(self.probabilities)
@@ -342,7 +343,7 @@ class SimulatedAnnealing():
         #fig = plt.figure()
         #ax = fig.add_subplot(111)
         #line1, = ax.plot(range(len(self.probabilities)+1),self.probabilities,label = 'Probability')
-        return self.best_state.stateToFulltreeWord(), self.best_score, self.best_words, self.best_word_scores #return best word 
+        return self.best_state.stateToFulltreeWord(), self.best_score, self.iteration_best_was_found, self.best_words, self.best_word_scores #return best word 
 
     def is_stagnant(self):
 

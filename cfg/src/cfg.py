@@ -240,6 +240,9 @@ def exportBT(bt, include_nodes=None):
     # print("exportBT num_include_nodes", num_include_nodes)
     # print("exportBT len(include_nodes)", len(include_nodes))
 
+    print("==========================================================")
+    print("BT NODE BUG TEST", bt.nodes[len(include_nodes) - 1].label)
+
     # Do the traversal, using the stack to help
     while len(nodes_stack) != 0:
 
@@ -312,6 +315,9 @@ def getSubtreeIndices(bt, include_nodes):
         #print("node_index: ", node_index)
         #print(len(include_nodes))
         include_node = include_nodes[node_index]
+        
+        if node_index == len(include_nodes) - 1: #trying to recreate bug
+            include_node = True
         
         # Add all children to the stack
         if level == 0:
@@ -870,6 +876,16 @@ class CrossoverRule(GeneticRule):
 class CFG():
     def __init__(self):
 
+        # Get the config file etc
+        rospack = rospkg.RosPack()
+        filepath = rospack.get_path('mcts') + "/config/" + rospy.get_param('~config')
+        with open(filepath, 'r') as stream:
+            config = yaml.safe_load(stream)
+
+        self.use_groups = config["use_groups"]
+        self.use_structure = config["use_structure"]
+        self.use_cheat = config["use_cheat"]
+
         # Generate a grammar
         self.grammar = self.generateGrammar()
         self.printAllProdRules()
@@ -881,6 +897,7 @@ class CFG():
 
         # Print all words
         #self.printAllTerminalWords(4)
+        
 
     def addProductionRule(self, new_production_rule):
 
@@ -900,8 +917,26 @@ class CFG():
             rule.printProductionRule()
     
     def generateGrammar(self): 
+
         
-        return self.generateGrammarGuidedStructureGroupsWithPlannerCheatNoCrossover()
+        # no_cheat comparison method grammar
+        if self.use_groups and self.use_structure and not self.use_cheat:
+            return self.generateGrammarGuidedStructureGroups()
+
+        # no_groups comparison method grammar
+        elif not self.use_groups and self.use_structure and not self.use_cheat:
+            return self.generateGrammarGuidedStructure()
+
+        # no_groups_no_structure method grammar
+        elif not self.use_groups and not self.use_structure and not self.use_cheat:
+            return self.generateGrammar_nolr()
+
+        # all other comparison methods grammar
+        elif self.use_groups and self.use_structure and self.use_cheat:
+            return self.generateGrammarGuidedStructureGroupsWithPlannerCheat()
+        
+        
+        #return self.generateGrammarGuidedStructureGroupsWithPlannerCheatNoCrossover()
 
     def generateGeneticGrammar(self):
 
@@ -1494,9 +1529,9 @@ class CFG():
         production_rule_list.append(production_rule)
         '''
 
-        # Star denotes crossover has not yet been applied
+        # Star denotes crossover has not yet been applied - NOPE removed * for crossover
         input_word = createWord("S")
-        output_word = createWord("? ( sequence add_sequence ) *")
+        output_word = createWord("? ( sequence add_sequence )") 
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
@@ -1689,9 +1724,9 @@ class CFG():
         production_rule_list.append(production_rule)
         '''
 
-        # Star denotes crossover has not yet been applied
+        # Star denotes crossover has not yet been applied - REMOVED STAR FOR CROSSOVER
         input_word = createWord("S")
-        output_word = createWord("? ( sequence add_sequence -> ( [go_to_new_vertex] ) ) *")
+        output_word = createWord("? ( sequence add_sequence -> ( [go_to_new_vertex] ) )")
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
@@ -2075,7 +2110,7 @@ class CFG():
 
         
         input_word = createWord("S")
-        output_word = createWord("? ( sequence sequence sequence sequence sequence sequence sequence sequence ) *")
+        output_word = createWord("? ( sequence sequence sequence sequence sequence sequence sequence sequence )")
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
@@ -2624,7 +2659,7 @@ if __name__ == "__main__":
 
     #cfg.printAllTerminalWords(7)
 
-    start_word = createWord('? ( -> ( (mine_found) ? ( [disarm] ) ) -> ( [shortest_path] ) -> ( [random_walk] ) ) *')
+    start_word = createWord('? ( -> ( (mine_found) ? ( [disarm] ) ) -> ( [shortest_path] ) -> ( [random_walk] ) )')
     #test_char = Character("*")
     #print(test_char.label)
 

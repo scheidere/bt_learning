@@ -7,8 +7,9 @@ Jan 2020
 '''
 
 from mcts import mcts
-from mcts_restarts import mcts_restarts
-from mcts_restarts_with_simulated_annealing import mcts_sim_anneal_switching
+#from mcts_restarts import mcts_restarts
+#from mcts_restarts_with_simulated_annealing import mcts_sim_anneal_switching
+from all_methods import AllMethods
 from action import Action, printActionSequence
 from tree_node import countNodes
 # from plot_tree import plotTree
@@ -27,11 +28,24 @@ import pstats
 from simulator.run_simulator import UnderwaterSimulator
 
 import time
+import datetime
 
 
 def run():
 
     rospy.init_node('mcts')
+
+    config_filename = rospy.get_param('~config')
+    garbage_string = "_parameters.yaml"
+    if garbage_string in config_filename:
+        current_method = config_filename.replace(garbage_string, '')
+
+    now = datetime.datetime.now()
+    start_time_milli = int(time.time()*1000) #milliseconds
+
+
+    # Create output file
+    f = open("/home/scheidee/Desktop/bt_learning_output/all_methods_output/" + str(start_time_milli) + current_method + "_output.txt","w+") #overall output file, can't load while running
 
     # Create CFG object
     cfg = CFG()
@@ -60,70 +74,92 @@ def run():
     max_mcts_iterations = config["max_mcts_iterations"]
     max_sim_iterations = config["max_sim_iterations"]
     use_dag = config["use_dag"]
+    use_sa = config["use_sa"]
     
-    #[solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict, best_reward] = mcts_restarts( cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config )    
-    final_best_word, final_best_word_score = mcts_sim_anneal_switching( cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config )    
 
-    # Display the tree
-    ###printActionSequence(solution) #this is not set up for words instead of sequences for actions
-    
-    print('Final best word:')
-    if final_best_word:
-        final_best_word.printWord()
+    # Create instance of class containing all methods
+    all_methods = AllMethods(config)
+
+    overall_best_word, overall_best_word_score, total_time_to_best, num_rounds_to_best, total_time_for_run = all_methods.run(cfg, budget, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config)
+    f.write("Results for " + current_method + " method: \n")
+    f.write("Date and time: " + now.strftime("%Y-%m-%d %H:%M:%S")+ "\n")
+    f.write("Overall best word: \n")
+    if overall_best_word:
+        f.write(overall_best_word.toString() + "\n")
     else:
-        print(final_best_word) #should be None in this case (to account for when no trees have score > 0 in a round)
+        f.write('None\n')
+    f.write("Overall best word score: " + str(overall_best_word_score) + "\n")
+    f.write("Total time to best: " + str(total_time_to_best) + " seconds\n")
+    f.write("Number of rounds to best: " + str(num_rounds_to_best) + "\n")
+    f.write("Total time for run: " + str(total_time_for_run) + " seconds\n")
+
 
     '''
-    print('sequence at best node:')
-    for soln in solution:
-        soln.printWord()
+    if use_sa: # Run simulated annealing as subtree compilation rounds
+        
+        final_best_word, final_best_word_score = all_methods.monte_carlo_sim_anneal_switching( cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config )    
     
-    print('best_rollout at best node:')
-    best_rollout.printWord()
+        print('Final best word:')
+        if final_best_word:
+            final_best_word.printWord()
+        else:
+            print(final_best_word) #should be None in this case (to account for when no trees have score > 0 in a round)
+    
+    else: # Run Monte Carlo method as subtree compilation rounds
+        
+        [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict, best_reward] = all_methods.monte_carlo_restarts( cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config )    
 
-    print('best_rollout_active_words at best node:')
-    for best_rollout_active_word in winner.best_rollout_active_words:
-        best_rollout_active_word.printWord()
+        print('sequence at best node:')
+        for soln in solution:
+            soln.printWord()
+        
+        print('best_rollout at best node:')
+        best_rollout.printWord()
 
-    print('sequence at best_rollout_node:')
-    for soln in best_rollout_node.sequence:
-        soln.printWord()
+        print('best_rollout_active_words at best node:')
+        for best_rollout_active_word in winner.best_rollout_active_words:
+            best_rollout_active_word.printWord()
 
-    print('best_rollout at best_rollout_node:')    
-    best_rollout_node.best_rollout.printWord()
+        print('sequence at best_rollout_node:')
+        for soln in best_rollout_node.sequence:
+            soln.printWord()
 
-    print('best_rollout_active_words at best_rollout_node:')
-    for best_rollout_active_word in best_rollout_node.best_rollout_active_words:
-        best_rollout_active_word.printWord()
+        print('best_rollout at best_rollout_node:')    
+        best_rollout_node.best_rollout.printWord()
+
+        print('best_rollout_active_words at best_rollout_node:')
+        for best_rollout_active_word in best_rollout_node.best_rollout_active_words:
+            best_rollout_active_word.printWord()
+
+        # OLD plotting function -- does not work for these cfg trees
+        #plotTree(list_of_all_nodes, winner, action_set, False, budget, 1, exploration_exploitation_parameter)
+        #plotTree(list_of_all_nodes, winner, action_set, True, budget, 2, exploration_exploitation_parameter)
+        plot_search_tree = config["plot_search_tree"]
+        if plot_search_tree:
+
+            # new plotting function
+            use_uct = False # True case doesn't currently work
+            max_height = 1000
+            # plot_cfg_tree(list_of_all_nodes, winner, use_uct, max_height, exploration_exploitation_parameter)
+
+            print_text = False
+            filename='dag.gv'
+            plot_cfg_dag(list_of_all_nodes, winner, use_uct, max_height, exploration_exploitation_parameter, print_text, filename)
+
+            print_text = True
+            filename='dag_text.gv'
+            plot_cfg_dag(list_of_all_nodes, winner, use_uct, max_height, exploration_exploitation_parameter, print_text, filename)
+
+            # Wait for Ctrl+C
+            while True:
+                try:
+                    time.sleep(.1)
+                except KeyboardInterrupt:
+                    sys.exit()
+
     '''
 
-    # OLD plotting function -- does not work for these cfg trees
-    #plotTree(list_of_all_nodes, winner, action_set, False, budget, 1, exploration_exploitation_parameter)
-    #plotTree(list_of_all_nodes, winner, action_set, True, budget, 2, exploration_exploitation_parameter)
-    plot_search_tree = config["plot_search_tree"]
-    if plot_search_tree:
-
-        # new plotting function
-        use_uct = False # True case doesn't currently work
-        max_height = 1000
-        # plot_cfg_tree(list_of_all_nodes, winner, use_uct, max_height, exploration_exploitation_parameter)
-
-        print_text = False
-        filename='dag.gv'
-        plot_cfg_dag(list_of_all_nodes, winner, use_uct, max_height, exploration_exploitation_parameter, print_text, filename)
-
-        print_text = True
-        filename='dag_text.gv'
-        plot_cfg_dag(list_of_all_nodes, winner, use_uct, max_height, exploration_exploitation_parameter, print_text, filename)
-
-        # Wait for Ctrl+C
-        while True:
-            try:
-                time.sleep(.1)
-            except KeyboardInterrupt:
-                sys.exit()
-    
-
+    f.close()
 
 def run_profiler():
     cProfile.run('run()', 'profile_stats')

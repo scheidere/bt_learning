@@ -405,8 +405,14 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     #print('parent.num_updates after',parent.num_updates)
                     parent.updateBestRollout(rollout_word, rollout_active_words, rollout_reward)
 
-                    # Recurse up the tree
-                    parent = parent.parents[0]
+                    # If list is not empty (i.e. no parents)
+                    if parent.parents != []:
+
+                        # Recurse up the tree
+                        parent = parent.parents[0]
+
+                    else:
+                        break
             else:
                 print("invalid rollout (empty?)")
                 # print("MCTS backprop " + str(iter))
@@ -418,8 +424,14 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     parent.updateAverage(rollout_reward, iter)
                     #parent.updateBestRollout(rollout_word, rollout_active_words, rollout_reward)
 
-                    # Recurse up the tree
-                    parent = parent.parents[0]
+                    # If list is not empty (i.e. no parents)
+                    if parent.parents != []:
+
+                        # Recurse up the tree
+                        parent = parent.parents[0]
+
+                    else:
+                        break
 
         # Remember the rollout score, for DAG merging
         all_iteration_rewards[iter] = rollout_reward
@@ -451,6 +463,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     if node:
                         add_backwards_edges(cfg, dict_of_all_nodes, node, all_iteration_rewards, adding_best_edges_steps, max_ancestors)
 
+        if True:
             if iter%iterations_between_adding_production_rules==0 or iter==max_iterations-1:
 
                 # Find the best node that contains sequenceX as part of its evaluation, for each X

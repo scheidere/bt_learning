@@ -1,3 +1,4 @@
+# Monte Carlo
 budget: 40
 exploration_exploitation_parameter: 1.0 # =1.0 is recommended. <1.0 more exploitation. >1.0 more exploration. 
 max_mcts_iterations: 1000 #200001 #change name to max_mcts_iterations ##you change this to make it run longer
@@ -9,14 +10,25 @@ use_dag: True
 iterations_between_adding_best_edges: 200
 adding_best_edges_steps: 3
 adding_nonzero_edges_steps: 3
-iterations_between_adding_production_rules: 10000
+iterations_between_adding_production_rules: 10000000
 max_ancestors: 1000 # number of ancestors allowed when looking back up the DAG
-
 probability_skip_unpicked_child_words: 0.0
+use_groups: False #???#not functional yet
+use_structure: False #???#not functional yet
+use_restarts: True #???
 
+
+# Sim Annealing
+use_sa: True #??? not functional yet
+
+# Both
+use_cheat: True #???
+
+# Simulator
 min_reward: 0
 max_reward: 100
 
-num_rounds: 50
-iterations_per_round: 1000
-consecutive_initial_rounds: 10
+# Testing
+num_rounds: 50 #???
+iterations_per_round: 1000 #???
+consecutive_initial_rounds: 10 #???

@@ -30,7 +30,7 @@ class UnderwaterSimulator():
 
         # Get the config file etc
         rospack = rospkg.RosPack()
-        filepath = rospack.get_path('simulator') + "/config/" + rospy.get_param('~config')
+        filepath = rospack.get_path('simulator') + "/config/" + rospy.get_param('~sim_config')
         with open(filepath, 'r') as stream:
             self.config = yaml.safe_load(stream)
         self.robot_id = rospy.get_param('~robot_id')
@@ -173,11 +173,22 @@ if __name__ == "__main__":
     #word1 = createWord('? ( -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( [random_walk] ) )')
     #word2 = createWord('? ( -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_object_found) [pick_up] ) -> ( [random_walk] ) )')
     
-    word1 = word_manual4
-    word2 = word_manual3
+    word_rand_false_best = createWord('? ( -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) ? ( (benign_object_found) ) ? ( [pick_up] ) ) -> ( (wildlife_found) (at_surface) (in_comms) [report] ) -> ( (is_armed) [disarm] ) -> ( [go_to_new_vertex] ) )')
+    word_rand_false_worst = createWord('? ( -> ( (is_armed) [disarm] ) -> ( (benign_object_found) ? ( (carrying_benign) [pick_up] ) [take_to_drop_off] ) -> ( ? ( [report] ) ? ( (in_comms) ) ) )')
+
+    word1 = word_manual3
+    word2 = word_rand_false_best
     #word2 = createWord('? ( -> ( (wildlife_found) ? ( [report] ) ? ( [go_to_comms] ) ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) ? ( (carrying_benign) ) ? ( [take_to_drop_off] ) ) -> ( (mine_found) [disarm] ) -> ( ? ( [go_to_likely_target] ) ) )')
 
+    word3 = word_manual3
+    word4 = word_rand_false_worst
+
+    word5 = word_rand_false_best
+    word6 = word_rand_false_worst
+
     compare(word1,word2,200)
+    #compare(word3,word4,200)
+    #compare(word5,word6,200)
 
     #word = createWord('? ( -> ( [report] ? ( (wildlife_found) ) ? ( [go_to_comms] ) ) -> ( [random_walk] ) )')
     #word = createWord('?  (  ->  (  ?  (  [report]  [go_to_comms]  )  ?  (  (at_surface)  )  <!>  (  (in_comms)  )  )  ->  (  ?  (  [random_walk]  )  )  ) ')

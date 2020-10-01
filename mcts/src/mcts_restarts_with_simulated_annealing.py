@@ -44,13 +44,13 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
     start_time = int(time.time()*1000) #milliseconds
 
     # Initialize mcts_sa_output.txt
-    f = open("/home/scheidee/Desktop/bt_learning_output/" + str(start_time) + "mcts_sa_output.txt","w+") #overall output file, can't load while running
+    f = open("/home/scheidee/Desktop/bt_learning_output/092420/" + str(start_time) + "mcts_sa_output.txt","w+") #overall output file, can't load while running
     print(f.read())
 
     # Do the rounds
     for round in xrange(num_rounds):
 
-        f1 = open("/home/scheidee/Desktop/bt_learning_output/" + str(start_time) + "mcts_sa_output_thru_round" + str(round) + ".txt","w+")
+        f1 = open("/home/scheidee/Desktop/bt_learning_output/092420/" + str(start_time) + "mcts_sa_output_thru_round" + str(round) + ".txt","w+")
 
         f.write("+++++++++++++++++++++++++\n")
         f.write("Results for round %d\n" % round)
@@ -268,7 +268,7 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
             initial_temperature = 1000
             k_max = 1000
             sim_anneal = SimulatedAnnealing(initial_state, initial_temperature, k_max, round)
-            sim_anneal_best_word, score, sim_anneal_best_words, scores = sim_anneal.run()
+            sim_anneal_best_word, score, iteration_best_was_found, sim_anneal_best_words, scores = sim_anneal.run()
             print("++++++++++++++++++++++")
             print("Sim anneal best words: " + str(sim_anneal_best_words) + "len = " + str(len(sim_anneal_best_words)))
             print("Associated scores: " + str(scores) + "len = " + str(len(scores)))
@@ -296,6 +296,7 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
                 # Keep track of current best tree (of the entire search)
                 overall_best_word = sim_anneal_best_word # should already be active because active update happens in sim_anneal.energy()
                 overall_best_word_score = intermediate_best_word_score
+                total_time_to_best = int(time.time()) - start_time/1000 #total time in seconds, that it took to reach the overall best word
                 print("CURRENT OVERALL BEST WORD (active parts only): ")
                 overall_best_word.printWord()
                 print("OVERALL BEST WORD REWARD: %s" % overall_best_word_score)
@@ -358,8 +359,8 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
                 f.write("\n")
                 f1.write(word.toString())
                 f1.write("\n")
-            f.write("Not all of these will be added to shortcut_words if there is redundancy")
-            f1.write("Not all of these will be added to shortcut_words if there is redundancy")
+            f.write("Not all of these will be added to shortcut_words if there is redundancy\n")
+            f1.write("Not all of these will be added to shortcut_words if there is redundancy\n")
 
             f.write("Shortcut words:\n")
             f1.write("Shortcut words:\n")
@@ -418,6 +419,10 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
         f.write('None\n')
     f.write("OVERALL_BEST_WORD_SCORE: %s\n" % overall_best_word_score)
     f.write("===========================\n")    
+    # Need to fix MCTS iteration check when best is found first
+    #f.write("RUNTIME: --- %s seconds ---" % (total_time_to_best)+'\n')
+    #f.write("RUNTIME: --- %s minutes ---" % str((total_time)/60.0)+'\n')
+    #f.write("RUNTIME: --- %s hours ---" % str((total_time)/3600.0)+'\n')
     f.close()
     #return [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict, sim_anneal_best_word]
     return overall_best_word, overall_best_word_score
