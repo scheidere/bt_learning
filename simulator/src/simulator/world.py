@@ -70,7 +70,10 @@ class World():
         self.surface_level = 0
 
     def init_world(self, seed1, do_test=True):
+        self.seed = seed1
         random.seed(seed1) # for repeatable trials
+        np.random.seed(seed1) # for repeatable trials
+        print('init_world seed1 test: random.randint(25,50)', random.randint(25,50))
         self.init_world_once(do_test)
         while not self.is_connected():
             print("World graph is disconnected. Reinitializing...")
@@ -263,7 +266,17 @@ class World():
 
     def reset_world(self):
 
+        print('original_classes_y',self.original_classes_y)
         self.classes_y = copy.copy(self.original_classes_y)
+        print('self.classes_y after reset', self.classes_y)
+
+    def reset_seed(self):
+
+        # DO NOT USE DURING RUN OF ALG
+        # For use when plotting so identical trees have same random numbers
+
+        random.seed(self.seed) # for repeatable trials
+        np.random.seed(self.seed) # for repeatable trials
 
     def target_inclusion_test(self):
         target_inclusion_test_list = np.zeros(self.num_classes - 1) #minus 1 for the void of target class (i.e. 0)
@@ -284,14 +297,22 @@ class World():
     def randomize_targets(self):
         # Randomize targets and ensure that all three target types are present
 
+        #print('world.randomize_targets test, seed test: random.randint(25,50)', random.randint(25,50))
+        #test_count = 0
+        #print('world.randomize_targets test NUM NODES', self.num_nodes)
+        #print('world.randomize_targets test len(self.vertices)',len(self.vertices))
+
         # Vertex classes - ground truth
         all_targets_included = False
-        self.classes_y = np.array([]) # 0 - not target, 1 - wildlife/report, 2 - mine/disarm, 3 - benign/move
         while not all_targets_included:
+            #test_count+= 1
+            self.classes_y = np.array([])
             for i in range(self.num_nodes):
+                #print('world.randomize_targets in-loop test, seed test: random.randint(25,50)', random.randint(25,50))
                 self.classes_y = np.append(self.classes_y,np.random.choice(a= len(self.prior),p = self.prior))
             all_targets_included = self.target_inclusion_test()
 
+        #print('world.randomize_targets TEST_COUNT', test_count)
 
         #print("classes_y",self.classes_y.shape) 
         #self.original_classes = self.classes_y

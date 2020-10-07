@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 import time
 
 class SimulatedAnnealing():
-    def __init__(self, initial_state, initial_temperature, k_max, round_num):
+    def __init__(self, initial_state, initial_temperature, k_max, round_num, underwater_simulator):
         self.initial_state = initial_state
         self.initial_state_list = self.initial_state.state_list
         self.known_subtree_words = self.initial_state.known_subtree_words
@@ -41,7 +41,7 @@ class SimulatedAnnealing():
 
         # Create a single instance of the simulator so that you do not continuously recreate the world
         # To randomize targets, go to parameters.yaml in simulator
-        self.underwater_simulator = UnderwaterSimulator()
+        self.underwater_simulator = underwater_simulator
         self.best_score = 0 #-self.energy(self.best_state)
 
         self.do_plot = False

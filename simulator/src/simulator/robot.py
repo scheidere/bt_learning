@@ -370,7 +370,11 @@ class Robot():
         # Setup state belief
         # print("Setup state belief")
         self.state = []
-        random_start_vertex = self.get_next_random_number()
+        randomize_start = rospy.get_param('~randomize_start')
+        if randomize_start: # want this when training
+            random_start_vertex = self.get_next_random_number()
+        else: # want this when plotting results (box plot stuff, plot_results.launch)
+            random_start_vertex = 0 
         current_state = State(random_start_vertex) # start at a random vertex
         self.state = current_state
 
@@ -443,6 +447,7 @@ class Robot():
         return number
         '''
         return random.randint(0,len(self.known_world.vertices)-1)
+
 
 
     def do_iteration(self, num_iterations):

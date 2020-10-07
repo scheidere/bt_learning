@@ -295,7 +295,7 @@ class AllMethods():
 
                 initial_temperature = self.iterations_per_round
                 k_max = 1000
-                sim_anneal = SimulatedAnnealing(initial_state, initial_temperature, k_max, round)
+                sim_anneal = SimulatedAnnealing(initial_state, initial_temperature, k_max, round, underwater_simulator)
                 sim_anneal_best_word, score, iteration_best_was_found, sim_anneal_best_words, scores = sim_anneal.run()
                 print("++++++++++++++++++++++")
                 print("Sim anneal best words: " + str(sim_anneal_best_words) + "len = " + str(len(sim_anneal_best_words)))

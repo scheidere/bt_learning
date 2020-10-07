@@ -23,7 +23,7 @@ import copy
 
 
 class UnderwaterSimulator():
-    def __init__(self, seed=None):
+    def __init__(self, seed):
         self.create_worlds(seed)
 
     def create_worlds(self, seed):
@@ -104,7 +104,7 @@ class UnderwaterSimulator():
 
 def compare(word1, word2, sim_iterations):
     sim = UnderwaterSimulator()
-    original_target_locations = copy.copy(sim.world.classes_y)
+    ##original_target_locations = copy.copy(sim.world.classes_y)
 
     #print("1 before",sim.world.classes_y)
     #print('orig', original_target_locations)
@@ -114,7 +114,7 @@ def compare(word1, word2, sim_iterations):
     #print(original_target_locations == sim.world.classes_y)
 
     # Reset target locations (what's the better way?)
-    sim.world.classes_y = copy.copy(original_target_locations)
+    ##sim.world.classes_y = copy.copy(original_target_locations)
     
     #print('2 before', sim.world.classes_y)
     #print('orig', original_target_locations)

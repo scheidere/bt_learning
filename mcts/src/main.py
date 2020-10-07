@@ -59,8 +59,11 @@ def run():
         action_set.append(Action(id,i))
     '''
 
+    # Get seed
+    seed = rospy.get_param('~seed')
+
     # Create a simulator
-    underwater_simulator = UnderwaterSimulator()
+    underwater_simulator = UnderwaterSimulator(seed=seed)
     
     # Get the config file etc
     rospack = rospkg.RosPack()
