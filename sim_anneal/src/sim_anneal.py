@@ -39,6 +39,8 @@ class SimulatedAnnealing():
         self.best_words = []
         self.best_word_scores = []
 
+        self.iteration_best_was_found = None
+
         # Create a single instance of the simulator so that you do not continuously recreate the world
         # To randomize targets, go to parameters.yaml in simulator
         self.underwater_simulator = underwater_simulator
@@ -89,7 +91,11 @@ class SimulatedAnnealing():
         self.score, target_reported, belief_distance, active_word, active_subtree_indices = self.underwater_simulator.generateReward(state_word, 200)  
         print("Score: " + str(self.score))
         print("active_word: ")
-        active_word.printWord()
+        if active_word:
+            active_word.printWord()
+        else:
+            print('None')
+        #active_word.printWord()
         #active_chars_pre = active_word.list
         #print(active_chars_pre)
 
@@ -337,7 +343,10 @@ class SimulatedAnnealing():
         print("Best state list: " + str(self.best_state.state_list))
         #self.best_state_word = self.best_state.stateToFulltreeWord()
         print("Best state word: ")
-        self.best_state_word.printWord()
+        if self.best_state_word:
+            self.best_state_word.printWord()
+        else:
+            print('None')
         print("Best state score: " + str(self.best_score))
         #print("Plot probability")
         #fig = plt.figure()

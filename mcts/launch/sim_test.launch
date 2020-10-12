@@ -12,5 +12,6 @@
 		<param name="robot_id" type="int" value="0" />
 		<param name="num_robots" type="int" value="$(arg num_robots)" />
 		<param name="seed" type="int" value= "1" />
+		<param name="randomize_start" type="bool" value= "True" />
 	</node>
 </launch>

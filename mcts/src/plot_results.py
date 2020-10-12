@@ -22,7 +22,7 @@ from os.path import isfile, join
 import rospy
 import copy
 
-data_labels_no_underscore = ['final', 'no sa', 'no sa no restarts', 'no dag','no groups','no groups no structure','no cheat']
+data_labels_no_underscore = ['final', 'no sa', 'no sa\nno restarts', 'no dag','no groups','no groups\nno structure','no cheat']
 data_labels = ['final', 'no_sa', 'no_sa_no_restarts', 'no_dag','no_groups','no_groups_no_structure','no_cheat']
 
 
@@ -218,8 +218,8 @@ def update_box_plot(path, num_worlds, manual_word):
 	ax.set_title('Behavior Tree Performance')
 	ax.boxplot(data)
 	ax.set_xlabel('Method')
-	ax.set_ylabel('Reward')
-	plt.xticks([1, 2, 3, 4, 5, 6, 7], data_labels_no_underscore, rotation=45)
+	ax.set_ylabel('Reward (normalized)')
+	plt.xticks([1, 2, 3, 4, 5, 6, 7], data_labels_no_underscore, rotation=45, ha='right')
 
 
 	plt.show()
@@ -232,9 +232,9 @@ if __name__ == '__main__':
 	num_worlds = input('Enter 1 for training world, and otherwise specify number of new worlds to test on: ')
 	print('test')
 	# Specify path to all output files
-	path = "/home/scheidee/Desktop/bt_learning_output/all_methods_output"
+	path = "/home/scheidee/Desktop/bt_learning_output/all_methods_output_complete"
 
-	manual_word = createWord('? ( -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_object_found) [pick_up] ) -> ( (likely_target_found) [go_to_likely_target] ) -> ( [shortest_path] ) )')
+	manual_word = createWord('? ( -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_object_found) [pick_up] ) -> ( (likely_target_found) [go_to_likely_target] ) -> ( [coverage] ) )')
 
 	update_box_plot(path,num_worlds,manual_word)
 

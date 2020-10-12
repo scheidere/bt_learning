@@ -102,8 +102,10 @@ class UnderwaterSimulator():
 
         except rospy.ROSInterruptException: pass
 
-def compare(word1, word2, sim_iterations):
-    sim = UnderwaterSimulator()
+
+
+def compare(word1, word2, sim_iterations, seed):
+    sim = UnderwaterSimulator(seed=seed)
     ##original_target_locations = copy.copy(sim.world.classes_y)
 
     #print("1 before",sim.world.classes_y)
@@ -130,8 +132,8 @@ def compare(word1, word2, sim_iterations):
     word2.printWord()
     print('Score 2: ', score2)
 
-def test(word):
-    sim = UnderwaterSimulator()
+def test(word, sim_iterations, seed):
+    sim = UnderwaterSimulator(seed=seed)
     score, target_reported, belief_distance, active_word, active_subtree_indices = sim.generateReward(word, sim_iterations)
     word.printWord()
     print(sim.world.classes_y)
@@ -147,7 +149,7 @@ if __name__ == "__main__":
     # Run with roslaunch mcts sim_test.launch
 
     rospy.init_node('underwater_simulator')
-
+    seed = rospy.get_param('~seed')
     '''
     character_list = [Character('?'),Character('('), Character('->'),Character('('),\
     Character('(target_found_90)'),Character('?'),Character('('),Character('(in_comms)'),\
@@ -186,7 +188,10 @@ if __name__ == "__main__":
     word5 = word_rand_false_best
     word6 = word_rand_false_worst
 
-    compare(word1,word2,200)
+    word_manual_coverage = createWord('? ( -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_object_found) [pick_up] ) -> ( (likely_target_found) [go_to_likely_target] ) -> ( [coverage] ) )') #-> ( [shortest_path] ) )') #-> ( [random_walk] ) )')
+    test(word_manual_coverage, 200, seed)
+
+    #compare(word1,word2,200)
     #compare(word3,word4,200)
     #compare(word5,word6,200)
 

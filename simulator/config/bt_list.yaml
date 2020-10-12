@@ -33,7 +33,7 @@ groups:
       - shortest_path
     conditions: []
   - actions:
-      - go_to_new_vertex
+      - coverage
     conditions: []
 
 

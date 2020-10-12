@@ -13,22 +13,22 @@ adding_nonzero_edges_steps: 3
 iterations_between_adding_production_rules: 10000000
 max_ancestors: 1000 # number of ancestors allowed when looking back up the DAG
 probability_skip_unpicked_child_words: 0.0
-use_groups: True #???#not functional yet
-use_structure: True #???#not functional yet
-use_restarts: True #???
+use_groups: True 
+use_structure: True 
+use_restarts: True 
 
 
 # Sim Annealing
-use_sa: True #??? not functional yet
+use_sa: True 
 
 # Both
-use_cheat: False #???
+use_cheat: False 
 
 # Simulator
 min_reward: 0
 max_reward: 100
 
 # Testing
-num_rounds: 50 #???
-iterations_per_round: 1000 #???
-consecutive_initial_rounds: 10 #???
+num_rounds: 10
+iterations_per_round: 200
+consecutive_initial_rounds: 4

@@ -68,11 +68,14 @@ class World():
         # Create a world
         self.config = config
         self.surface_level = 0
+        self.fully_set_seed = rospy.get_param('~fully_set_seed')
+
 
     def init_world(self, seed1, do_test=True):
         self.seed = seed1
         random.seed(seed1) # for repeatable trials
-        np.random.seed(seed1) # for repeatable trials
+        if self.fully_set_seed:
+            np.random.seed(seed1) # for repeatable trials
         print('init_world seed1 test: random.randint(25,50)', random.randint(25,50))
         self.init_world_once(do_test)
         while not self.is_connected():
@@ -276,7 +279,8 @@ class World():
         # For use when plotting so identical trees have same random numbers
 
         random.seed(self.seed) # for repeatable trials
-        np.random.seed(self.seed) # for repeatable trials
+        if self.fully_set_seed: #Safety check: This should always be true when this function is called because its true in plot_results.launch
+            np.random.seed(self.seed) # for repeatable trials
 
     def target_inclusion_test(self):
         target_inclusion_test_list = np.zeros(self.num_classes - 1) #minus 1 for the void of target class (i.e. 0)

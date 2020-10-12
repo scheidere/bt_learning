@@ -704,7 +704,7 @@ class Robot():
         elif 'go_to_likely_target' in active_actions:
             self.planner_type = Robot.PLANNER_TYPE_PEAKBELIEF
 
-        elif 'go_to_new_vertex' in active_actions:
+        elif 'coverage' in active_actions:
             self.planner_type = Robot.PLANNER_TYPE_COVERAGE
 
         elif 'take_to_drop_off' in active_actions:
@@ -756,7 +756,7 @@ class Robot():
                     self.bt_interface.setActionStatusRunning(action)
                 else:
                     self.bt_interface.setActionStatusSuccess(action)
-            elif action == 'go_to_new_vertex':
+            elif action == 'coverage':
                 if self.planner_type == Robot.PLANNER_TYPE_COVERAGE:
                     self.bt_interface.setActionStatusRunning(action)
                 else:

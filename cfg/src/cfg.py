@@ -917,7 +917,6 @@ class CFG():
             rule.printProductionRule()
     
     def generateGrammar(self): 
-
         
         # no_cheat comparison method grammar
         if self.use_groups and self.use_structure and not self.use_cheat:
@@ -1726,7 +1725,7 @@ class CFG():
 
         # Star denotes crossover has not yet been applied - REMOVED STAR FOR CROSSOVER
         input_word = createWord("S")
-        output_word = createWord("? ( sequence add_sequence -> ( [go_to_new_vertex] ) )")
+        output_word = createWord("? ( sequence add_sequence -> ( [coverage] ) )")
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 

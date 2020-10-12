@@ -78,12 +78,16 @@ def run():
     max_sim_iterations = config["max_sim_iterations"]
     use_dag = config["use_dag"]
     use_sa = config["use_sa"]
+
+    num_rounds = config["num_rounds"]
+    iterations_per_round = config["iterations_per_round"]
+    consecutive_initial_rounds = config["consecutive_initial_rounds"]
     
 
     # Create instance of class containing all methods
     all_methods = AllMethods(config)
 
-    overall_best_word, overall_best_word_score, total_time_to_best, num_rounds_to_best, total_time_for_run = all_methods.run(cfg, budget, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config)
+    overall_best_word, overall_best_word_score, total_time_to_best, num_rounds_to_best, total_time_for_run, best_reward_per_round_list = all_methods.run(cfg, budget, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config)
     f.write("Results for " + current_method + " method: \n")
     f.write("Date and time: " + now.strftime("%Y-%m-%d %H:%M:%S")+ "\n")
     f.write("Overall best word: \n")
@@ -92,6 +96,12 @@ def run():
     else:
         f.write('None\n')
     f.write("Overall best word score: " + str(overall_best_word_score) + "\n")
+    f.write("All rounds best score list: \n")
+    print(best_reward_per_round_list)  
+    f.write(str(best_reward_per_round_list))
+    f.write('\n')
+    f.write(len(best_reward_per_round_list))
+    f.write('\n')
     f.write("Total time to best: " + str(total_time_to_best) + " seconds\n")
     f.write("Number of rounds to best: " + str(num_rounds_to_best) + "\n")
     f.write("Total time for run: " + str(total_time_for_run) + " seconds\n")
@@ -162,6 +172,9 @@ def run():
 
     '''
 
+    f.write("Total number of rounds: " + str(num_rounds) + "\n")
+    f.write("Iterations per round: " + str(iterations_per_round) + "\n")
+    f.write("Consecutive initial rounds: " + str(consecutive_initial_rounds) + "\n")
     f.close()
 
 def run_profiler():
