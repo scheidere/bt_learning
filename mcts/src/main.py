@@ -100,7 +100,7 @@ def run():
     print(best_reward_per_round_list)  
     f.write(str(best_reward_per_round_list))
     f.write('\n')
-    f.write(len(best_reward_per_round_list))
+    f.write(str(len(best_reward_per_round_list)))
     f.write('\n')
     f.write("Total time to best: " + str(total_time_to_best) + " seconds\n")
     f.write("Number of rounds to best: " + str(num_rounds_to_best) + "\n")
