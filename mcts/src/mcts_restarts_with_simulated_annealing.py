@@ -200,8 +200,8 @@ def mcts_sim_anneal_switching(cfg, budget, max_mcts_iterations, exploration_expl
                 f.write("\n")
                 f1.write(word.toString())
                 f1.write("\n")
-            f.write("Not all of these will be added to shortcut_words if there is redundancy")
-            f1.write("Not all of these will be added to shortcut_words if there is redundancy")
+            f.write("Not all of these will be added to shortcut_words if there is redundancy\n")
+            f1.write("Not all of these will be added to shortcut_words if there is redundancy\n")
 
             # Plot it
             plot_search_tree = config["plot_search_tree"]
