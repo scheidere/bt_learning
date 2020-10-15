@@ -173,13 +173,18 @@ class AllMethods():
                     print("OVERALL BEST WORD REWARD: %s" % overall_best_word_score)
                     
                     f.write("CURRENT OVERALL BEST WORD (active parts only): ")
-                    f.write(overall_best_word.toString())
-                    f.write("\n")
+                    f1.write("CURRENT OVERALL BEST WORD (active parts only): ")
+                    if overall_best_word:
+                        f.write(overall_best_word.toString())
+                        f.write("\n")
+                        f1.write(overall_best_word.toString())
+                        f1.write("\n")
+                    else:
+                        f.write('None\n')
+                        f1.write('None\n')
+
                     f.write("OVERALL BEST WORD REWARD: %s" % overall_best_word_score)
                     f.write("\n")
-                    f1.write("CURRENT OVERALL BEST WORD (active parts only): ")
-                    f1.write(overall_best_word.toString())
-                    f1.write("\n")
                     f1.write("OVERALL BEST WORD REWARD: %s" % overall_best_word_score)
                     f1.write("\n")
                     
@@ -285,14 +290,20 @@ class AllMethods():
                 #initial_state.initial_state_list = initial_state.wordToList(mcts_best_word)
                 
                 f.write("TESTING TESTING TESTING - prev_round_best_word\n")
-                f.write(prev_round_best_word.toString())
-                f.write("\n")
                 f1.write("TESTING TESTING TESTING - prev_round_best_word\n")
-                f1.write(prev_round_best_word.toString())
-                f1.write("\n")
-                
                 print("TESTING TESTING TESTING - prev_round_best_word\n")
-                print(prev_round_best_word.toString())
+                if prev_round_best_word:
+                    f.write(prev_round_best_word.toString())
+                    f.write("\n")
+                    f1.write(prev_round_best_word.toString())
+                    f1.write("\n")
+                    print(prev_round_best_word.toString())
+                else:
+                    f.write('None\n')
+                    f1.write('None\n')
+                
+                
+                
                 if overall_best_word_score > 0:
                     print('Initializing SA with overall best word...')
                     print('Overall best word: ', overall_best_word.toString())
@@ -301,8 +312,12 @@ class AllMethods():
                 f.write("Test to see if SA gets current best word as starting point...\n")
                 f1.write("Test to see if SA gets current best word as starting point...\n")
                 initial_word = initial_state.stateToFulltreeWord()
-                f.write("Initial SA state word (checking for test): %s\n" % initial_word.toString())
-                f1.write("Initial SA state word (checking for test): %s\n" % initial_word.toString())
+                if initial_word:
+                    f.write("Initial SA state word (checking for test): %s\n" % initial_word.toString())
+                    f1.write("Initial SA state word (checking for test): %s\n" % initial_word.toString())
+                else:
+                    f.write("Initial SA state word (checking for test): None\n")
+                    f1.write("Initial SA state word (checking for test): None\n")
 
                 initial_temperature = self.iterations_per_round
                 k_max = 1000
@@ -314,12 +329,17 @@ class AllMethods():
                 print("++++++++++++++++++++++")
                 
                 f.write("Best word: ")
-                f.write(sim_anneal_best_word.toString())
-                f.write("\n")
-                f.write("Best word score: %d\n" % score)
                 f1.write("Best word: ")
-                f1.write(sim_anneal_best_word.toString())
-                f1.write("\n")
+                if sim_anneal_best_word:
+                    f.write(sim_anneal_best_word.toString())
+                    f.write("\n")
+                    f1.write(sim_anneal_best_word.toString())
+                    f1.write("\n")
+                else:
+                    f.write('None\n')
+                    f1.write('None\n')
+                
+                f.write("Best word score: %d\n" % score)
                 f1.write("Best word score: %d\n" % score)
                 
 
@@ -340,20 +360,22 @@ class AllMethods():
                     total_time_to_best = int(time.time()) - start_time/1000 #total time in seconds, that it took to reach the overall best word
                     num_rounds_to_best = round
                     print("CURRENT OVERALL BEST WORD (active parts only): ")
+                    f.write("CURRENT OVERALL BEST WORD (active parts only): ")
+                    f1.write("CURRENT OVERALL BEST WORD (active parts only): ")
                     if overall_best_word:
                         overall_best_word.printWord()
+                        f.write(overall_best_word.toString())
+                        f.write("\n")
+                        f1.write(overall_best_word.toString())
+                        f1.write("\n")
                     else:
                         print('None')
+                        f.write('None\n')
+                        f1.wrote('None\n')
+
                     print("OVERALL BEST WORD REWARD: %s" % overall_best_word_score)
-                    
-                    f.write("CURRENT OVERALL BEST WORD (active parts only): ")
-                    f.write(overall_best_word.toString())
-                    f.write("\n")
                     f.write("OVERALL BEST WORD REWARD: %s" % overall_best_word_score)
                     f.write("\n")
-                    f1.write("CURRENT OVERALL BEST WORD (active parts only): ")
-                    f1.write(overall_best_word.toString())
-                    f1.write("\n")
                     f1.write("OVERALL BEST WORD REWARD: %s" % overall_best_word_score)
                     f1.write("\n")
                     
