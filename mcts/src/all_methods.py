@@ -103,7 +103,7 @@ class AllMethods():
             max_mcts_iterations = self.iterations_per_round
             #if round in range(1):
             #if round in range(5): #do mcts first half, do sa second half (5 rounds each)
-            if not self.use_sa or (round  < self.consecutive_initial_rounds or round > self.consecutive_initial_rounds and round%2==0 or len(shortcut_words) == 0): #ex. run mcts for first 5 rounds then SA/MCTS alternating i.e. mcts = (0,1,2,3,4,6,8), sa = (5,7,9)
+            if not self.use_sa or (round  < self.consecutive_initial_rounds or round > self.consecutive_initial_rounds and round%2!=0 or len(shortcut_words) == 0): #ex. run mcts for first 5 rounds then SA/MCTS alternating i.e. mcts = (0,1,2,3,4,6,8), sa = (5,7,9)
             #if round%2==0 or len(shortcut_words) == 0: #alternating rounds
                 f.write("MCTS...\n")
                 f1.write("MCTS...\n")
@@ -321,7 +321,7 @@ class AllMethods():
 
                 initial_temperature = self.iterations_per_round
                 k_max = 1000
-                sim_anneal = SimulatedAnnealing(initial_state, initial_temperature, k_max, round, underwater_simulator)
+                sim_anneal = SimulatedAnnealing(initial_state, initial_temperature, k_max, round, underwater_simulator, self.use_cheat)
                 sim_anneal_best_word, score, iteration_best_was_found, sim_anneal_best_words, scores = sim_anneal.run()
                 print("++++++++++++++++++++++")
                 print("Sim anneal best words: " + str(sim_anneal_best_words) + "len = " + str(len(sim_anneal_best_words)))

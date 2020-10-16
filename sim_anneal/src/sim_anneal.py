@@ -19,13 +19,14 @@ import matplotlib.pyplot as plt
 import time
 
 class SimulatedAnnealing():
-    def __init__(self, initial_state, initial_temperature, k_max, round_num, underwater_simulator):
+    def __init__(self, initial_state, initial_temperature, k_max, round_num, underwater_simulator, use_cheat):
         self.initial_state = initial_state
         self.initial_state_list = self.initial_state.state_list
         self.known_subtree_words = self.initial_state.known_subtree_words
         self.initial_temperature = initial_temperature
         self.k_max = k_max
         self.round_num = round_num #for plotting
+        self.use_cheat = use_cheat
 
         self.best_state = initial_state #initially
         self.probabilities = [] #for plotting
@@ -51,16 +52,21 @@ class SimulatedAnnealing():
         self.fixed_planner_subtree_num = None
 
         # it seems that the fixed planner is not guaranteed to be in the known_subtree_words list
-        self.fixed_planner_subtree_word = createWord('-> ( [go_to_new_vertex] )')
+        self.fixed_planner_subtree_word = createWord('-> ( [coverage] )')
         for i in range(len(self.known_subtree_words)):
             word = self.known_subtree_words[i]
             if word.equal(self.fixed_planner_subtree_word):
                 self.fixed_planner_subtree_num = i
                 break
-        if not self.fixed_planner_subtree_num: #meaning it was not included in known_subtree_words
-            # Add the "cheat" as a shortcut contained in known_subtree_words
-            self.known_subtree_words.append(self.fixed_planner_subtree_word)
-            self.fixed_planner_subtree_num = len(self.known_subtree_words)-1
+            # If using cheat, make sure cheat is known word so it will be used in neighbor states
+            if not self.fixed_planner_subtree_num and self.use_cheat: #meaning it was not included in known_subtree_words
+                # Add the "cheat" as a shortcut contained in known_subtree_words
+                self.known_subtree_words.append(self.fixed_planner_subtree_word)
+                self.fixed_planner_subtree_num = len(self.known_subtree_words)-1
+
+            # Otherwise, the cheat may have been added to the list of known_subtree_words just through the previous rounds' learning, so leave it 
+            # This doesn't count as a "cheat" because it was learned independently                
+
 
     def temperature(self, k): #needs to take in (k-1)/k_max
         # temp should start at max t and end at 0
@@ -206,20 +212,22 @@ class SimulatedAnnealing():
             # Pick a random neighbor
             neighbor_list = random.choice(list_of_neighbor_lists)
             print('Neighbor: ', neighbor_list)
-            print('Index of cheat subtree: ', self.fixed_planner_subtree_num)
+            if self.use_cheat:
+                print('Index of cheat subtree: ', self.fixed_planner_subtree_num)
 
-            # Ensure "cheat", i.e. the fixed planner subtree, is at the end of neighbor list, and no where else
-            for i in range(len(neighbor_list)):
-                print('i',i)
-                print('neighbor_list[i]', neighbor_list[i])
-                if neighbor_list[i] == self.fixed_planner_subtree_num:
-                    # Then we have found the cheat in the tree, and will remove it for simpliity
-                    print('removing')
-                    neighbor_list.remove(self.fixed_planner_subtree_num)
-                    break #b/c you have changed length so loop will break due to index out of range
+            if self.use_cheat:
+                # Ensure "cheat", i.e. the fixed planner subtree, is at the end of neighbor list, and no where else
+                for i in range(len(neighbor_list)):
+                    print('i',i)
+                    print('neighbor_list[i]', neighbor_list[i])
+                    if neighbor_list[i] == self.fixed_planner_subtree_num:
+                        # Then we have found the cheat in the tree, and will remove it for simpliity
+                        print('removing')
+                        neighbor_list.remove(self.fixed_planner_subtree_num)
+                        break #b/c you have changed length so loop will break due to index out of range
 
-            # Add "cheat" subtree to right side of neighbor BT
-            neighbor_list.append(self.fixed_planner_subtree_num)
+                # Add "cheat" subtree to right side of neighbor BT
+                neighbor_list.append(self.fixed_planner_subtree_num)
 
             self.neighbor_state = State(neighbor_list, self.known_subtree_words)
 
