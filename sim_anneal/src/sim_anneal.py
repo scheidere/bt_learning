@@ -58,11 +58,11 @@ class SimulatedAnnealing():
             if word.equal(self.fixed_planner_subtree_word):
                 self.fixed_planner_subtree_num = i
                 break
-            # If using cheat, make sure cheat is known word so it will be used in neighbor states
-            if not self.fixed_planner_subtree_num and self.use_cheat: #meaning it was not included in known_subtree_words
-                # Add the "cheat" as a shortcut contained in known_subtree_words
-                self.known_subtree_words.append(self.fixed_planner_subtree_word)
-                self.fixed_planner_subtree_num = len(self.known_subtree_words)-1
+        # If using cheat, make sure cheat is known word so it will be used in neighbor states
+        if not self.fixed_planner_subtree_num and self.use_cheat: #meaning it was not included in known_subtree_words
+            # Add the "cheat" as a shortcut contained in known_subtree_words
+            self.known_subtree_words.append(self.fixed_planner_subtree_word)
+            self.fixed_planner_subtree_num = len(self.known_subtree_words)-1
 
             # Otherwise, the cheat may have been added to the list of known_subtree_words just through the previous rounds' learning, so leave it 
             # This doesn't count as a "cheat" because it was learned independently                
