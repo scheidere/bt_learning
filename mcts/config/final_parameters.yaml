@@ -29,6 +29,6 @@ min_reward: 0
 max_reward: 100
 
 # Testing
-num_rounds: 10 #50
-iterations_per_round:  200 #1000
-consecutive_initial_rounds: 2 #10
+num_rounds: 50
+iterations_per_round:  1000
+consecutive_initial_rounds: 10
