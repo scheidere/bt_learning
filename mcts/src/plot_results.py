@@ -21,9 +21,14 @@ from os.path import isfile, join
 
 import rospy
 import copy
+import json
 
-data_labels_no_underscore = ['final', 'no sa', 'no sa\nno restarts', 'no dag','no groups','no groups\nno structure','no cheat']
-data_labels = ['final', 'no_sa', 'no_sa_no_restarts', 'no_dag','no_groups','no_groups_no_structure','no_cheat']
+#data_labels_no_underscore = ['final', 'no sa', 'no sa\nno restarts', 'no dag','no groups','no groups\nno structure','no cheat']
+#data_labels = ['final', 'no_sa', 'no_sa_no_restarts', 'no_dag','no_groups','no_groups_no_structure','no_cheat']
+#data_labels_no_underscore = ['final', 'no sa', 'no dag','no groups','no cheat']
+#data_labels = ['final', 'no_sa', 'no_dag','no_groups','no_cheat']
+data_labels_no_underscore = ['final', 'no cheat', 'no dag', 'no sa', 'no groups']
+data_labels = ['final', 'no_cheat', 'no_dag', 'no_sa', 'no_groups']
 
 
 def initialize_data_array_list():#initalize_data_arrays():
@@ -60,10 +65,10 @@ def normalize_reward(manual_reward, reward):
 
 def get_method_type(file_name):
 
-	print('in method function')
-	print('file name', file_name)
+	#print('in method function')
+	#print('file name', file_name)
 	for label in data_labels:
-		print('label loop test', label)
+		#print('label loop test', label)
 		if label in file_name:
 			print('label', label)
 			return label
@@ -219,9 +224,94 @@ def update_box_plot(path, num_worlds, manual_word):
 	ax.boxplot(data)
 	ax.set_xlabel('Method')
 	ax.set_ylabel('Reward (normalized)')
-	plt.xticks([1, 2, 3, 4, 5, 6, 7], data_labels_no_underscore, rotation=45, ha='right')
+	plt.xticks([1, 2, 3, 4, 5], data_labels_no_underscore, rotation=45, ha='right')
 
 
+	plt.show()
+
+def initialize_convergence_data_lists():
+
+	convergence_data_list_list = []
+
+	for i in range(len(data_labels)):
+		convergence_data_list_list.append([])
+
+	return convergence_data_list_list
+
+
+def accumulate_method_lists(method, to_be_summed_list, reward_list):
+	# Group a given extracted reward list with others for that method so they can be consolidated after sorting
+
+	for element in range(len(data_labels)):
+		if method == data_labels[element]:
+			to_be_summed_list[element].append(json.loads(reward_list))
+
+def extract_reward_list(path,file):
+	open_file = open(path + '/' + file, 'r')
+	lines = open_file.readlines()
+	temp = lines[6] 
+
+	# Remove '\n'
+	return temp[:-1]
+
+
+
+def update_convergence_plot(path):
+	# Given the path to the output directory
+	files = [f for f in listdir(path)]
+	#print(files)
+
+	to_be_summed_list = initialize_convergence_data_lists() #each element of this list will be a list of lists
+	convergence_data_list_list = initialize_convergence_data_lists() #each element will be a list of average best rewards for the element-specific method]
+
+	for file_name in files:
+
+		# Extract method
+		method = get_method_type(file_name)
+
+		# Extract reward list (one best reward per round so length of 50)
+		reward_list = extract_reward_list(path, file_name)
+
+
+		# Sort reward_list into correct method element in to_be_summed_list
+		accumulate_method_lists(method, to_be_summed_list, reward_list)
+
+
+	print('to_be_summed_list', to_be_summed_list)
+	#for i in range(len(to_be_summed_list)):
+	#	print('test',len(el))
+	#	for i in range(len(el)):
+	#		el2 = el[i]
+	#		print('test2', el2)
+	#		print('len', len(el2))
+
+	# Average best rewards for each round of all 50-round runs
+	for i in range(len(to_be_summed_list)): # for each method
+		element = to_be_summed_list[i]
+		averaging_num = len(element)
+		for j in range(len(element)): # for each 50-round run, i.e. each reward list
+			reward_list = to_be_summed_list[i][j]
+			for k in range(len(reward_list)): #for each best reward (per round)
+				if len(convergence_data_list_list[i]) < k+1:
+					convergence_data_list_list[i].append(0)
+				print('reward_list[k]', reward_list[k])
+				convergence_data_list_list[i][k] += reward_list[k] #sum with other nums for that specific round and method
+
+		# Once a method is completely summed from all 50-round runs, get average
+		for a in range(len(convergence_data_list_list[i])):
+			convergence_data_list_list[i][a] = convergence_data_list_list[i][a]/averaging_num
+
+
+	# Plot each method
+	x = range(len(reward_list)) #len=50
+	y = convergence_data_list_list
+	plt.xlabel('Rounds')
+	plt.ylabel('Reward')
+	plt.title('Average Best Reward')
+	for i in range(len(convergence_data_list_list)):
+		method_rewards = convergence_data_list_list[i]
+		plt.plot(method_rewards, label = data_labels[i])
+	plt.legend()
 	plt.show()
 
 
@@ -232,11 +322,14 @@ if __name__ == '__main__':
 	num_worlds = input('Enter 1 for training world, and otherwise specify number of new worlds to test on: ')
 	print('test')
 	# Specify path to all output files
-	path = "/home/scheidee/Desktop/bt_learning_output/all_methods_output_complete"
+	path = "/home/scheidee/Desktop/bt_learning_output/plottable_output"
 
 	manual_word = createWord('? ( -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_object_found) [pick_up] ) -> ( (likely_target_found) [go_to_likely_target] ) -> ( [coverage] ) )')
 
-	update_box_plot(path,num_worlds,manual_word)
+	if num_worlds != 0:
+		update_box_plot(path,num_worlds,manual_word)
+	else:
+		update_convergence_plot(path)
 
 	# Just testing box plot stuff
 	'''
