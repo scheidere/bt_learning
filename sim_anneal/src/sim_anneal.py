@@ -27,6 +27,7 @@ class SimulatedAnnealing():
         self.k_max = k_max
         self.round_num = round_num #for plotting
         self.use_cheat = use_cheat
+        self.use_cheat = False # For testing if using cheat for SA makes it worse overall
 
         self.best_state = initial_state #initially
         self.probabilities = [] #for plotting

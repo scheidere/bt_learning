@@ -27,8 +27,8 @@ import json
 #data_labels = ['final', 'no_sa', 'no_sa_no_restarts', 'no_dag','no_groups','no_groups_no_structure','no_cheat']
 #data_labels_no_underscore = ['final', 'no sa', 'no dag','no groups','no cheat']
 #data_labels = ['final', 'no_sa', 'no_dag','no_groups','no_cheat']
-data_labels_no_underscore = ['final', 'no cheat', 'no dag', 'no sa', 'no groups']
-data_labels = ['final', 'no_cheat', 'no_dag', 'no_sa', 'no_groups']
+data_labels_no_underscore = ['final', 'no cheat', 'no sa', 'no dag', 'no groups']
+data_labels = ['final', 'no_cheat', 'no_sa', 'no_dag', 'no_groups']
 
 
 def initialize_data_array_list():#initalize_data_arrays():
@@ -70,7 +70,7 @@ def get_method_type(file_name):
 	for label in data_labels:
 		#print('label loop test', label)
 		if label in file_name:
-			print('label', label)
+			#print('label', label)
 			return label
 
 
@@ -255,8 +255,34 @@ def extract_reward_list(path,file):
 	return temp[:-1]
 
 
+def generate_reward_list(path_to_intermediates, timestamp):
 
-def update_convergence_plot(path):
+	new_reward_list = []
+
+	for all files with given timestamp
+		get best tree from almost last line in that file
+		generateReward on particular world that stays the same
+		add that reward to new_reward_list
+	do until all done so new_reward_list has 50 elements all specific to that world
+
+	return new_reward_list
+
+
+def generate_all_reward_lists(path_to_intermediates, to_be_summed_list):
+	# Given the path to the output directory
+	files = [f for f in listdir(path_to_intermediates)]
+
+	for file_name in files:
+
+		if 'round' not in file_name:
+			timestamp = file_name[:13]
+			method = get_method_type(file_name)
+			new_reward_list = generate_reward_list(timestamp)
+			accumulate_method_lists(method, to_be_summed_list)
+
+	return to_be_summed_list
+
+def update_convergence_plot(path, path_to_intermediates):
 	# Given the path to the output directory
 	files = [f for f in listdir(path)]
 	#print(files)
@@ -277,13 +303,9 @@ def update_convergence_plot(path):
 		accumulate_method_lists(method, to_be_summed_list, reward_list)
 
 
-	print('to_be_summed_list', to_be_summed_list)
-	#for i in range(len(to_be_summed_list)):
-	#	print('test',len(el))
-	#	for i in range(len(el)):
-	#		el2 = el[i]
-	#		print('test2', el2)
-	#		print('len', len(el2))
+	??? change accumulate_method_lists usage to use generate_all_reward_lists function above
+	to_be_summed_list = generate_all_reward_lists(path_to_intermediates, to_be_summed_list)
+	also need to calculate manual reward for that world to normalize these rewards in the reward_lists?
 
 	# Average best rewards for each round of all 50-round runs
 	for i in range(len(to_be_summed_list)): # for each method
@@ -294,7 +316,6 @@ def update_convergence_plot(path):
 			for k in range(len(reward_list)): #for each best reward (per round)
 				if len(convergence_data_list_list[i]) < k+1:
 					convergence_data_list_list[i].append(0)
-				print('reward_list[k]', reward_list[k])
 				convergence_data_list_list[i][k] += reward_list[k] #sum with other nums for that specific round and method
 
 		# Once a method is completely summed from all 50-round runs, get average
