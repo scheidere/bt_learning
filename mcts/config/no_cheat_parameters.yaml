@@ -25,10 +25,10 @@ use_sa: True
 use_cheat: False 
 
 # Simulator
-min_reward: 0
-max_reward: 100
+min_reward: 0.0
+max_reward: 1.0
 
 # Testing
 num_rounds: 50
-iterations_per_round: 1000
-consecutive_initial_rounds: 10
+iterations_per_round: 1000 #1000
+consecutive_initial_rounds: 5 #10

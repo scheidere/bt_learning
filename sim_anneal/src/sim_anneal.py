@@ -95,31 +95,32 @@ class SimulatedAnnealing():
         if state_word == None:
             return 0
 
-        self.score, target_reported, belief_distance, active_word, active_subtree_indices = self.underwater_simulator.generateReward(state_word, 200)  
-        print("Score: " + str(self.score))
-        print("active_word: ")
-        if active_word:
-            active_word.printWord()
-        else:
-            print('None')
+        # self.score, target_reported, belief_distance, active_word, active_subtree_indices = self.underwater_simulator.generateReward(state_word, 200)  
+        self.score, active_word, active_subtree_indices = self.underwater_simulator.generateReward(state_word, 200)  
+        # print("Score: " + str(self.score))
+        # print("active_word: ")
+        # if active_word:
+        #     active_word.printWord()
+        # else:
+        #     print('None')
         #active_word.printWord()
         #active_chars_pre = active_word.list
         #print(active_chars_pre)
 
-        print('active_subtree_indices: ' + str(active_subtree_indices))
-        print('DOES IT PRINT HERE???')
-        print('Pre-update state list: ' + str(state.state_list))
+        # print('active_subtree_indices: ' + str(active_subtree_indices))
+        # print('DOES IT PRINT HERE???')
+        # print('Pre-update state list: ' + str(state.state_list))
         # Prune inactive subtrees, updating current state
         state.activeIndicesToNewState(active_subtree_indices)
-        print('DOES IT PRINT AFTER ACTIVE UPDATE FOR STATE?')
-        print('Updated state list, after pruning: ' + str(state.state_list))
+        # print('DOES IT PRINT AFTER ACTIVE UPDATE FOR STATE?')
+        # print('Updated state list, after pruning: ' + str(state.state_list))
 
         # If the score is zero, the order might just be wrong
         # Remove the inactive subtrees to allow for neighbors to be added potentially in the correct order
         #if score == 0:
         #    self.state_list = state.subtreeWordToNum()
 
-        print("Best Score: " + str(self.best_score))
+        # print("Best Score: " + str(self.best_score))
         if self.score > self.best_score:
             self.best_state = state #this might be wrong, not giving correct num at end
             self.best_score = self.score
@@ -138,12 +139,12 @@ class SimulatedAnnealing():
         Acceptance probability function:
         Probability of moving to new state given current state
         '''
-        print("Generate current state energy")
+        # print("Generate current state energy")
         energy_current = self.energy(current_state, iteration)
-        print("current energy: ", energy_current)
-        print("Generate neighbor state energy")
+        # print("current energy: ", energy_current)
+        # print("Generate neighbor state energy")
         energy_neighbor = self.energy(neighbor_state, iteration)
-        print("neighbor energy: ", energy_neighbor)
+        # print("neighbor energy: ", energy_neighbor)
 
         if energy_neighbor < energy_current:
             # New state is better, so pick it always
@@ -152,7 +153,7 @@ class SimulatedAnnealing():
             if temperature == 0:
                 temperature = 0.001
             P = math.exp(-(energy_neighbor - energy_current)/temperature)
-            print("In function P: ", P)
+            # print("In function P: ", P)
     
         return P
 
@@ -196,34 +197,34 @@ class SimulatedAnnealing():
                 # Return solution before closing
                 break
 
-            print("+++++++++++++++++++++++++++")
+            # print("+++++++++++++++++++++++++++")
             print('Iteration: ' + str(k))
 
             # Get temperature
             self.T = self.temperature(k)
-            print('T: ' + str(self.T))
-            print("+++++++++++++++++++++++++++")
+            # print('T: ' + str(self.T))
+            # print("+++++++++++++++++++++++++++")
 
             # Generate neighbors of current state
             neighbors = Neighbors(self.current_state)
             list_of_neighbor_lists = neighbors.getAllNeighbors() # List of lists
-            print('Current state list: ', self.current_state.state_list)
-            print('Neighbors: ', list_of_neighbor_lists)
+            # print('Current state list: ', self.current_state.state_list)
+            # print('Neighbors: ', list_of_neighbor_lists)
 
             # Pick a random neighbor
             neighbor_list = random.choice(list_of_neighbor_lists)
-            print('Neighbor: ', neighbor_list)
-            if self.use_cheat:
-                print('Index of cheat subtree: ', self.fixed_planner_subtree_num)
+            # print('Neighbor: ', neighbor_list)
+            # if self.use_cheat:
+                # print('Index of cheat subtree: ', self.fixed_planner_subtree_num)
 
             if self.use_cheat:
                 # Ensure "cheat", i.e. the fixed planner subtree, is at the end of neighbor list, and no where else
                 for i in range(len(neighbor_list)):
-                    print('i',i)
-                    print('neighbor_list[i]', neighbor_list[i])
+                    # print('i',i)
+                    # print('neighbor_list[i]', neighbor_list[i])
                     if neighbor_list[i] == self.fixed_planner_subtree_num:
                         # Then we have found the cheat in the tree, and will remove it for simpliity
-                        print('removing')
+                        # print('removing')
                         neighbor_list.remove(self.fixed_planner_subtree_num)
                         break #b/c you have changed length so loop will break due to index out of range
 
@@ -234,9 +235,9 @@ class SimulatedAnnealing():
 
             # Calculate probability of picking neighbor state
             P = self.probability(self.current_state, self.neighbor_state, self.T, k)
-            print("Probability: " + str(P))
+            # print("Probability: " + str(P))
             self.probabilities.append(P)
-            print(self.probabilities)
+            # print(self.probabilities)
 
             self.best_scores.append(self.best_score)
 
@@ -339,7 +340,7 @@ class SimulatedAnnealing():
                 self.current_state = self.best_state
             # If we are not stuck, determine which state to pick, based on P
             elif P >= random.random():
-                print("Picking neighbor state...")
+                # print("Picking neighbor state...")
                 self.current_state = self.neighbor_state
             # Otherwise the current state stays the same
 
@@ -348,15 +349,15 @@ class SimulatedAnnealing():
                 break #no point continuing if subtrees sucking is stopping it from being productive
             
 
-        print("Finished simulated annealing...")
-        print("Best state list: " + str(self.best_state.state_list))
+        # print("Finished simulated annealing...")
+        # print("Best state list: " + str(self.best_state.state_list))
         #self.best_state_word = self.best_state.stateToFulltreeWord()
-        print("Best state word: ")
+        # print("Best state word: ")
         if self.best_state_word:
             self.best_state_word.printWord()
-        else:
-            print('None')
-        print("Best state score: " + str(self.best_score))
+        # else:
+            # print('None')
+        # print("Best state score: " + str(self.best_score))
         #print("Plot probability")
         #fig = plt.figure()
         #ax = fig.add_subplot(111)
@@ -372,7 +373,7 @@ class SimulatedAnnealing():
             self.stagnant_best_score_count = 0
 
         if self.stagnant_best_score_count >= 100:
-            print('Resetting current state to best state due to stagnance')
+            # print('Resetting current state to best state due to stagnance')
             self.stagnant_best_score_count = 0
             return True
 
@@ -387,7 +388,7 @@ class SimulatedAnnealing():
             self.super_stagnant_best_score_count = 0
 
         if self.super_stagnant_best_score_count >= 400:
-            print('Stopping due to lack of progress')
+            # print('Stopping due to lack of progress')
             self.super_stagnant_best_score_count = 0
             return True
 

@@ -19,7 +19,7 @@ import zlib
 def getActionsConditions():
     # Read in the list of actions and conditions from the bt_list file
     rospack = rospkg.RosPack()
-    filepath = rospack.get_path('simulator') + "/config/bt_list.yaml" 
+    filepath = rospack.get_path('simulator') + "/config/simple_bt_list.yaml" 
     with open(filepath, 'r') as stream:
         bt_list = yaml.safe_load(stream)
 
@@ -43,7 +43,7 @@ def getActionsConditionsGroups():
 
     # Read in the list of actions and conditions from the bt_list file
     rospack = rospkg.RosPack()
-    filepath = rospack.get_path('simulator') + "/config/bt_list.yaml" 
+    filepath = rospack.get_path('simulator') + "/config/simple_bt_list.yaml" 
     with open(filepath, 'r') as stream:
         bt_list = yaml.safe_load(stream)
 
@@ -240,8 +240,8 @@ def exportBT(bt, include_nodes=None):
     # print("exportBT num_include_nodes", num_include_nodes)
     # print("exportBT len(include_nodes)", len(include_nodes))
 
-    print("==========================================================")
-    print("BT NODE BUG TEST", bt.nodes[len(include_nodes) - 1].label)
+    # print("==========================================================")
+    # print("BT NODE BUG TEST", bt.nodes[len(include_nodes) - 1].label)
 
     # Do the traversal, using the stack to help
     while len(nodes_stack) != 0:

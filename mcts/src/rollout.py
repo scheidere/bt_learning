@@ -49,7 +49,7 @@ def rollout(partial_word, cfg, budget):
         current_word = new_word
 
 
-    print('rollout over budget: ' + current_word.toString())
+    # print('rollout over budget: ' + current_word.toString())
     # Return empty word
     return Word([])
 

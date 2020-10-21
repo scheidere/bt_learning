@@ -47,14 +47,18 @@ def getActionsConditions():
     #return bt_list["actions"], bt_list["conditions"]
 
 class BT_Interface():
-    def __init__(self, bt):
+    def __init__(self, bt, do_graphviz=True):
 
         self.bt = bt
+        self.do_graphviz = do_graphviz
 
-        self.graphviz_pub = rospy.Publisher('behavior_tree_graphviz', String, queue_size=1)
-        self.compressed_pub = rospy.Publisher('behavior_tree_graphviz_compressed', String, queue_size=1)
+        if self.do_graphviz:
+            self.graphviz_pub = rospy.Publisher('behavior_tree_graphviz', String, queue_size=1)
+            self.compressed_pub = rospy.Publisher('behavior_tree_graphviz_compressed', String, queue_size=1)
 
         self.init_bt()
+
+
 
         # Get my actions and conditions
         self.actions, self.conditions = getActionsConditions()
@@ -78,14 +82,16 @@ class BT_Interface():
 
         self.activeTest()
 
-        source = gv.get_graphviz(self.bt)
-        source_msg = String()
-        source_msg.data = source
-        self.graphviz_pub.publish(source_msg)
+        if self.do_graphviz:
+            # Publish to visualize in GUI
+            source = gv.get_graphviz(self.bt)
+            source_msg = String()
+            source_msg.data = source
+            self.graphviz_pub.publish(source_msg)
 
-        compressed = String()
-        compressed.data = zlib.compress(source)
-        self.compressed_pub.publish(compressed)
+            compressed = String()
+            compressed.data = zlib.compress(source)
+            self.compressed_pub.publish(compressed)
 
     def defineActionNodes(self):
 
@@ -193,7 +199,8 @@ class BT_Interface():
         try:
             nodes = self.action_nodes[action]
         except KeyError:
-            print("setActionStatusFailure action " + action + " does not exist in BT")
+            # print("setActionStatusFailure action " + action + " does not exist in BT")
+            pass
         else:
             for node in nodes:
                 node.set_status(ReturnStatus(Status.FAILURE))
@@ -202,7 +209,8 @@ class BT_Interface():
         try:
             nodes = self.action_nodes[action]
         except KeyError:
-            print("setActionStatusFailure action " + action + " does not exist in BT")
+            # print("setActionStatusFailure action " + action + " does not exist in BT")
+            pass
         else:
             for node in nodes:
                 node.set_status(ReturnStatus(Status.RUNNING))
@@ -211,7 +219,8 @@ class BT_Interface():
         try:
             nodes = self.action_nodes[action]
         except KeyError:
-            print("setActionStatusFailure action " + action + " does not exist in BT")
+            # print("setActionStatusFailure action " + action + " does not exist in BT")
+            pass
         else:
             for node in nodes:
                 node.set_status(ReturnStatus(Status.SUCCESS))

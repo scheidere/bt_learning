@@ -14,91 +14,182 @@ import yaml
 from std_msgs.msg import String
 
 from cfg import Word, Character, createWord
-from robot import Robot, RobotController, TargetBelief
-from world import World
-from sensor_model import SensorModel
+
+from bt_interface import BT_Interface
 
 import random
 import copy
+import math
 
+def conditionNumToLabel(condition_num):
+    return 'c' + str(condition_num)
 
-class UnderwaterSimulator():
+def actionNumToLabel(action_num):
+    return 'a' + str(action_num)
+
+def conditionLabelToNum(condition_label):
+    return int(condition_label[1:])
+
+def actionLabelToNum(action_label):
+    return int(action_label[1:])
+
+class SimpleSimulator():
     def __init__(self, seed):
-        self.create_worlds(seed)
+        # Currently ignored
+        self.seed = seed
+        self.N = 2
 
-    def create_worlds(self, seed):
+    
 
-        # Get the config file etc
-        rospack = rospkg.RosPack()
-        filepath = rospack.get_path('simulator') + "/config/" + rospy.get_param('~sim_config')
-        with open(filepath, 'r') as stream:
-            self.config = yaml.safe_load(stream)
-        self.robot_id = rospy.get_param('~robot_id')
-        self.num_robots = rospy.get_param('~num_robots')
-        self.randomize_targets = self.config['randomize_targets']
-        # seed = rospy.get_param('~seed')
-        if seed:
-            self.seed = seed
-        else:
-            self.seed = 0 #random.randint(0,20) # random environment
+    def setConditions(self, bt_interface, condition_combination):
 
-        # Create the world
-        self.world = World(self.config)
-        do_test = True # don't error check graph
+        # Convert to binary string, chop off the '0b' prefix
+        binary = bin(condition_combination)
+        binary = binary[2:]
 
-        self.world.init_world(self.seed, do_test)
+        # Loop through from end
+        binary_i = len(binary) - 1
+        for i in xrange(self.N + 1):
 
-    def update_worlds(self):
+            label = conditionNumToLabel(i)
 
-        self.world.randomize_targets() 
+            if binary_i >= 0:
 
-    def reset_worlds(self):
+                if binary[binary_i] == '0':
+                    # turn off condition
+                    # print(label, False)
+                    bt_interface.setConditionStatus(label, False)
+                else:
+                    # turn on condition
+                    # print(label, True)
+                    bt_interface.setConditionStatus(label, True)
+            else:
+                # beyond length of binary number, treat as 0
+                # turn off condition
+                # print(label, False)
+                bt_interface.setConditionStatus(label, False)
 
-        self.world.reset_world()
+            # decrement counter
+            binary_i -= 1
+
+    def getCorrectAction(self, condition_combination):
+        # multiply the condition numbers
+        # (if none, default score is 1)
+
+        # Convert to binary string, chop off the '0b' prefix
+        binary = bin(condition_combination)
+        binary = binary[2:]
+
+        m = 1
+        binary_i = len(binary) - 1
+        for i in xrange(self.N + 1):
+
+            if binary_i >= 0:
+
+                if binary[binary_i] == '1':
+                    m *= i
+            else:
+                break
+
+            # decrement counter
+            binary_i -= 1
+        return m
+
+    def setActions(self, bt_interface):
+        # Just set them all to running
+        for action_num in xrange(math.factorial(self.N) + 1):
+
+            action_label = actionNumToLabel(action_num)
+            bt_interface.setActionStatusRunning(action_label)
+
+    def getActiveActionNum(self, active_actions):
+        l = []
+        for a in active_actions:
+
+            l.append(actionLabelToNum(a))
+
+            # !!Changed to only get the first one!! to prevent cheating by just making all of them active
+            break
+
+        return l
 
     def generateReward(self, word, max_iterations):
 
+        debug = False
+
         try:
-            '''
-            character_list = [Character('?'),Character('('), Character('->'),Character('('),\
-            Character('(target_found_90)'),Character('?'),Character('('),Character('(in_comms)'),\
-            Character('[go_to_comms]'),Character(')'),Character(')'),Character('[shortest_path]'),Character(')')]
-            word = Word(character_list)
-            '''
-
-            #print('classes_y',self.world.classes_y)
-
-            # Re-randomize the worlds
-            if self.randomize_targets:
-                # Randomizes world with new targets, all three types included
-                self.update_worlds()
-            else:
-                # Resets world with same targets as previous round
-                self.reset_worlds()
+            
 
             # Create BT object from terminal BT CFG
             bt_root, bt = word.createBT()
+            do_graphviz = False # False should make faster, but turns off GUI
+            bt_interface = BT_Interface(bt, do_graphviz)
 
-            print("run_simulator")
-            word.printWord()
-            #print("len(bt.nodes)", len(bt.nodes))
+            if debug:
+                print("run_simulator")
+                word.printWord()
 
-            robot = Robot(self.config, self.robot_id, self.num_robots, self.seed, bt, max_iterations, self.world)
-            # cProfile.run('RobotController(config, robot)')
-            robot_controller = RobotController(self.config, robot)
-            score, target_reported, belief_distance = robot_controller.run()
-            #print('Score: ', score)
+            # Set score
+            score = 0
+            max_score = 2**(self.N + 1)
+
+            # Set all actions to running
+            self.setActions(bt_interface)
+
+            # Iterate through combinations of conditions
+            for condition_combination in xrange( max_score ):
+
+                if debug:
+                    print('==================')
+                    print('condition_combination', condition_combination)
+
+                # Tell BT which conditions are true and false
+                self.setConditions(bt_interface, condition_combination)
+
+                # Do a BT tick
+                bt_interface.tick_bt()
+
+                # Check which action is active
+                active_actions = bt_interface.getActiveActions()
+                active_action_nums = self.getActiveActionNum( active_actions )
+                if debug:
+                    print('active_action_nums', active_action_nums)
+
+                # Which action should be active?
+                correct_action = self.getCorrectAction( condition_combination )
+                if debug:
+                    print('correct_action', correct_action)
+
+                # Is the correct action active?
+                if correct_action in active_action_nums:
+                    score += 1
+                    if debug:
+                        print('score!')
+
+            # Extra tick here to ensure active is computed correctly (I think)
+            # bt_interface.tick_bt()
+
+            # Normalize score
+            if debug:
+                print( 'score: ' + str(score) + " of " + str(max_score) ) 
+            score = float(score) / float(max_score)
+
+
 
             # Get the Word of all active parts of the BT
-            active_word = robot.bt_interface.generateActiveCFGWord()
-            print("active_word", active_word)
-            active_subtree_indices = robot.bt_interface.getActiveSubtreeIndices()
-            print('active_subtree_indices', active_subtree_indices)
+            active_word = bt_interface.generateActiveCFGWord()
+            if debug:
+                print("active_word:")
+                active_word.printWord()
+            active_subtree_indices = bt_interface.getActiveSubtreeIndices()
+            if debug:
+                print('active_subtree_indices', active_subtree_indices)
 
             #test = [score,target_reported,belief_distance,active_word,active_subtree_indices]
-            print('generateReward output', score,target_reported,belief_distance,active_word,active_subtree_indices)
-            #print('number of outputs from generateReward', len(test))
-            return score, target_reported, belief_distance, active_word, active_subtree_indices
+            if debug:
+                print('generateReward output', score, active_word, active_subtree_indices)
+
+            return score, active_word, active_subtree_indices
 
         except rospy.ROSInterruptException: pass
 
@@ -148,15 +239,39 @@ if __name__ == "__main__":
 
     # Run with roslaunch mcts sim_test.launch
 
-    rospy.init_node('underwater_simulator')
+    rospy.init_node('simple_simulator')
     seed = rospy.get_param('~seed')
+
+    # word_manual = createWord('? ( -> ( (c0) [a0] ) )')
+    # word_manual = createWord('? ( -> ( (c0) [a0] ) -> ( (c2) (c3) [a6] ) )')
+    # word_manual = createWord('? ( -> ( (c0) [a0] ) -> ( (c2) (c3) [a6] ) -> ( (c2) [a2] ) -> ( (c3) [a3] ) -> ( [a1] ) )')
+
+    # word_manual = createWord('? ( -> ( <!> ( (c0) ) ? ( [a1] ) ) -> ( [a0] ) )')
+    # word_manual = createWord('? ( -> ( [a0] [a2] [a1] ? ( <!> ( (c2) ) (c1) ) ) -> ( <!> ( (c0) ) [a1] ) )')
+    word_manual = createWord('? ( -> ( <!> ( (c0) ) ? ( <!> ( (c2) ) [a2] ) (c1) ? ( [a1] ) ) -> ( <!> ( (c2) ) (c0) ? ( [a0] ) ) -> ( ? ( <!> ( (c2) ) [a0] ) [a1] ) )')
+
+    
+
+   
+
+
+
+    simulator = SimpleSimulator(0)
+    score, active_word, active_subtree_indices = simulator.generateReward(word_manual, 0) 
+    print score
+
+
+
+
+
+
     '''
     character_list = [Character('?'),Character('('), Character('->'),Character('('),\
     Character('(target_found_90)'),Character('?'),Character('('),Character('(in_comms)'),\
     Character('[go_to_comms]'),Character(')'),Character(')'),Character('[shortest_path]'),Character(')')]
     word = Word(character_list)
     '''
-
+    '''
     # Below used to test and compare different trees on the same sim map/set of targets
 
     word_manual = createWord('? ( -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_object_found) [pick_up] ) -> ( (likely_target_found) [go_to_likely_target] ) -> ( [shortest_path] ) )') #-> ( [shortest_path] ) )') #-> ( [random_walk] ) )')
@@ -199,7 +314,7 @@ if __name__ == "__main__":
     #word = createWord('?  (  ->  (  ?  (  [report]  [go_to_comms]  )  ?  (  (at_surface)  )  <!>  (  (in_comms)  )  )  ->  (  ?  (  [random_walk]  )  )  ) ')
     #test(word)
     #test(word)
-
+    '''
 
     '''
     # Testing disarm subtree, looking for bug found during simulated annealing

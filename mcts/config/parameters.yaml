@@ -14,8 +14,8 @@ max_ancestors: 1000 # number of ancestors allowed when looking back up the DAG
 
 probability_skip_unpicked_child_words: 0.0
 
-min_reward: 0
-max_reward: 100
+min_reward: 0.0
+max_reward: 1.0
 
 num_rounds: 50
 iterations_per_round: 1000

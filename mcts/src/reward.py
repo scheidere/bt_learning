@@ -7,7 +7,7 @@ Jan 2020
 
 from action import Action #, printActionSequence
 from cfg import Word, Character, createWord
-from simulator.run_simulator import UnderwaterSimulator
+from simulator.simple_simulator import SimpleSimulator
 
 
 '''
@@ -160,7 +160,7 @@ def reward(word, max_iterations, underwater_simulator, min_reward, max_reward): 
 
     best_temp_reward = 0 # Check with Graeme
 
-    word.printWord()
+    # word.printWord()
 
     num_simulations = 1
     active_words = []
@@ -169,14 +169,14 @@ def reward(word, max_iterations, underwater_simulator, min_reward, max_reward): 
         is_valid = True
         reward_sum = 0
         for i in xrange(num_simulations):
-            print("LOOK")
+            # print("LOOK")
             #test = underwater_simulator.generateReward(word, max_iterations)
             #print('test length' + str(len(test)))
-            temp_reward, robot_reported, distance, active_word, active_subtree_indices = underwater_simulator.generateReward(word, max_iterations)
-            print('active_subtree_indices', active_subtree_indices)
+            temp_reward, active_word, active_subtree_indices = underwater_simulator.generateReward(word, max_iterations)
+            # print('active_subtree_indices', active_subtree_indices)
             active_words.append(active_word)
-            print("Active word:")
-            active_word.printWord()
+            # print("Active word:")
+            # active_word.printWord()
             reward_sum += temp_reward
             
             if i == 1: # Check with Graeme
@@ -195,7 +195,7 @@ def reward(word, max_iterations, underwater_simulator, min_reward, max_reward): 
 
     # Normalisation
     reward = float(reward - min_reward)/float(max_reward - min_reward)
-    print("reward",reward)
+    # print("reward",reward)
     best_reward = float(best_temp_reward - min_reward)/float(max_reward - min_reward)
 
     return is_valid, reward, best_reward, active_words, active_subtree_indices
