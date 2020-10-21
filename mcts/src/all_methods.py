@@ -75,13 +75,13 @@ class AllMethods():
             current_method = config_filename.replace(garbage_string, '')
 
         # Initialize mcts_sa_output.txt
-        f = open("/home/scheidee/Desktop/bt_learning_output/intermediate_output_files/2020_10_18/" + str(start_time) + current_method + "_output.txt","w+") #overall output file, can't load while running
+        f = open("/home/scheidee/Desktop/bt_learning_output/RESULTS/2020_10_20/intermediate_output_files/" + str(start_time) + current_method + "_output.txt","w+") #overall output file, can't load while running
         #print(f.read())
 
         # Do the rounds
         for round in xrange(self.num_rounds):
 
-            f1 = open("/home/scheidee/Desktop/bt_learning_output/intermediate_output_files/2020_10_18/" + str(start_time) + current_method + "_output_thru_round" + str(round) + ".txt","w+")
+            f1 = open("/home/scheidee/Desktop/bt_learning_output/RESULTS/2020_10_20/intermediate_output_files/" + str(start_time) + current_method + "_output_thru_round" + str(round) + ".txt","w+")
 
             f.write("+++++++++++++++++++++++++\n")
             f.write("Results for round %d\n" % round)
@@ -129,7 +129,7 @@ class AllMethods():
                     print('best_rollout_active_words at best node:')
                     for best_rollout_active_word in winner.best_rollout_active_words:
                         best_rollout_active_word.printWord()
-                        active_best_rollout = best_rollout_active_word
+                        #active_best_rollout = best_rollout_active_word
 
                     print('sequence at best_rollout_node:')
                     for soln in best_rollout_node.sequence:
@@ -141,6 +141,7 @@ class AllMethods():
                     print('best_rollout_active_words at best_rollout_node:')
                     for best_rollout_active_word in best_rollout_node.best_rollout_active_words:
                         best_rollout_active_word.printWord()
+                        active_best_rollout = best_rollout_active_word
 
                     print('best_reward from best_rollout: %s' % best_reward )
                     
@@ -483,7 +484,7 @@ class AllMethods():
             if overall_best_word != None:
                 f1.write(overall_best_word.toString()+'\n')
             else:
-                f1.write("overall_best_word is None\n")
+                f1.write("None\n")
             f1.write("OVERALL_BEST_WORD_SCORE: %s\n" % overall_best_word_score)
             f1.write("===========================\n")
             f1.close()
