@@ -45,7 +45,7 @@ def run():
 
 
     # Create output file
-    f = open("/home/scheidee/Desktop/bt_learning_output/RESULTS/2020_10_20/all_methods_output" + str(start_time_milli) + current_method + "_output.txt","w+") #overall output file, can't load while running
+    f = open("/home/graeme/Dropbox/emily_graeme_shared/results_from_graeme/2020_10_20_b/all_methods_output/" + str(start_time_milli) + current_method + "_output.txt","w+") #overall output file, can't load while running
 
     # Create CFG object
     cfg = CFG()
