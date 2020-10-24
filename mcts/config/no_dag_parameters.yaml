@@ -22,7 +22,7 @@ use_restarts: True
 use_sa: True 
 
 # Both
-use_cheat: True 
+use_cheat: False 
 
 # Simulator
 min_reward: 0.0
