@@ -25,12 +25,7 @@ import json
 
 import re
 
-#data_labels_no_underscore = ['final', 'no sa', 'no sa\nno restarts', 'no dag','no groups','no groups\nno structure','no cheat']
-#data_labels = ['final', 'no_sa', 'no_sa_no_restarts', 'no_dag','no_groups','no_groups_no_structure','no_cheat']
-#data_labels_no_underscore = ['final', 'no sa', 'no dag','no groups','no cheat']
-#data_labels = ['final', 'no_sa', 'no_dag','no_groups','no_cheat']
-data_labels_no_underscore = ['final', 'no cheat', 'no sa', 'no dag', 'no groups']
-data_labels = ['final', 'no_cheat', 'no_sa', 'no_dag', 'no_groups']
+
 
 
 def initialize_data_array_list():#initalize_data_arrays():
@@ -226,6 +221,7 @@ def update_box_plot(path, num_worlds, manual_word):
     ax.boxplot(data)
     ax.set_xlabel('Method')
     ax.set_ylabel('Reward (normalized)')
+    ??? make this automatic depending on size of label list i.e. 1 to 7 or 1 to 6 etc
     plt.xticks([1, 2, 3, 4, 5], data_labels_no_underscore, rotation=45, ha='right')
 
 
@@ -330,7 +326,7 @@ def generate_reward_list(path_to_intermediates, timestamp, do_skips_for_testing)
 
             new_reward_list[round]= norm_reward
 
-
+    print('new_reward_list: ', new_reward_list)
     return new_reward_list
 
 
@@ -398,11 +394,23 @@ if __name__ == '__main__':
     do_skips_for_testing = False
 
     num_worlds = input('For convergence plot, enter 0. For box plot, enter 1 for training world, and otherwise specify number of new worlds to test on: ')
-    print('test')
+
+    #data_labels_no_underscore = ['final', 'no sa', 'no sa\nno restarts', 'no dag','no groups','no groups\nno structure','no cheat']
+    #data_labels = ['final', 'no_sa', 'no_sa_no_restarts', 'no_dag','no_groups','no_groups_no_structure','no_cheat']
+    #data_labels_no_underscore = ['final', 'no sa', 'no dag','no groups','no cheat']
+    #data_labels = ['final', 'no_sa', 'no_dag','no_groups','no_cheat']
+    if num_worlds == 0: # convergence comparisons (no sa no restart doesnt count b/c doesnt do 50 rounds)
+        data_labels_no_underscore = ['final', 'no cheat', 'no dag', 'no sa', 'no groups','no groups\nno structure']
+        data_labels = ['final', 'no_cheat', 'no_dag', 'no_sa', 'no_groups', 'no_groups_no_structure']
+    else: # final tree comparison
+        data_labels_no_underscore = ['final', 'no cheat', 'no dag', 'no sa', 'no groups','no groups\nno structure','no sa\nno restarts']
+        data_labels = ['final', 'no_cheat', 'no_dag', 'no_sa', 'no_groups', 'no_groups_no_structure', 'no_sa_no_restarts']
+
+
     # Specify path to all output files
-    path = "/home/scheidee/Desktop/bt_learning_output/RESULTS/COMPLETE"
-    path_to_intermediates = "/home/scheidee/Desktop/bt_learning_output/RESULTS/INTERMEDIATE"
-    #path_to_intermediates = "/home/scheidee/Desktop/bt_learning_output/RESULTS/test"
+    path = "/home/scheidee/Desktop/bt_learning_output/RESULTS/old/COMPLETE"
+    path_to_intermediates = "/home/scheidee/Desktop/bt_learning_output/RESULTS/old/INTERMEDIATE"
+    #path_to_intermediates = "/home/scheidee/Desktop/bt_learning_output/RESULTS/old/test"
 
     manual_word = createWord('? ( -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_object_found) [pick_up] ) -> ( (likely_target_found) [go_to_likely_target] ) -> ( [coverage] ) )')
 

@@ -240,8 +240,8 @@ def exportBT(bt, include_nodes=None):
     # print("exportBT num_include_nodes", num_include_nodes)
     # print("exportBT len(include_nodes)", len(include_nodes))
 
-    print("==========================================================")
-    print("BT NODE BUG TEST", bt.nodes[len(include_nodes) - 1].label)
+    #print("==========================================================")
+    #print("BT NODE BUG TEST", bt.nodes[len(include_nodes) - 1].label)
 
     # Do the traversal, using the stack to help
     while len(nodes_stack) != 0:

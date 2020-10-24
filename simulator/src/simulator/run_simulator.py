@@ -178,6 +178,8 @@ if __name__ == "__main__":
     word_rand_false_best = createWord('? ( -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) ? ( (benign_object_found) ) ? ( [pick_up] ) ) -> ( (wildlife_found) (at_surface) (in_comms) [report] ) -> ( (is_armed) [disarm] ) -> ( [go_to_new_vertex] ) )')
     word_rand_false_worst = createWord('? ( -> ( (is_armed) [disarm] ) -> ( (benign_object_found) ? ( (carrying_benign) [pick_up] ) [take_to_drop_off] ) -> ( ? ( [report] ) ? ( (in_comms) ) ) )')
 
+    #final_method_best_word = 
+
     word1 = word_manual3
     word2 = word_rand_false_best
     #word2 = createWord('? ( -> ( (wildlife_found) ? ( [report] ) ? ( [go_to_comms] ) ) -> ( ? ( <!> ( (benign_object_found) ) [pick_up] ) ? ( (carrying_benign) ) ? ( [take_to_drop_off] ) ) -> ( (mine_found) [disarm] ) -> ( ? ( [go_to_likely_target] ) ) )')
