@@ -37,7 +37,7 @@ class SimpleSimulator():
     def __init__(self, seed):
         # Currently ignored
         self.seed = seed
-        self.N = 2
+        self.N = 3
 
     
 
