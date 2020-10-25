@@ -390,7 +390,7 @@ def update_convergence_plot(path, path_to_intermediates, do_skips_for_testing):
     plt.title('Average Best Reward')
     for i in range(len(convergence_data_list_list)):
         method_rewards = convergence_data_list_list[i]
-        plt.plot(method_rewards, label = data_labels[i])
+        plt.plot(method_rewards, label = data_labels_no_underscore[i])
     plt.legend()
     plt.show()
 
@@ -410,19 +410,19 @@ if __name__ == '__main__':
     #data_labels_no_underscore = ['final', 'no sa', 'no dag','no groups','no cheat']
     #data_labels = ['final', 'no_sa', 'no_dag','no_groups','no_cheat']
     # if num_worlds == 0: # convergence comparisons (no sa no restart doesnt count b/c doesnt do 50 rounds)
-        data_labels_no_underscore = ['final', 'no cheat', 'no dag', 'no sa', 'no groups','no groups\nno structure']
+    #    data_labels_no_underscore = ['final', 'no cheat', 'no dag', 'no sa', 'no groups','no groups\nno structure']
     #     data_labels = ['final', 'no_cheat', 'no_dag', 'no_sa', 'no_groups', 'no_groups_no_structure']
     # else: # final tree comparison
     #     data_labels_no_underscore = ['final', 'no cheat', 'no dag', 'no sa', 'no groups','no groups\nno structure','no sa\nno restarts']
     #     data_labels = ['final', 'no_cheat', 'no_dag', 'no_sa', 'no_groups', 'no_groups_no_structure', 'no_sa_no_restarts']
 
-    data_labels_no_underscore = ['no cheat', 'no dag', 'no sa']
-    data_labels = ['no_cheat', 'no_dag', 'no_sa']
+    data_labels = ['no_cheat', 'no_dag', 'no_sa', 'no_groups_no_structure']
+    data_labels_no_underscore = ['MCDAGS+SA', 'MCTS+SA', 'MDAGS', 'No Structure']
 
 
 
     # Specify path to all output files
-    path = "/home/graeme/Dropbox/emily_graeme_shared/results_from_graeme/simple/all_methods_output/n_3"
+    path = "/home/graeme/Dropbox/emily_graeme_shared/results_from_graeme/simple/all_methods_output/n_3/"
     path_to_intermediates = ""
     #path_to_intermediates = "/home/scheidee/Desktop/bt_learning_output/RESULTS/old/test"
 
