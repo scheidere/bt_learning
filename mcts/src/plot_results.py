@@ -221,7 +221,7 @@ def update_box_plot(path, num_worlds, manual_word):
     ax.boxplot(data)
     ax.set_xlabel('Method')
     ax.set_ylabel('Reward (normalized)')
-    ??? make this automatic depending on size of label list i.e. 1 to 7 or 1 to 6 etc
+    xs = range(1,len(data_labels)+1)
     plt.xticks([1, 2, 3, 4, 5], data_labels_no_underscore, rotation=45, ha='right')
 
 

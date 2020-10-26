@@ -21,6 +21,8 @@ from sensor_model import SensorModel
 import random
 import copy
 
+import statistics as stats
+
 
 class UnderwaterSimulator():
     def __init__(self, seed):
@@ -132,6 +134,8 @@ def compare(word1, word2, sim_iterations, seed):
     word2.printWord()
     print('Score 2: ', score2)
 
+    return score, score2
+
 def test(word, sim_iterations, seed):
     sim = UnderwaterSimulator(seed=seed)
     score, target_reported, belief_distance, active_word, active_subtree_indices = sim.generateReward(word, sim_iterations)
@@ -140,8 +144,38 @@ def test(word, sim_iterations, seed):
     print('Score: ', score)
 
 
+def getComparisonStatistics(word1, word2, num_sims, num_sim_iters,seed):
 
+    word1_scores = []
+    word2_scores = []
 
+    for i in range(num_sims):
+
+        if rospy.is_shutdown():
+            break
+
+        score, score2 = compare(word1, word2, num_sim_iters, seed)
+        word1_scores.append(score)
+        word2_scores.append(score2)
+
+    print("+++++++++++++++++++++++++++++++++++++")
+    print("Before normalization")
+    print(word1_scores)
+    print(word2_scores)
+    for i in range(len(word1_scores)):
+        word1_scores[i] = float(word1_scores[i])/float(word2_scores[i])
+        word2_scores[i] = 1 #manual tree gets 100% of what it gets haha
+    print("After normalization")
+    print(word1_scores)
+    print(word2_scores)
+    print("+++++++++++++++++++++++++++++++++++++")
+
+    average1 = sum(word1_scores)/len(word1_scores)
+    std_dev1 = stats.pstdev(word1_scores)
+    average2 = sum(word2_scores)/len(word2_scores)
+    std_dev2 = stats.pstdev(word2_scores)
+
+    return (average1, std_dev1), (average2, std_dev2)
 
 if __name__ == "__main__":
 
@@ -178,7 +212,7 @@ if __name__ == "__main__":
     word_rand_false_best = createWord('? ( -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) ? ( (benign_object_found) ) ? ( [pick_up] ) ) -> ( (wildlife_found) (at_surface) (in_comms) [report] ) -> ( (is_armed) [disarm] ) -> ( [go_to_new_vertex] ) )')
     word_rand_false_worst = createWord('? ( -> ( (is_armed) [disarm] ) -> ( (benign_object_found) ? ( (carrying_benign) [pick_up] ) [take_to_drop_off] ) -> ( ? ( [report] ) ? ( (in_comms) ) ) )')
 
-    #final_method_best_word = 
+    #final_method_best_word = createWord('? ( -> ( (is_armed) [disarm] ) -> ( <!> ( (likely_target_found) ) [go_to_likely_target] ) -> ( (benign_object_found) ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) ? ( [pick_up] ) ) -> ( (in_comms) ? ( <!> ( (at_surface) ) [report] ) ? ( [go_to_comms] ) ) -> ( ? ( <!> ( (at_surface) ) [report] ) (wildlife_found) [go_to_comms] ) )')
 
     word1 = word_manual3
     word2 = word_rand_false_best
@@ -191,8 +225,13 @@ if __name__ == "__main__":
     word6 = word_rand_false_worst
 
     word_manual_coverage = createWord('? ( -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_object_found) [pick_up] ) -> ( (likely_target_found) [go_to_likely_target] ) -> ( [coverage] ) )') #-> ( [shortest_path] ) )') #-> ( [random_walk] ) )')
-    test(word_manual_coverage, 200, seed)
+    final_method_best_word = createWord('? ( -> ( (benign_object_found) [pick_up] ) -> ( (wildlife_found) <!> ( (in_comms) ) ? ( (at_surface) [report] ) [go_to_comms] ) -> ( (is_armed) [disarm] ) -> ( (benign_object_found) ) -> ( (carrying_benign) [take_to_drop_off] ) -> ( [go_to_likely_target] ) )')
 
+
+    ###test(final_method_best_word, 200, seed)
+    ###score, score2 = compare(final_method_best_word,word_manual_coverage,200,seed)
+    (average1, std_dev1), (average2, std_dev2) = getComparisonStatistics(final_method_best_word, word_manual_coverage, 100, 200, seed)
+    print((average1, std_dev1), (average2, std_dev2))
     #compare(word1,word2,200)
     #compare(word3,word4,200)
     #compare(word5,word6,200)
