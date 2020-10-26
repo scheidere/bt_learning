@@ -13,6 +13,7 @@
 
 import numpy as np 
 import matplotlib.pyplot as plt 
+import matplotlib.cm
 from cfg import createWord
 from simulator.run_simulator import UnderwaterSimulator
 
@@ -26,7 +27,7 @@ import json
 import re
 
 
-
+from scipy import stats
 
 def initialize_data_array_list():#initalize_data_arrays():
 
@@ -367,6 +368,10 @@ def update_convergence_plot(path, path_to_intermediates, do_skips_for_testing):
     for i in range(len(to_be_summed_list)): # for each method
         element = to_be_summed_list[i]
         averaging_num = len(element)
+
+        print('method',data_labels_no_underscore[i])
+        print('num trials:',averaging_num)
+
         for j in range(len(element)): # for each 50-round run, i.e. each reward list
             reward_list = to_be_summed_list[i][j]
             for k in range(len(reward_list)): #for each best reward (per round)
@@ -378,8 +383,32 @@ def update_convergence_plot(path, path_to_intermediates, do_skips_for_testing):
         for a in range(len(convergence_data_list_list[i])):
             convergence_data_list_list[i][a] = convergence_data_list_list[i][a]/averaging_num
 
+    # GRAEME added
+    # Compute errors for errorbars
+    convergence_error_list_list_list = []
+    for i in range(len(to_be_summed_list)):
+        element = to_be_summed_list[i]
+        convergence_error_list_list_list.append([])
+        for j in range(len(element)):
+
+            reward_list = to_be_summed_list[i][j]
+            for k in range(len(reward_list)): #for each best reward (per round)
+                if len(convergence_error_list_list_list[i]) < k+1:
+                    convergence_error_list_list_list[i].append([])
+                current_score = reward_list[k] #convergence_data_list_list[i][k] += reward_list[k]
+                convergence_error_list_list_list[i][k].append(current_score)
+
+    convergence_errors = []
+    for i in range(len(to_be_summed_list)):
+        convergence_errors.append([])
+        for k in range(len(convergence_error_list_list_list[i])):
+
+            # standard error of the mean
+            reward_list = convergence_error_list_list_list[i][k]
+            convergence_errors[i].append( stats.sem(reward_list) )
 
     # Plot each method
+    plt.figure(figsize = (5,4))
     x = range(len(reward_list)) #len=50
     y = convergence_data_list_list
     if not do_skips_for_testing:
@@ -387,10 +416,19 @@ def update_convergence_plot(path, path_to_intermediates, do_skips_for_testing):
     else:
         plt.xlabel('Rounds/10')
     plt.ylabel('Reward (normalized)')
-    plt.title('Average Best Reward')
+    # cmap = plt.get_cmap()
+    # cmap = 'bgrcmyk'
+    # plt.title('Average Best Reward')
     for i in range(len(convergence_data_list_list)):
         method_rewards = convergence_data_list_list[i]
-        plt.plot(method_rewards, label = data_labels_no_underscore[i])
+        # plt.plot(method_rewards, label = data_labels_no_underscore[i])
+
+        # col = cmap[data_labels_cmap_indices[i]]
+        col = 'C' + str(data_labels_cmap_indices[i])
+        print(col)
+
+        method_error = convergence_errors[i]
+        plt.errorbar(range(0,len(method_rewards)),method_rewards,method_error, color = col, label = data_labels_no_underscore[i], errorevery = 10, capsize = 3)
     plt.legend()
     plt.show()
 
@@ -417,7 +455,8 @@ if __name__ == '__main__':
     #     data_labels = ['final', 'no_cheat', 'no_dag', 'no_sa', 'no_groups', 'no_groups_no_structure', 'no_sa_no_restarts']
 
     data_labels = ['no_cheat', 'no_dag', 'no_sa', 'no_groups_no_structure']
-    data_labels_no_underscore = ['MCDAGS+SA', 'MCTS+SA', 'MDAGS', 'No Structure']
+    data_labels_no_underscore = ['MCDAGS+SA', 'MCTS+SA', 'MCDAGS', 'No Structure']
+    data_labels_cmap_indices = [1,2,3,4] #[1,3,4,6]
 
 
 
