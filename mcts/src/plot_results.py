@@ -399,16 +399,19 @@ def update_convergence_plot(path, path_to_intermediates, do_skips_for_testing):
                 convergence_error_list_list_list[i][k].append(current_score)
 
     convergence_errors = []
+    convergence_medians = []
     for i in range(len(to_be_summed_list)):
         convergence_errors.append([])
+        convergence_medians.append([])
         for k in range(len(convergence_error_list_list_list[i])):
 
             # standard error of the mean
             reward_list = convergence_error_list_list_list[i][k]
             convergence_errors[i].append( stats.sem(reward_list) )
+            convergence_medians[i].append( np.median(reward_list) )
 
     # Plot each method
-    plt.figure(figsize = (5,3.8))
+    plt.figure(figsize = (5,4.2))
     x = range(len(reward_list)) #len=50
     y = convergence_data_list_list
     if not do_skips_for_testing:
@@ -430,9 +433,9 @@ def update_convergence_plot(path, path_to_intermediates, do_skips_for_testing):
         method_error = convergence_errors[i]
         plt.errorbar(range(0,len(method_rewards)),method_rewards,method_error, color = col, label = data_labels_no_underscore[i], errorevery = 10, capsize = 3)
     plt.yticks((0.4, 0.5, 0.6, 0.7, 0.8))
-    plt.ylim((0.45, 0.82))
+    plt.ylim((0.49, 0.81))
 
-    plt.legend(loc='lower right')
+    plt.legend(loc='lower right',labelspacing=0)
     plt.show()
 
 
