@@ -21,7 +21,7 @@ from sensor_model import SensorModel
 import random
 import copy
 
-import statistics as stats
+# import statistics as stats
 
 
 class UnderwaterSimulator():
