@@ -21,7 +21,7 @@ def plot_cfg_dag(list_of_all_nodes, winner, use_uct, max_height, exploration_exp
     # Start a graphviz graph
     u = Digraph('search dag', filename=filename, node_attr={'color': 'lightblue2', 'style': 'filled', 'size': '1,1'})
     u.attr(size='100,100')
-    u.attr(ranksep='5')
+    u.attr(ranksep='1.5') #5
 
     # For color ranges, get min and max rewards
     min_reward = 9999
@@ -67,14 +67,14 @@ def plot_cfg_dag(list_of_all_nodes, winner, use_uct, max_height, exploration_exp
                     node_text = n.sequence[-1].toString()
                 else:
                     node_text = ""
-                u.node(node_id, node_text, color=col)
+                u.node(node_id, node_text, color=col, **{'width':'1', 'height':'1'})
                 # u.node(node_id, n.sequence[-1].toString() + "\n" + str(reward), color=col)
                 included = True
                 
                 # Add an edge back to the parent
                 for parent in n.parents:
                     parent_id = str(id(parent))
-                    u.edge(parent_id, node_id)#, color=col)
+                    u.edge(parent_id, node_id, **{'arrowsize':'3.0', 'penwidth':'3.0'})#, color=col)
 
             # if the children are being cut off due to max_height
             '''
@@ -114,7 +114,7 @@ def plot_cfg_dag(list_of_all_nodes, winner, use_uct, max_height, exploration_exp
                 node_text = n.sequence[-1].toString()
             else:
                 node_text = ""
-            u.node(node_id, node_text, color=col)
+            u.node(node_id, node_text, color=col, **{'width':'1', 'height':'1'})
             included = True
 
         included_list.append(included)

@@ -99,7 +99,7 @@ if __name__ == '__main__':
         	Character('[random_walk]'),Character(')'),\
         	Character(')')]
         '''
-        
+        '''
         # updated multi-target manual tree
         character_list = [Character('?'),Character('('),\
             Character('->'),Character('('),\
@@ -119,7 +119,7 @@ if __name__ == '__main__':
             Character('(likely_target_found)'),Character('[go_to_likely_target]'),Character(')'),\
             Character('[random_walk]'),\
             Character(')')]
-        
+        '''
         '''
         character_list = [Character('?'),Character('('),\
             Character('->'),Character('('),\
@@ -149,8 +149,17 @@ if __name__ == '__main__':
         #cfg_word = createWord('?  (  ->  (  ?  (  <!>  (  (benign_object_found)  )  (benign_object_found)  <!>  (  (carrying_benign)  )  [take_to_drop_off]  )  [pick_up]  )  ->  (  (mine_found)  ?  (  (is_armed)  [disarm]  )  )  )')
         
         # Manual tree
-        #cfg_word = createWord('? ( -> ( (target_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( ? ( <!> ( (carrying_object) ) [take_to_drop_off] ) (object_found) [pick_up] ) -> ( (likely_target_found) [go_to_likely_target] ) -> ( [random_walk] ) )')
-        
+        # cfg_word = createWord('? ( -> ( (target_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( ? ( <!> ( (carrying_object) ) [take_to_drop_off] ) (object_found) [pick_up] ) -> ( (likely_target_found) [go_to_likely_target] ) -> ( [random_walk] ) )')
+
+
+        # For concept figure
+        # dont use cfg_word = createWord('? ( -> ( (c0) ? ( (c1) [a0] ) [a1] ) -> ( (c2) ? ( <!> ( (c3) ) [a2] ) ) -> ( ? ( <!> ( (c4) ) [a3] ) (c5) [a4] ) -> ( (c6) [a5] ) -> ( [a5] ) )')
+        # cfg_word = createWord('? ( -> ( (c2) (c1) ? ( <!> ( (c3) ) [a2] ) ) -> ( (c0) ? ( (c1) [a0] ) [a1] ) -> ( ? ( <!> ( (c4) ) [a3] ) (c5) [a4] ) )')
+        cfg_word = createWord('? ( -> ( (c0) (c5) [a2] ) -> ( ? ( <!> ( (c3) ) [a3] ) (c5) [a4] ) -> ( (c1) ? ( (c3) [a3] ) ) )')
+        # cfg_word = createWord('? ( -> ( (c1) ? ( (c2) [a1] ) ) -> ( ? ( (c1) [a0] ) (c4) [a3] ) -> ( ? ( <!> ( (c4) ) [a2] ) (c4) [a4] ) -> ( (c0) [a4] ) )')
+
+
+
         cfg_word.printWord()
         # cfg_word_filter = filterDuplicates(cfg_word)
         # cfg_word_filter.printWord()
@@ -158,8 +167,9 @@ if __name__ == '__main__':
         bt_root, bt = cfg_word.createBT()
         # bt_root, bt = cfg_word_filter.createBT()
 
-        includes = [True, True, True, True, True, True, True, True, True, True,\
-            True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True]
+        # includes = [True, True, True, True, True, True, True, True, True, True,\
+            # True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True]
+        includes = None
 
         new_word = exportBT(bt, includes)
 

@@ -408,7 +408,7 @@ def update_convergence_plot(path, path_to_intermediates, do_skips_for_testing):
             convergence_errors[i].append( stats.sem(reward_list) )
 
     # Plot each method
-    plt.figure(figsize = (5,4))
+    plt.figure(figsize = (5,3.8))
     x = range(len(reward_list)) #len=50
     y = convergence_data_list_list
     if not do_skips_for_testing:
@@ -429,7 +429,10 @@ def update_convergence_plot(path, path_to_intermediates, do_skips_for_testing):
 
         method_error = convergence_errors[i]
         plt.errorbar(range(0,len(method_rewards)),method_rewards,method_error, color = col, label = data_labels_no_underscore[i], errorevery = 10, capsize = 3)
-    plt.legend()
+    plt.yticks((0.4, 0.5, 0.6, 0.7, 0.8))
+    plt.ylim((0.45, 0.82))
+
+    plt.legend(loc='lower right')
     plt.show()
 
 

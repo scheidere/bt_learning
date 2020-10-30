@@ -233,10 +233,10 @@ def exportBT(bt, include_nodes=None):
 
     prev_level = 0
     #print("initial: ", len(include_nodes))
-    num_include_nodes = 0
-    for i in include_nodes:
-        if i:
-            num_include_nodes += 1
+    # num_include_nodes = 0
+    # for i in include_nodes:
+    #     if i:
+    #         num_include_nodes += 1
     # print("exportBT num_include_nodes", num_include_nodes)
     # print("exportBT len(include_nodes)", len(include_nodes))
 
