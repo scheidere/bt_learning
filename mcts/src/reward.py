@@ -6,8 +6,8 @@ Jan 2020
 '''
 
 from action import Action #, printActionSequence
-from cfg import Word, Character
-# from run_simulator import UnderwaterSimulator
+from cfg import Word, Character, createWord
+from simulator.run_simulator import UnderwaterSimulator
 
 
 '''
@@ -156,10 +156,7 @@ def reward(word, max_iterations, underwater_simulator): # single target case
 
     return is_valid, reward
 '''
-def reward(word, max_iterations, underwater_simulator): # multi-target case
-
-    min_reward = 0
-    max_reward = 100 # Our tree gets 75 on average # or avg_num_targets_in_world * max_reward_per_target
+def reward(word, max_iterations, underwater_simulator, min_reward, max_reward): # multi-target case
 
     best_temp_reward = 0 # Check with Graeme
 
@@ -172,7 +169,11 @@ def reward(word, max_iterations, underwater_simulator): # multi-target case
         is_valid = True
         reward_sum = 0
         for i in xrange(num_simulations):
-            temp_reward, robot_reported, distance, active_word = underwater_simulator.generateReward(word, max_iterations)
+            print("LOOK")
+            #test = underwater_simulator.generateReward(word, max_iterations)
+            #print('test length' + str(len(test)))
+            temp_reward, robot_reported, distance, active_word, active_subtree_indices = underwater_simulator.generateReward(word, max_iterations)
+            print('active_subtree_indices', active_subtree_indices)
             active_words.append(active_word)
             print("Active word:")
             active_word.printWord()
@@ -190,21 +191,23 @@ def reward(word, max_iterations, underwater_simulator): # multi-target case
         is_valid = False
         reward = min_reward
         best_reward = min_reward
+        active_subtree_indices = []
 
     # Normalisation
     reward = float(reward - min_reward)/float(max_reward - min_reward)
     print("reward",reward)
     best_reward = float(best_temp_reward - min_reward)/float(max_reward - min_reward)
 
-    return is_valid, reward, best_reward, active_words
+    return is_valid, reward, best_reward, active_words, active_subtree_indices
 
 
-'''
+
 if __name__ == "__main__":
 
     word = Word([Character("->"),Character("("),Character("[]"),Character("?"),Character("("),Character("[]"),Character("()"),Character(")"),Character(")")])
+    #word = createWord('? ( -> ( (target_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( ? ( <!> ( (carrying_object) ) [take_to_drop_off] ) (object_found) [pick_up] ) -> ( (likely_target_found) [go_to_likely_target] ) -> ( [random_walk] ) )')
 
-    reward(word)
+    underwater_simulator = UnderwaterSimulator()
+    is_valid, rollout_reward, best_rollout_reward, rollout_active_words = reward(word, 200, underwater_simulator)
 
-    print(reward(word))
-'''
+    print('is_valid, rollout_reward, best_rollout_reward, rollout_active_words',is_valid, rollout_reward, best_rollout_reward, rollout_active_words)

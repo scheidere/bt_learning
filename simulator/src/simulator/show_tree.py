@@ -99,7 +99,7 @@ if __name__ == '__main__':
         	Character('[random_walk]'),Character(')'),\
         	Character(')')]
         '''
-        '''
+        
         # updated multi-target manual tree
         character_list = [Character('?'),Character('('),\
             Character('->'),Character('('),\
@@ -119,7 +119,7 @@ if __name__ == '__main__':
             Character('(likely_target_found)'),Character('[go_to_likely_target]'),Character(')'),\
             Character('[random_walk]'),\
             Character(')')]
-        '''
+        
         '''
         character_list = [Character('?'),Character('('),\
             Character('->'),Character('('),\
@@ -141,12 +141,20 @@ if __name__ == '__main__':
             Character('[shortest_path]'),Character(')'),\
             Character('[go_to_comms]'),Character(')')]
 
-
-        cfg_word = Word(character_list)
         '''
+        #cfg_word = Word(character_list)
+        
         # cfg_word = createWord('? ( ? ( -> ( (mine_found) [disarm] ) [shortest_path] ) [go_to_comms] )')
 
-        cfg_word = createWord('?  (  ->  (  ?  (  <!>  (  (benign_object_found)  )  (benign_object_found)  <!>  (  (carrying_benign)  )  [take_to_drop_off]  )  [pick_up]  )  ->  (  (mine_found)  ?  (  (is_armed)  [disarm]  )  )  )')
+        #cfg_word = createWord('?  (  ->  (  ?  (  <!>  (  (benign_object_found)  )  (benign_object_found)  <!>  (  (carrying_benign)  )  [take_to_drop_off]  )  [pick_up]  )  ->  (  (mine_found)  ?  (  (is_armed)  [disarm]  )  )  )')
+        
+        # Manual tree
+        cfg_word = createWord('? ( -> ( (target_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( ? ( <!> ( (carrying_object) ) [take_to_drop_off] ) (object_found) [pick_up] ) -> ( (likely_target_found) [go_to_likely_target] ) -> ( [coverage] ) )')
+        
+        # Best performing final tree
+        #cfg_word = createWord('? ( -> ( (is_armed) [disarm] ) -> ( <!> ( (likely_target_found) ) [go_to_likely_target] ) -> ( (benign_object_found) ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) ? ( [pick_up] ) ) -> ( (in_comms) ? ( <!> ( (at_surface) ) [report] ) ? ( [go_to_comms] ) ) -> ( ? ( <!> ( (at_surface) ) [report] ) (wildlife_found) [go_to_comms] ) )')
+        #cfg_word = createWord('? ( -> ( (benign_object_found) ? ( [pick_up] ) ) -> ( (carrying_benign) <!> ( (benign_object_found) ) [take_to_drop_off] ) -> ( ? ( <!> ( (benign_object_found) ) ) (carrying_benign) ) -> ( [report] ? ( (wildlife_found) ) ? ( [go_to_comms] ) ) -> ( (is_armed) ? ( <!> ( (mine_found) ) [disarm] ) ) -> ( [coverage] ) )')
+        cfg_word_bla = createWord('? ( -> ( (benign_object_found) [pick_up] ) -> ( (wildlife_found) <!> ( (in_comms) ) ? ( (at_surface) [report] ) [go_to_comms] ) -> ( (is_armed) [disarm] ) -> ( (benign_object_found) ) -> ( (carrying_benign) [take_to_drop_off] ) -> ( [go_to_likely_target] ) )')
 
         cfg_word.printWord()
         # cfg_word_filter = filterDuplicates(cfg_word)
@@ -155,8 +163,12 @@ if __name__ == '__main__':
         bt_root, bt = cfg_word.createBT()
         # bt_root, bt = cfg_word_filter.createBT()
 
+        output_filename = 'manual_bt.tree'
+        bt.write_config(output_filename) # Goes to home/scheidee/.ros
+
         includes = [True, True, True, True, True, True, True, True, True, True,\
-            True, True, True, True, True]
+            True, True, True, True, True, True, True, True, True, True, True,\
+            True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True]
 
         new_word = exportBT(bt, includes)
 

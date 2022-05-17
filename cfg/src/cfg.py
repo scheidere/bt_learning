@@ -232,13 +232,16 @@ def exportBT(bt, include_nodes=None):
     char_list = []
 
     prev_level = 0
-
+    #print("initial: ", len(include_nodes))
     num_include_nodes = 0
     for i in include_nodes:
         if i:
             num_include_nodes += 1
     # print("exportBT num_include_nodes", num_include_nodes)
     # print("exportBT len(include_nodes)", len(include_nodes))
+
+    #print("==========================================================")
+    #print("BT NODE BUG TEST", bt.nodes[len(include_nodes) - 1].label)
 
     # Do the traversal, using the stack to help
     while len(nodes_stack) != 0:
@@ -247,11 +250,16 @@ def exportBT(bt, include_nodes=None):
         current_node = nodes_stack.pop() #pop
         level = level_stack.pop()
         # print(current_node.__class__.__name__)
-
-        if include_nodes == None:
+        
+        node_index = bt.nodes.index(current_node)
+        if include_nodes == None or node_index == len(include_nodes) - 1: #trying to recreate bug
             include_node = True
         else:
+            #print("include_nodes: ", include_nodes)
+            #print("current node: ", current_node)
             node_index = bt.nodes.index(current_node)
+            #print("node_index: ", node_index)
+            #print(len(include_nodes))
             include_node = include_nodes[node_index]
 
         if include_node:
@@ -278,6 +286,52 @@ def exportBT(bt, include_nodes=None):
     # Close the file
     new_word = Word(char_list)
     return new_word
+
+def getSubtreeIndices(bt, include_nodes):  
+    # Return list of indices denoting active subtrees in the given order 
+
+    # Setup a stack data structure (similar to nodes_worklist)
+    # Do this for both keeping track of nodes and for number of tabs
+    nodes_stack = []
+    level_stack = []
+    nodes_stack.append(bt.root) #push
+    level_stack.append(0)
+
+    # Current subtree index
+    subtree_index = 0
+    subtree_index_list = []
+    
+    # Do the traversal, using the stack to help
+    while len(nodes_stack) != 0:
+
+        # Pop a node off the stack
+        current_node = nodes_stack.pop() #pop
+        level = level_stack.pop()
+        # print(current_node.__class__.__name__)
+
+        #print("include_nodes: ", include_nodes)
+        #print("current node: ", current_node)
+        node_index = bt.nodes.index(current_node)
+        #print("node_index: ", node_index)
+        #print(len(include_nodes))
+        include_node = include_nodes[node_index]
+        
+        if node_index == len(include_nodes) - 1: #trying to recreate bug
+            include_node = True
+        
+        # Add all children to the stack
+        if level == 0:
+            for child_idx in reversed(range(len(current_node.children))):
+                nodes_stack.append(current_node.children[child_idx]) #push
+                level_stack.append(level+1)
+
+        if level == 1:
+            if include_node:
+                # Sequence (and hence subtree) is active
+                subtree_index_list.append(subtree_index)
+            subtree_index += 1
+
+    return subtree_index_list
 
 class ProductionRule():
     def __init__(self, input_word, output_word):
@@ -706,19 +760,144 @@ def extract_subtrees(word):
                 subtree_words.append(Word(subtree_word_list))
     return subtree_words
 
+class GeneticRule():
+    def __init__(self):
+        pass
+
+    # Copied from ProductionRule()
+    def equal(self, other_production_rule):
+        return self.input_word.equal(other_production_rule.input_word) and self.output_word.equal(other_production_rule.output_word)
+    
+    def findSubtree(self, start_word, input_word):
+        word_found = False
+        #print("in findSubtree")
+        #print(start_word, start_word.lenWord())
+        #print(input_word, input_word.lenWord())
+        for i in range(start_word.lenWord() - input_word.lenWord() + 1):
+            flag = True
+            for j in range(input_word.lenWord()):
+                if not start_word.at(i+j).equal(input_word.at(j)):
+                    flag = False
+                    break
+            if flag:
+                word_found = True
+                start_index = i
+                end_index = i + input_word.lenWord() - 1
+                return start_index, end_index
+
+        return None
+
+    # Copied from ProductionRule()
+    def applyProductionRule(self, start_word): #changed name from applyGeneticRule (made rollout.py easier)
+
+        # return error if ever called from here
+        raise ValueError("Cannot apply rule with parent class")
+
+
+class CrossoverRule(GeneticRule):
+
+    def applyProductionRule(self, start_word): #changed name from applyGeneticRule
+
+        new_word_list = []
+
+        # Extract sub-trees as words from current BT word
+        subtree_words_list = extract_subtrees(start_word)
+        #print(len(subtree_words_list),'len')
+
+        if start_word.list[-1].equal(Character("*")) and len(subtree_words_list) > 1:
+
+            # Check that crossover has not been applied yet (i.e. star still at end)
+            #if start_word.list[-1].equal(Character("*")):
+            #start_word.printWord()
+
+            # Remove subtrees from starting BT, start_word
+            first_start_index, first_end_index = self.findSubtree(start_word, subtree_words_list[0])
+            last_start_index, last_end_index = self.findSubtree(start_word, subtree_words_list[-1])
+            pre_subtree_char_list = start_word.list[:first_start_index]
+            post_subtree_char_list = start_word.list[last_end_index+1:-1] # End of tree minus star
+            ##print("pre,post",pre_subtree_char_list,post_subtree_char_list)
+
+            ##print("start_word:")
+            ##start_word.printWord()
+            ##print("new words:")
+            ## Iterate through all pairs of two subtrees
+            for i in range(len(subtree_words_list)-1):
+                #print("i",i)
+                test_i = i
+                for j in range(i+1,len(subtree_words_list)):
+
+                    # Reset subtree order
+                    subtree_order = [k for k in range(len(subtree_words_list))]
+                    #print(subtree_order)
+                    #print(i,j)
+                    # Update subtree order via swapping of given pair
+                    subtree_order[test_i], subtree_order[j] = subtree_order[j], subtree_order[test_i]
+                    #print(subtree_order)
+                     
+                    # Add subtrees in new order to create child tree from crossover
+                    new_char_list = []
+
+                    # Add original root structure
+                    for char in pre_subtree_char_list:
+                        new_char_list.append(char)
+
+                    # Add ordered subtrees 
+                    for i in subtree_order:
+                        for char in subtree_words_list[i].list:
+                            new_char_list.append(char)
+
+                    # Add original conclusive characters, relating to root
+                    for char in post_subtree_char_list:
+                        new_char_list.append(char)
+
+                    #for char in new_char_list:
+                        #print(char.label)
+                    new_word = Word(new_char_list)
+                    ###new_word.printWord()
+
+                    # Add new word to the population
+                    new_word_list.append(new_word)
+
+        if start_word.list[-1].equal(Character("*")):
+            new_char_list = []
+            # Add non-crossed-over word without star
+            for char in start_word.list[:-1]:
+                new_char_list.append(char)
+            new_word_list.append(Word(new_char_list))
+
+        #for word in new_word_list:
+        #    word.printWord()
+
+        return new_word_list
+
+
+       
 
 class CFG():
     def __init__(self):
 
+        # Get the config file etc
+        rospack = rospkg.RosPack()
+        filepath = rospack.get_path('mcts') + "/config/" + rospy.get_param('~config')
+        with open(filepath, 'r') as stream:
+            config = yaml.safe_load(stream)
+
+        self.use_groups = config["use_groups"]
+        self.use_structure = config["use_structure"]
+        self.use_cheat = config["use_cheat"]
+
         # Generate a grammar
         self.grammar = self.generateGrammar()
         self.printAllProdRules()
+
+        self.genetic_grammar = self.generateGeneticGrammar()
 
         # Print word
         #self.printWord()
 
         # Print all words
         #self.printAllTerminalWords(4)
+        
 
     def addProductionRule(self, new_production_rule):
 
@@ -739,7 +918,32 @@ class CFG():
     
     def generateGrammar(self): 
         
-        return self.generateGrammarGuidedStructureGroups()
+        # no_cheat comparison method grammar
+        if self.use_groups and self.use_structure and not self.use_cheat:
+            return self.generateGrammarGuidedStructureGroups()
+
+        # no_groups comparison method grammar
+        elif not self.use_groups and self.use_structure and not self.use_cheat:
+            return self.generateGrammarGuidedStructure()
+
+        # no_groups_no_structure method grammar
+        elif not self.use_groups and not self.use_structure and not self.use_cheat:
+            return self.generateGrammar_nolr()
+
+        # all other comparison methods grammar
+        elif self.use_groups and self.use_structure and self.use_cheat:
+            return self.generateGrammarGuidedStructureGroupsWithPlannerCheat()
+        
+        
+        #return self.generateGrammarGuidedStructureGroupsWithPlannerCheatNoCrossover()
+
+    def generateGeneticGrammar(self):
+
+        rules = []
+
+        rules.append(CrossoverRule())
+
+        return rules
 
     def generateGrammar_treeTest(self):
 
@@ -1317,9 +1521,16 @@ class CFG():
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
         '''
-
+        '''
         input_word = createWord("S")
         output_word = createWord("? ( sequence add_sequence )")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+        '''
+
+        # Star denotes crossover has not yet been applied - NOPE removed * for crossover
+        input_word = createWord("S")
+        output_word = createWord("? ( sequence add_sequence )") 
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
@@ -1465,6 +1676,395 @@ class CFG():
 
         return production_rule_list
 
+    def generateGrammarGuidedStructureGroupsWithPlannerCheat(self):
+
+        '''
+        Same as generateGrammarGuidedStructure, but with groups
+        Only actions and conditions in the same group are allowed within the same sequence subtree
+
+        This CFG results in the following guided (or forced) structure
+        ?
+        -> -> -> ...
+        ? A C
+        A C
+        '''
+
+        # Create empty production rule list
+        production_rule_list = []
+        # list_actions,list_conditions = getActionsConditions()
+        groups = getActionsConditionsGroups()
+        num_groups = len(groups)
+
+        '''
+        input_word = createWord("S")
+        output_word = createWord("? ( add_sequence sequence add_sequence )")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = createWord("add_sequence sequence add_sequence")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = createWord("sequence")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = Word([])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+        '''
+        '''
+        input_word = createWord("S")
+        output_word = createWord("? ( sequence add_sequence )")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+        '''
+
+        # Star denotes crossover has not yet been applied - REMOVED STAR FOR CROSSOVER
+        input_word = createWord("S")
+        output_word = createWord("? ( sequence add_sequence -> ( [coverage] ) )")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = createWord("sequence add_sequence")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = createWord("sequence")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        for g_idx in xrange(num_groups):
+
+            g = groups[g_idx]
+            s = str(g_idx)
+
+            # Convert generic sequence to a sequence of a particular group
+            input_word = createWord("sequence")
+            output_word = createWord("sequence"+s)
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("sequence"+s)
+            output_word = createWord(["->", "(", "A"+s, "children_r"+s, ")"])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("sequence"+s)
+            output_word = createWord(["->","(","children_l"+s,"A"+s, ")"])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("sequence"+s)
+            output_word = createWord(["->","(","fallback"+s,"children_r"+s, ")"])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("sequence"+s)
+            output_word = createWord(["->","(","children_l"+s,"fallback"+s, ")"])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("fallback"+s)
+            output_word = createWord(["?","(","A"+s,"level3_r"+s, ")"])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("children_r"+s)
+            output_word = createWord(["A"+s, "children_r"+s])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("children_r"+s)
+            output_word = createWord(["fallback"+s, "children_r"+s])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("children_r"+s)
+            output_word = createWord("A"+s)
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("children_r"+s)
+            output_word = createWord("fallback"+s)
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("children_l"+s)
+            output_word = createWord(["children_l"+s,"fallback"+s])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            # Only do the following if there are conditions in this group
+            if len(g["conditions"]) > 0:
+
+                input_word = createWord("fallback"+s)
+                output_word = createWord(["?", "(", "level3_l"+s, "A"+s, ")"])
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                input_word = createWord("children_l"+s)
+                output_word = createWord(["children_l"+s, "CorD"+s])
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                input_word = createWord("children_l"+s)
+                output_word = createWord("CorD"+s)
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                input_word = createWord("level3_l"+s)
+                output_word = createWord(["level3_l"+s,"CorD"+s])
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                input_word = createWord("level3_l"+s)
+                output_word = createWord("CorD"+s)
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                input_word = createWord("CorD"+s)
+                output_word = createWord("C"+s)
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                input_word = createWord("CorD"+s)
+                output_word = createWord(["<!>", "(", "C"+s, ")"])
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                for condition in g["conditions"]:
+                    condition_string = '(' + condition + ')'
+                    input_word = Word([Character("C"+s)])
+                    output_word = Word([Character(condition_string)]) #'()'
+                    production_rule = ProductionRule(input_word, output_word)
+                    production_rule_list.append(production_rule)
+
+            input_word = createWord("children_l"+s)
+            output_word = createWord("fallback"+s)
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("level3_r"+s)
+            output_word = createWord(["A"+s,"level3_r"+s])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("level3_r"+s)
+            output_word = createWord("A"+s)
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            for action in g["actions"]:
+                action_string = '[' + action + ']'
+                input_word = Word([Character("A"+s)])
+                output_word = Word([Character(action_string)]) #'[]'
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+            
+
+        return production_rule_list
+
+    def generateGrammarGuidedStructureGroupsWithPlannerCheatNoCrossover(self):
+
+        '''
+        Same as generateGrammarGuidedStructure, but with groups
+        Only actions and conditions in the same group are allowed within the same sequence subtree
+
+        This CFG results in the following guided (or forced) structure
+        ?
+        -> -> -> ...
+        ? A C
+        A C
+        '''
+
+        # Create empty production rule list
+        production_rule_list = []
+        # list_actions,list_conditions = getActionsConditions()
+        groups = getActionsConditionsGroups()
+        num_groups = len(groups)
+
+        '''
+        input_word = createWord("S")
+        output_word = createWord("? ( add_sequence sequence add_sequence )")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = createWord("add_sequence sequence add_sequence")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = createWord("sequence")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = Word([])
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+        '''
+        '''
+        input_word = createWord("S")
+        output_word = createWord("? ( sequence add_sequence )")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+        '''
+
+        # Star denotes crossover has not yet been applied
+        input_word = createWord("S")
+        output_word = createWord("? ( sequence add_sequence -> ( [go_to_new_vertex] ) ) ") #*") removed * to prevent crossover
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = createWord("sequence add_sequence")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        input_word = createWord("add_sequence")
+        output_word = createWord("sequence")
+        production_rule = ProductionRule(input_word, output_word)
+        production_rule_list.append(production_rule)
+
+        for g_idx in xrange(num_groups):
+
+            g = groups[g_idx]
+            s = str(g_idx)
+
+            # Convert generic sequence to a sequence of a particular group
+            input_word = createWord("sequence")
+            output_word = createWord("sequence"+s)
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("sequence"+s)
+            output_word = createWord(["->", "(", "A"+s, "children_r"+s, ")"])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("sequence"+s)
+            output_word = createWord(["->","(","children_l"+s,"A"+s, ")"])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("sequence"+s)
+            output_word = createWord(["->","(","fallback"+s,"children_r"+s, ")"])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("sequence"+s)
+            output_word = createWord(["->","(","children_l"+s,"fallback"+s, ")"])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("fallback"+s)
+            output_word = createWord(["?","(","A"+s,"level3_r"+s, ")"])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("children_r"+s)
+            output_word = createWord(["A"+s, "children_r"+s])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("children_r"+s)
+            output_word = createWord(["fallback"+s, "children_r"+s])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("children_r"+s)
+            output_word = createWord("A"+s)
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("children_r"+s)
+            output_word = createWord("fallback"+s)
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("children_l"+s)
+            output_word = createWord(["children_l"+s,"fallback"+s])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            # Only do the following if there are conditions in this group
+            if len(g["conditions"]) > 0:
+
+                input_word = createWord("fallback"+s)
+                output_word = createWord(["?", "(", "level3_l"+s, "A"+s, ")"])
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                input_word = createWord("children_l"+s)
+                output_word = createWord(["children_l"+s, "CorD"+s])
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                input_word = createWord("children_l"+s)
+                output_word = createWord("CorD"+s)
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                input_word = createWord("level3_l"+s)
+                output_word = createWord(["level3_l"+s,"CorD"+s])
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                input_word = createWord("level3_l"+s)
+                output_word = createWord("CorD"+s)
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                input_word = createWord("CorD"+s)
+                output_word = createWord("C"+s)
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                input_word = createWord("CorD"+s)
+                output_word = createWord(["<!>", "(", "C"+s, ")"])
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+                for condition in g["conditions"]:
+                    condition_string = '(' + condition + ')'
+                    input_word = Word([Character("C"+s)])
+                    output_word = Word([Character(condition_string)]) #'()'
+                    production_rule = ProductionRule(input_word, output_word)
+                    production_rule_list.append(production_rule)
+
+            input_word = createWord("children_l"+s)
+            output_word = createWord("fallback"+s)
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("level3_r"+s)
+            output_word = createWord(["A"+s,"level3_r"+s])
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            input_word = createWord("level3_r"+s)
+            output_word = createWord("A"+s)
+            production_rule = ProductionRule(input_word, output_word)
+            production_rule_list.append(production_rule)
+
+            for action in g["actions"]:
+                action_string = '[' + action + ']'
+                input_word = Word([Character("A"+s)])
+                output_word = Word([Character(action_string)]) #'[]'
+                production_rule = ProductionRule(input_word, output_word)
+                production_rule_list.append(production_rule)
+
+            
+
+        return production_rule_list
 
     def generateGrammarShortcutsOnly(self):
 
@@ -1863,7 +2463,44 @@ class CFG():
                             break
                 if not duplicate_found:        
                     child_words.append(output_word)
-            
+
+        # Now do the same for all genetic rules
+        for i in range(len(self.genetic_grammar)):
+            output_word_list = self.genetic_grammar[i].applyProductionRule(input_word) #changed name from applyGeneticRule
+
+            # print("applying production rule: ")
+            # self.grammar[i].printProductionRule()
+
+            # print("generates words: ")
+            # for w in output_word_list:
+            #     w.printWord()
+
+            # Check if word in output_word_list already in child_words
+            for output_word in output_word_list:
+
+                #####
+                # MOVED FILTER TO WITHIN applyProductionRule instead
+                #####
+
+                # Filter out any rubbish duplicate nodes
+                #output_word = filterDuplicates(output_word_before_filter)
+
+                # If output_word not in child_words:
+                duplicate_found = False
+
+                # Make sure this production doesn't go nowhere
+                # Only really relevant after adding the filter step above
+                #if output_word.equal(input_word):
+                #    duplicate_found = True
+
+                if not duplicate_found:
+                    for word in child_words:
+                        if output_word.equal(word):
+                            duplicate_found = True
+                            break
+                if not duplicate_found:        
+                    child_words.append(output_word)            
+
 
         return child_words
 
@@ -2019,7 +2656,38 @@ if __name__ == "__main__":
     
     cfg = CFG()
 
-    cfg.printAllTerminalWords(7)
+    #cfg.printAllTerminalWords(7)
+
+    start_word = createWord('? ( -> ( (mine_found) ? ( [disarm] ) ) -> ( [shortest_path] ) -> ( [random_walk] ) )')
+    #test_char = Character("*")
+    #print(test_char.label)
+
+    #test_word = createWord('? ( (mine_found) ) *')
+    #print(test_word.list[-1])
+    #test_word.list[-1].printLabel()
+    '''
+    subtrees = extract_subtrees(start_word)
+    for tree in subtrees:
+        tree.printWord()
+    
+    for tree in subtrees:
+        print(tree)
+        for char in tree.list:
+            print(char.label)
+    '''
+    #print(subtrees[-1].list[-1].label)
+    #print('test')
+    #bla = subtrees[-1].list[-1]
+    #bla.printLabel()
+    #print('test')
+    #start_word.list[-1].printLabel()
+    #if start_word.list[-1].equal(Character("*")):
+    #    print("win")
+
+    
+
+    ##crossover = CrossoverRule()
+    ##crossover.applyProductionRule(start_word)
 
     #rospy.init_node('behavior_tree_node')
     #list_actions,list_conditions = getActionsConditions()

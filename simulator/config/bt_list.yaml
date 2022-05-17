@@ -32,6 +32,9 @@ groups:
   - actions:
       - shortest_path
     conditions: []
+  - actions:
+      - coverage
+    conditions: []
 
 
 

@@ -34,6 +34,8 @@ from cfg import CFG, Word, Character, createWord
 
 import numpy as np
 
+import time
+
 
 
 class State():
@@ -319,6 +321,7 @@ class Robot():
     PLANNER_TYPE_DROPOFF = 6
     PLANNER_TYPE_DISARM = 7
     PLANNER_TYPE_PICKUP = 8
+    PLANNER_TYPE_COVERAGE = 9
 
     def __init__(self, config, robot_id, num_robots, seed, bt, max_iterations, world):
 
@@ -331,6 +334,8 @@ class Robot():
         self.belief_distance = 500
         self.robot_belief_idx = None #issue solved: used before do_iteration called in robot controller
         #self.communicate_observations = communicate_observations
+
+        ##self.nearest_mine_idx = None
 
         '''
         self.scoring_statistics = ScoringStatistics()
@@ -365,7 +370,11 @@ class Robot():
         # Setup state belief
         # print("Setup state belief")
         self.state = []
-        random_start_vertex = self.get_next_random_number()
+        randomize_start = rospy.get_param('~randomize_start')
+        if randomize_start: # want this when training
+            random_start_vertex = self.get_next_random_number()
+        else: # want this when plotting results (box plot stuff, plot_results.launch)
+            random_start_vertex = 0 
         current_state = State(random_start_vertex) # start at a random vertex
         self.state = current_state
 
@@ -382,6 +391,10 @@ class Robot():
 
         num_vertices = len(self.known_world.vertices)
 
+        # Initialize visit_tracker for coverage planner
+        self.visit_tracker = np.zeros(num_vertices)
+        print('VISIT TRACKER: ', self.visit_tracker)
+
         # create sensor model
         # moved within world instead
         # self.sensor_model = SensorModel(config,num_vertices,self.known_world)
@@ -396,8 +409,6 @@ class Robot():
 
         self.drop_off_idx = self.known_world.drop_off_idx
 
-
-
         # plot
         # print("plot")
         self.h_state = None
@@ -406,7 +417,8 @@ class Robot():
             rospy.loginfo("plotting robot world")
             self.plot_robot()
 
-
+        self.armed_mine_found_flag = False
+        self.mine_disarmed_flag = False
         # print("finished init")
 
     def setup_random_numbers(self, seed):
@@ -437,6 +449,7 @@ class Robot():
         return random.randint(0,len(self.known_world.vertices)-1)
 
 
+
     def do_iteration(self, num_iterations):
         #rospy.loginfo("robot do_iteration")
 
@@ -458,6 +471,9 @@ class Robot():
         while distance_to_travel > 0:
             self.bt_interface.tick_bt()
 
+            active_actions = self.bt_interface.getActiveActions()
+            #print("+++++++++++++++++++++++++active_actions", active_actions)
+
             # Stop episode if battery is dead
             # Battery_low criteria (10 without resurface - dead; 5+ after Full - low battery)
             if self.state.battery_dead_check(self.config):
@@ -472,15 +488,18 @@ class Robot():
             
             # Plan
             # print("plan")
-            action_sequence = None          
+            action_sequence = None  
+            ###print("self.state.at_vertex() 1",self.state.at_vertex())        
             if self.state.at_vertex():
                 action_sequence = self.plan()
-                if action_sequence == None: #goal vertex is None, so path is empty
-                    break
+                #if action_sequence == None: #goal vertex is None, so path is empty
+                    #print("action sequence is None about to break")
+                    #break
 
             # Move
             # print("move")
             [new_vertex, distance_traveled, no_move] = self.move(action_sequence, distance_to_travel)
+
             if not no_move:
                 moved = True
             if no_move or distance_traveled == 0:
@@ -502,6 +521,7 @@ class Robot():
                 # default is that robot does not know answer
                 #robot_has_ans = False # maybe relates to BT, BT can learn this (report action node)
 
+            ###print("self.state.at_vertex() 2",self.state.at_vertex())
             if self.state.at_vertex():
                 # Choose vertex idx to report as belief of target location based on prob dist
                 #self.robot_belief_idx = self.target_belief.generateRobotBeliefIdx() # fix this function, then change name of it and variable
@@ -518,6 +538,7 @@ class Robot():
                 ## Before report was an action ## response = self.basestation_scorer.submit_target(robot_belief_idx, x, is_at_surface, is_in_comms, num_iterations)
                 #response = self.report_target_belief(self.nearest_wildlife_idx, World.CLASS_WILDLIFE, is_at_surface, is_in_comms, num_iterations)
                 response = self.report_target_belief(self.nearest_wildlife_idx, is_at_surface, is_in_comms) #report and associated reward, if any, done here # Check with Graeme DONE
+                #print("report should happen here")
 
                 # Update robot belief based on reporting reponse
                 if response == self.basestation_scorer.RESPONSE_CORRECT:
@@ -551,6 +572,7 @@ class Robot():
                     if successful_disarm:
                         self.target_belief.update_loc_class_0(self.nearest_mine_idx)
                         self.is_armed_array[self.nearest_mine_idx] = False # Check with Graeme DONE
+                        self.mine_disarmed_flag = True
                     else:
                         self.target_belief.update_loc_not_class_y(self.nearest_mine_idx, World.CLASS_MINE)
 
@@ -558,6 +580,9 @@ class Robot():
                 detection_list = self.target_belief.get_all_detections() 
                 self.basestation_scorer.detection_reward(detection_list) #give scorer +1 for all newly detected vertices in detection_list if detection is correct
 
+                # Update visit tracker
+                #if self.planner_type == Robot.PLANNER_TYPE_COVERAGE:
+                self.visit_tracker[x] = 1 # Update any vertex the robot has been to from 0 to 1 in the tracker
             
             # Condition checks
             self.condition_updates()
@@ -597,12 +622,17 @@ class Robot():
         wildlife_found = self.target_belief.class_y_found(World.CLASS_WILDLIFE)
         
         mine_found = self.target_belief.class_y_found(World.CLASS_MINE)
-        
+
+        #print('mine_found: ' + str(mine_found))
         self.nearest_mine_idx = self.target_belief.find_nearest_target(self.state.vertex_from_idx, World.CLASS_MINE)
         if self.nearest_mine_idx:
             is_armed = self.is_armed_array[self.nearest_mine_idx] #default is that they are always armed, unless they have been disarmed by robot
         else:
             is_armed = False
+        #print('is_armed: ' + str(is_armed))
+
+        if mine_found and is_armed:
+            self.armed_mine_found_flag = True
 
         benign_object_found = self.target_belief.class_y_found(World.CLASS_BENIGN)
 
@@ -645,12 +675,15 @@ class Robot():
     def report_target_belief(self,target_belief_idx, is_at_surface, is_in_comms):
         active_actions = self.bt_interface.getActiveActions()
         #print(active_actions)
-
+        #print("check if report is active action")
+        #print("Is report in active_actions? ", 'report' in active_actions)
+        #print("target_belief_idx: ", target_belief_idx)
+        #print("active_actions", active_actions)
         if 'report' in active_actions and target_belief_idx is not None:
             #response = self.basestation_scorer.submit_target(robot_belief_idx, x, is_at_surface, is_in_comms, num_iterations)
             #response = self.basestation_scorer.submit_target(robot_belief_idx, robot_belief_y, is_at_surface, is_in_comms, num_iterations)
             #if response != self.basestation_scorer.RESPONSE_NONE:
-            print('report is active action')
+            #print('report is active action')
             self.has_reported = True
             #return response
             response = self.known_world.report_target(target_belief_idx, self.basestation_scorer, is_at_surface, is_in_comms)
@@ -671,6 +704,9 @@ class Robot():
         elif 'go_to_likely_target' in active_actions:
             self.planner_type = Robot.PLANNER_TYPE_PEAKBELIEF
 
+        elif 'coverage' in active_actions:
+            self.planner_type = Robot.PLANNER_TYPE_COVERAGE
+
         elif 'take_to_drop_off' in active_actions:
             self.planner_type = Robot.PLANNER_TYPE_DROPOFF
 
@@ -681,6 +717,13 @@ class Robot():
             self.planner_type = Robot.PLANNER_TYPE_SHORTEST
 
         elif 'disarm' in active_actions:
+            print('disarm is active')
+            print('Current vertex (vertex_from_idx): ' + str(self.state.vertex_from_idx))
+            print('Goal vertex (vertex_to_idx): ' + str(self.state.vertex_to_idx))
+            #if self.nearest_mine_idx != None:
+                #print('Closest mine (nearest_mine_idx): ' + str(self.nearest_mine_idx))
+            #print('Actual target locations (mine = class 2): ')
+            #print(self.known_world.classes_y)
             self.planner_type = Robot.PLANNER_TYPE_DISARM
         
         elif 'pick_up' in active_actions:
@@ -710,6 +753,11 @@ class Robot():
                     self.bt_interface.setActionStatusSuccess(action)
             elif action == 'go_to_likely_target':
                 if self.planner_type == Robot.PLANNER_TYPE_PEAKBELIEF:
+                    self.bt_interface.setActionStatusRunning(action)
+                else:
+                    self.bt_interface.setActionStatusSuccess(action)
+            elif action == 'coverage':
+                if self.planner_type == Robot.PLANNER_TYPE_COVERAGE:
                     self.bt_interface.setActionStatusRunning(action)
                 else:
                     self.bt_interface.setActionStatusSuccess(action)
@@ -759,6 +807,14 @@ class Robot():
             planner = planners.PlannerPeakBelief(self, self.known_world)
 
             planner.set_parameters(self.state.vertex_from_idx, self.target_belief)
+
+            action_sequence = planner.plan(debug)
+            return action_sequence
+
+        elif self.planner_type == Robot.PLANNER_TYPE_COVERAGE:
+            planner = planners.PlannerCoverage(self, self.known_world)
+
+            planner.set_parameters(self.state.vertex_from_idx)
 
             action_sequence = planner.plan(debug)
             return action_sequence
@@ -886,14 +942,16 @@ class Robot():
                 distance_traveled = distance_to_travel
         elif action_sequence:
             action = action_sequence[0]
-            if action == current_state.vertex_from_idx:
+            while action == current_state.vertex_from_idx:
                 # get the next action instead
-                if len(action_sequence) >= 1:
-                    action = action_sequence[1]
+                if len(action_sequence) >= 2:
+                    action_sequence = action_sequence[1:]
+                    action = action_sequence[0]
                 else:
                     distance_traveled = 0
                     no_move = True
                     rospy.logwarn("robot is idle since plan gives current index")
+                    break
 
             if not no_move:
                 # start moving to next vertex
@@ -1001,11 +1059,18 @@ class RobotController():
                 break
 
             # Exit early if the robot hasn't moved in a while
-            if no_move and num_iterations >= 3:
+            if no_move and num_iterations >= 10:
                 no_move_count += 1
-                # print("no_move_count", no_move_count)
-                if no_move_count >= 3:
-                    print("exiting due to robot not moving")
+                #print("no_move_count", no_move_count)
+                if no_move_count >= 10: 
+                    print("Exiting due to robot not moving")
+                    print("========Performing error check========")
+                    print('self.robot.armed_mine_found_flag', self.robot.armed_mine_found_flag)
+                    print('self.robot.mine_disarmed_flag', self.robot.mine_disarmed_flag)
+                    if self.robot.armed_mine_found_flag and not self.robot.mine_disarmed_flag:
+                        print('Armed mine found, but not disarmed')
+                        print('+++++++++++++ERROR FOUND+++++++++++++')
+                        #time.sleep(10000)
                     break
             else:
                 no_move_count = 0

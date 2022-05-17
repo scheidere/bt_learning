@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 
 import rospy
 
-def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config, shortcut_words=[] ):
+def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config, shortcut_words): #shortcut_words=[] ):
 
     ################################
     # Add shortcut words to the production rules
@@ -63,6 +63,8 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
     iterations_between_adding_production_rules = config['iterations_between_adding_production_rules']
     probability_skip_unpicked_child_words = config['probability_skip_unpicked_child_words']
     max_ancestors = config['max_ancestors']
+    min_reward = config['min_reward']
+    max_reward = config['max_reward']
 
     
 
@@ -268,7 +270,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
         #print('rollout_word')
         #rollout_word.printWord()
         # print("MCTS reward " + str(iter))
-        is_valid, rollout_reward, best_rollout_reward, rollout_active_words = reward(word = rollout_word, max_iterations=max_sim_iterations, underwater_simulator=underwater_simulator)
+        is_valid, rollout_reward, best_rollout_reward, rollout_active_words, active_subtree_indices = reward(word = rollout_word, max_iterations=max_sim_iterations, underwater_simulator=underwater_simulator, min_reward = min_reward, max_reward = max_reward)
 
         print("rollout_word")
         rollout_word.printWord()
@@ -403,8 +405,14 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     #print('parent.num_updates after',parent.num_updates)
                     parent.updateBestRollout(rollout_word, rollout_active_words, rollout_reward)
 
-                    # Recurse up the tree
-                    parent = parent.parents[0]
+                    # If list is not empty (i.e. no parents)
+                    if parent.parents != []:
+
+                        # Recurse up the tree
+                        parent = parent.parents[0]
+
+                    else:
+                        break
             else:
                 print("invalid rollout (empty?)")
                 # print("MCTS backprop " + str(iter))
@@ -416,8 +424,14 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     parent.updateAverage(rollout_reward, iter)
                     #parent.updateBestRollout(rollout_word, rollout_active_words, rollout_reward)
 
-                    # Recurse up the tree
-                    parent = parent.parents[0]
+                    # If list is not empty (i.e. no parents)
+                    if parent.parents != []:
+
+                        # Recurse up the tree
+                        parent = parent.parents[0]
+
+                    else:
+                        break
 
         # Remember the rollout score, for DAG merging
         all_iteration_rewards[iter] = rollout_reward
@@ -449,6 +463,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     if node:
                         add_backwards_edges(cfg, dict_of_all_nodes, node, all_iteration_rewards, adding_best_edges_steps, max_ancestors)
 
+        if True:
             if iter%iterations_between_adding_production_rules==0 or iter==max_iterations-1:
 
                 # Find the best node that contains sequenceX as part of its evaluation, for each X
@@ -652,7 +667,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
     best_rollout = best_node.best_rollout
     winner = best_node
 
-    return [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict]
+    return [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict, best_reward]
 
 
 '''

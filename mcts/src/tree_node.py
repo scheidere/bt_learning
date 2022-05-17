@@ -40,6 +40,7 @@ class TreeNode():
             self.best_rollout = rollout
             self.best_rollout_evaluation_score = rollout_evaluation_score
             self.best_rollout_active_words = rollout_active_words
+            ###??? how to I record the current mcts iteration here, do I just pass it in?
 
     def updateAverage(self, evaluation_score, iteration_number):
         # Incremental update to the average

@@ -13,7 +13,7 @@ sys.setdefaultencoding('utf8')
 def get_graphviz(tree):
     nodes_worklist = [tree.root]
 
-    gv = 'digraph G {\n'
+    gv = 'digraph G { ranksep="0.3" nodesep="0.1" \n'
 
     counts = {bt.Condition: 0, bt.Action: 0, bt.Fallback: 0, bt.Sequence: 0, bt.Parallel: 0, bt.Decorator: 0}
     node_names = {}
@@ -38,6 +38,7 @@ def get_graphviz(tree):
                 style += 'color=lightblue'
             elif node.status == bt.ReturnStatus.FAILURE:
                 style += 'color=red'
+        # style += ' fontsize=15.0'
         
         if isinstance(node, bt.Condition):
             name = 'condition_%d' % (counts[bt.Condition])
@@ -45,7 +46,7 @@ def get_graphviz(tree):
             counts[bt.Condition] += 1
         elif isinstance(node, bt.Action):
             name = 'action_%d' % (counts[bt.Action])
-            gv += '\t%s [label="%s" shape=square %s]\n' % (name, node.label, style)
+            gv += '\t%s [label="%s" shape=box %s]\n' % (name, node.label, style)
             counts[bt.Action] += 1
         elif isinstance(node, bt.Fallback):
             name = 'fallback_%d' % (counts[bt.Fallback])

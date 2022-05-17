@@ -6,6 +6,7 @@ import sys
 import yaml
 import random
 import numpy as np
+import copy
 
 import cPickle as pickle
 #from simulator.srv import PickleString
@@ -16,8 +17,6 @@ from geometry_msgs.msg import Point
 #from robot import TargetBelief
 
 import matplotlib.pyplot as plt
-
-
 
 from sensor_model import SensorModel
 from distance import distance
@@ -69,10 +68,23 @@ class World():
         # Create a world
         self.config = config
         self.surface_level = 0
+        self.fully_set_seed = rospy.get_param('~fully_set_seed')
+
 
     def init_world(self, seed1, do_test=True):
-        # create a blank world, PRM style
+        self.seed = seed1
         random.seed(seed1) # for repeatable trials
+        if self.fully_set_seed:
+            np.random.seed(seed1) # for repeatable trials
+        print('init_world seed1 test: random.randint(25,50)', random.randint(25,50))
+        self.init_world_once(do_test)
+        while not self.is_connected():
+            print("World graph is disconnected. Reinitializing...")
+            self.init_world_once(do_test)
+
+
+    def init_world_once(self, do_test=True):
+        # create a blank world, PRM style
         num_nodes = self.config["num_nodes"]
         connection_radius = self.config["connection_radius"]
         environment_size = self.config["environment_size"]
@@ -134,7 +146,9 @@ class World():
             else:
                 self.prior[i] = self.prob_of_other_classes
 
-        self.randomize_targets()  
+
+        self.randomize_targets() 
+        self.original_classes_y = copy.copy(self.classes_y)
 
         # Define single random drop-off location (on surface) per world
         temp = random.randint(0,len(self.vertices)-1)
@@ -212,15 +226,107 @@ class World():
             return False
     '''
 
+    def is_open_set_empty(self, open_set):
+        for i in open_set:
+            if i == True:
+                return False
+        return True
+
+    def is_connected(self):
+        num_vertices = len(self.vertices)
+
+        open_set = [False] * num_vertices
+        closed_set = [False] *num_vertices
+
+        open_set[0] = True # Adding a vertex to open set, as our starting point
+
+        while not self.is_open_set_empty(open_set):
+
+
+            # find a vertex in open_set
+            v_current = open_set.index(True)
+
+            # remove it from the open set
+            open_set[v_current] = False
+
+            # add it to the closed set
+            closed_set[v_current] = True
+
+            # get the set of neighbours
+            neighbours = self.edge_adjacency_edge_lists[v_current]
+
+            # expand neighbouring nodes
+            for e in neighbours:
+                v_next = e.vertex_end_idx
+                if not closed_set[v_next] == True:
+                    # If not in closed set, add to open set
+                    open_set[v_next] = True
+
+        if False in closed_set: # you haven't visited at least one vertex
+            return False
+
+        return True
+
+    def reset_world(self):
+
+        print('original_classes_y',self.original_classes_y)
+        self.classes_y = copy.copy(self.original_classes_y)
+        print('self.classes_y after reset', self.classes_y)
+
+    def reset_seed(self):
+
+        # DO NOT USE DURING RUN OF ALG
+        # For use when plotting so identical trees have same random numbers
+
+        random.seed(self.seed) # for repeatable trials
+        if self.fully_set_seed: #Safety check: This should always be true when this function is called because its true in plot_results.launch
+            np.random.seed(self.seed) # for repeatable trials
+
+    def target_inclusion_test(self):
+        target_inclusion_test_list = np.zeros(self.num_classes - 1) #minus 1 for the void of target class (i.e. 0)
+        for vertex_class in self.classes_y:
+            if vertex_class == 1:
+                target_inclusion_test_list[0] = 1
+            elif vertex_class == 2:
+                target_inclusion_test_list[1] = 1
+            elif vertex_class == 3:
+                target_inclusion_test_list[2] = 1
+
+        if 0 in target_inclusion_test_list: #one target type not included, so we should randomize again
+            return False
+
+        return True
+
+
     def randomize_targets(self):
+        # Randomize targets and ensure that all three target types are present
+
+        #print('world.randomize_targets test, seed test: random.randint(25,50)', random.randint(25,50))
+        #test_count = 0
+        #print('world.randomize_targets test NUM NODES', self.num_nodes)
+        #print('world.randomize_targets test len(self.vertices)',len(self.vertices))
+
         # Vertex classes - ground truth
-        self.classes_y = np.array([]) # 0 - not target, 1 - wildlife/report, 2 - mine/disarm, 3 - benign/move
-        for i in range(self.num_nodes):
-            self.classes_y = np.append(self.classes_y,np.random.choice(a= len(self.prior),p = self.prior))
+        all_targets_included = False
+        while not all_targets_included:
+            #test_count+= 1
+            self.classes_y = np.array([])
+            for i in range(self.num_nodes):
+                #print('world.randomize_targets in-loop test, seed test: random.randint(25,50)', random.randint(25,50))
+                self.classes_y = np.append(self.classes_y,np.random.choice(a= len(self.prior),p = self.prior))
+            all_targets_included = self.target_inclusion_test()
+
+        #print('world.randomize_targets TEST_COUNT', test_count)
 
         #print("classes_y",self.classes_y.shape) 
+        #self.original_classes = self.classes_y
 
-        
+    '''
+    def inclusive_randomize_targets(self):
+        while not self.target_inclusion_test():
+            self.randomize_targets()
+    '''
+
 
     def disarm_target(self, vertex_idx, scorer):
         if self.classes_y[vertex_idx] == World.CLASS_MINE:

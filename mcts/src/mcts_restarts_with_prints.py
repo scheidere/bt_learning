@@ -25,11 +25,18 @@ def mcts_restarts(cfg, budget, max_mcts_iterations, exploration_exploitation_par
     # cfg.grammar = cfg.generateGrammarGuidedStructureGroupsOneSequence()
 
     cfg_shortcuts_only = CFG()
-    cfg_shortcuts_only.grammar = cfg_shortcuts_only.generateGrammarShortcutsOnly()
-    # Can alternate with genetic grammar here, etc, etc
+    # cfg_shortcuts_only.grammar = cfg_shortcuts_only.generateGrammarShortcutsOnly()
+
+    f = open("/home/scheidee/Dropbox/emily_graeme_shared/results_from_emily/2020_22_09/mcts_no_crossover/mcts_output.txt","w+") #overall output file, can't load while running
 
     # Do the rounds
     for round in xrange(num_rounds):
+
+        f1 = open("/home/scheidee/Dropbox/emily_graeme_shared/results_from_emily/2020_22_09/mcts_no_crossover/mcts_output_thru_round" + str(round) + ".txt","w+")
+
+        f.write("+++++++++++++++++++++++++\n")
+        f.write("Results for round %d\n" % round)
+        f.write("+++++++++++++++++++++++++\n")
 
         print("====================================")
         print("====================================")
@@ -45,15 +52,20 @@ def mcts_restarts(cfg, budget, max_mcts_iterations, exploration_exploitation_par
             break
 
         max_mcts_iterations = iterations_per_round
-        #if round%2==0 or len(shortcut_words) == 0:
-        if round in range(5) or round > 5 and round%2==0 or len(shortcut_words) == 0:
+        if round%2==0 or len(shortcut_words) == 0:
             cfg_copy = copy.deepcopy(cfg)
         else:
             cfg_copy = copy.deepcopy(cfg_shortcuts_only)
         shortcut_words_copy = copy.deepcopy(shortcut_words)
         
         [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict] = mcts( cfg_copy, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config, shortcut_words_copy )
-        
+        f.write("Best rollout: ")
+        f.write(best_rollout.toString())
+        f.write("\n")
+        f1.write("Best rollout: ")
+        f1.write(best_rollout.toString())
+        f1.write("\n")
+
 
         # Print results
         
@@ -106,6 +118,14 @@ def mcts_restarts(cfg, budget, max_mcts_iterations, exploration_exploitation_par
                         output_word = subtree_word
                         production_rule = ProductionRule(input_word, output_word)
 
+        f.write("Shortcut words:\n")
+        f1.write("Shortcut words:\n")
+        for word in shortcut_words:
+            f.write(word.toString())
+            f.write("\n")
+            f1.write(word.toString())
+            f1.write("\n")
+
         '''
         if best_rollout_node.average_evaluation_score > 0.0:
             subtree_words = []
@@ -135,6 +155,8 @@ def mcts_restarts(cfg, budget, max_mcts_iterations, exploration_exploitation_par
         for word in shortcut_words:
             word.printWord()
 
+        f1.close()
+
         # Plot it
         plot_search_tree = config["plot_search_tree"]
         if plot_search_tree:
@@ -159,5 +181,8 @@ def mcts_restarts(cfg, budget, max_mcts_iterations, exploration_exploitation_par
                     break
                 time.sleep(.1)
             '''
+
+        
+    f.close()
 
     return [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict]

@@ -8,7 +8,7 @@ from behavior_tree_msgs.msg import Status, Active
 import behavior_tree.behavior_tree_graphviz as gv
 import zlib
 
-from cfg import exportBT
+from cfg import exportBT, getSubtreeIndices
 
 '''
 def getActionsConditions():
@@ -143,6 +143,10 @@ class BT_Interface():
             print(n.__class__.__name__)
         '''
         return exportBT(self.bt, self.node_activated)
+
+    def getActiveSubtreeIndices(self):
+
+        return getSubtreeIndices(self.bt, self.node_activated)
     
 
     def getActiveActions(self):
