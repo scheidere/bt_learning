@@ -1,5 +1,5 @@
 
-from world import World
+from simulator.world import World
 import numpy as np
 '''
 Robot can submit "answers" or locations of targets to the scorer (i.e. basestation)

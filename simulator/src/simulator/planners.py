@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 import rospy
-import robot
-import world
+import simulator.robot
+import simulator.world
 import random
 import sys
 import numpy as np
@@ -148,13 +148,13 @@ class PlannerShortestPath(Planner):
             return [None,[]]
         d = dist_to_go[v]
         if debug:
-            print "dijkstra goal: " + str(self.vertex_goal_idx)
+            print("dijkstra goal: " + str(self.vertex_goal_idx))
         if prev[v] >= 0 or v == self.vertex_start_idx:
             while v >= 0:
                 path.insert(0, v)
                 v = prev[v]
         if debug:
-            print path
+            print(path)
         return [d, path] 
 
     def is_open_set_empty(self, open_set):
@@ -298,7 +298,7 @@ class PlannerCoverage(PlannerShortestPath):
         if debug:
             print('distance to go',d)
         if debug:
-            print "dijkstra goal: " + str(v_current)
+            print("dijkstra goal: " + str(v_current))
             print(v,self.vertex_start_idx)
             print('prev',prev[v])
         if prev[v] >= 0 or v == self.vertex_start_idx:
@@ -306,7 +306,7 @@ class PlannerCoverage(PlannerShortestPath):
                 path.insert(0, v)
                 v = prev[v]
         if debug:
-            print path
+            print(path)
         return [d, path] 
 
 class PlannerPeakBelief(PlannerShortestPath):
@@ -399,7 +399,7 @@ class PlannerResurface(PlannerShortestPath):
         if debug:
             print('distance to go',d)
         if debug:
-            print "dijkstra goal: " + str(v_current)
+            print("dijkstra goal: " + str(v_current))
             print(v,self.vertex_start_idx)
             print('prev',prev[v])
         if prev[v] >= 0 or v == self.vertex_start_idx:
@@ -407,7 +407,7 @@ class PlannerResurface(PlannerShortestPath):
                 path.insert(0, v)
                 v = prev[v]
         if debug:
-            print path
+            print(path)
         return [d, path] 
         
 
@@ -512,7 +512,7 @@ class PlannerCommsRange(PlannerShortestPath):
         if debug:
             print('distance to go',d)
         if debug:
-            print "dijkstra goal: " + str(v_current)
+            print("dijkstra goal: " + str(v_current))
             print(v,self.vertex_start_idx)
             print('prev',prev[v])
         if prev[v] >= 0 or v == self.vertex_start_idx:
@@ -520,5 +520,5 @@ class PlannerCommsRange(PlannerShortestPath):
                 path.insert(0, v)
                 v = prev[v]
         if debug:
-            print path
+            print(path)
         return [d, path] 

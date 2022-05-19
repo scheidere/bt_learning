@@ -36,16 +36,19 @@ def run():
     rospy.init_node('mcts')
 
     config_filename = rospy.get_param('~config')
-    garbage_string = "_parameters.yaml"
-    if garbage_string in config_filename:
-        current_method = config_filename.replace(garbage_string, '')
+    param_string_us = "_parameters.yaml" # us: with underscore
+    param_string = "parameters.yaml"
+    if param_string_us in config_filename:
+        current_method = config_filename.replace(param_string_us, '')
+    elif param_string == config_filename:
+        current_method = 'basic_test'
 
     now = datetime.datetime.now()
     start_time_milli = int(time.time()*1000) #milliseconds
 
 
-    # Create output file
-    f = open("/home/scheidee/Desktop/bt_learning_output/RESULTS/2020_10_20/all_methods_output/" + str(start_time_milli) + current_method + "_output.txt","w+") #overall output file, can't load while running
+    # Create output file (Change this path accordingly!)
+    f = open("/home/scheidee/Desktop/mcdags_output/" + str(start_time_milli) + current_method + "_output.txt","w+") #overall output file, can't load while running
 
     # Create CFG object
     cfg = CFG()
