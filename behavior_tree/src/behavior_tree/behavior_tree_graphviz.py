@@ -7,8 +7,8 @@ import os
 
 import sys
 #from importlib import reload
-#reload(sys)  
-#sys.setdefaultencoding('utf8')
+reload(sys)  
+sys.setdefaultencoding('utf8')
 
 
 def get_graphviz(tree):

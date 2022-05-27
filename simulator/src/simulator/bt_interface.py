@@ -83,6 +83,8 @@ class BT_Interface():
         source_msg.data = source
         self.graphviz_pub.publish(source_msg)
 
+        print(source)
+
         compressed = String()
         compressed.data = zlib.compress(source)
         self.compressed_pub.publish(compressed)

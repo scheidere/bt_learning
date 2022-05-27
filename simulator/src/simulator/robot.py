@@ -23,7 +23,7 @@ from simulator.scorer import Scorer
 
 import copy
 
-import simulator.planners
+import simulator.planners as planners
 #import communication_planner
 
 import random

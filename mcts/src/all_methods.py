@@ -75,13 +75,13 @@ class AllMethods():
             current_method = config_filename.replace(garbage_string, '')
 
         # Initialize mcts_sa_output.txt
-        f = open("/home/scheidee/Desktop/bt_learning_output/RESULTS/2020_10_20/intermediate_output_files/" + str(start_time) + current_method + "_output.txt","w+") #overall output file, can't load while running
+        f = open("/home/scheidee/Desktop/neural_mcdags_output/RESULTS/2022_05_27/intermediate_output_files/" + str(start_time) + current_method + "_output.txt","w+") #overall output file, can't load while running
         #print(f.read())
 
         # Do the rounds
         for round in xrange(self.num_rounds):
 
-            f1 = open("/home/scheidee/Desktop/bt_learning_output/RESULTS/2020_10_20/intermediate_output_files/" + str(start_time) + current_method + "_output_thru_round" + str(round) + ".txt","w+")
+            f1 = open("/home/scheidee/Desktop/neural_mcdags_output/RESULTS/2022_05_27/intermediate_output_files/" + str(start_time) + current_method + "_output_thru_round" + str(round) + ".txt","w+")
 
             f.write("+++++++++++++++++++++++++\n")
             f.write("Results for round %d\n" % round)
