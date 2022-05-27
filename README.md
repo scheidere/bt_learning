@@ -2,6 +2,8 @@
 
 ## setup
 
+Confirm use of Python 2. Use ```conda deactivate``` to revert from Anaconda Python 3 if relevant.
+Follow prompts to install dependencies (sorry), e.g.
 ```
 pip install graphviz
 ```
@@ -9,5 +11,5 @@ pip install graphviz
 ## run
 
 ```
-rosrun mcts main.py
+roslaunch mcts mcts.launch
 ```
