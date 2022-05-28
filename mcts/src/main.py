@@ -48,7 +48,7 @@ def run():
 
 
     # Create output file (Change this path accordingly!)
-    f = open("/home/scheidee/Desktop/neural_mcdags_output/RESULTS/2022_05_27/final_output_files/" + str(start_time_milli) + current_method + "_output.txt","w+") #overall output file, can't load while running
+    f = open("/home/scheidee/Desktop/neural_mcdags_output/RESULTS/2022_05_28/final/" + str(start_time_milli) + current_method + "_output.txt","w+") #overall output file, can't load while running
 
     # Create CFG object
     cfg = CFG()

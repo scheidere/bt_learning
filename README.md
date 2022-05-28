@@ -10,6 +10,8 @@ pip install graphviz
 
 ## How to run
 
+First, check that the output paths in main.py, all\_methods.py, and plot\_results.py in the mcts package are pointing to folders that exist on your system, and are consistent.
+
 To run the final MCDAGS+SA method:
 ```
 roslaunch mcts all_methods.launch config:=final

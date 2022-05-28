@@ -397,9 +397,8 @@ if __name__ == '__main__':
 
 
     # Specify path to all output files
-    path = "/home/scheidee/Desktop/neural_mcdags_output/RESULTS/2022_05_27/final"
-    path_to_intermediates = "/home/scheidee/Desktop/neural_mcdags_output/RESULTS/2022_05_27/intermediate"
-    #path_to_intermediates = "/home/scheidee/Desktop/bt_learning_output/RESULTS/old/test"
+    path = "/home/scheidee/Desktop/neural_mcdags_output/RESULTS/2022_05_28/plot_final"
+    path_to_intermediates = "/home/scheidee/Desktop/neural_mcdags_output/RESULTS/2022_05_28/plot_intermediate"
 
     manual_word = createWord('? ( -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_object_found) [pick_up] ) -> ( (likely_target_found) [go_to_likely_target] ) -> ( [coverage] ) )')
 
