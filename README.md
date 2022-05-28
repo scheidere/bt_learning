@@ -14,7 +14,7 @@ To run the final MCDAGS+SA method:
 ```
 roslaunch mcts all_methods.launch config:=final
 ```
-To run just MCDAGS:
+To run just MCDAGS (which is what we want for AI535 neural net project contexts):
 ```
 roslaunch mcts all_methods.launch config:=no_sa
 ```
