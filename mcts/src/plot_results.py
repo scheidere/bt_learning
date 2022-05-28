@@ -27,6 +27,10 @@ import scipy.stats as stats
 
 import re
 
+import rospkg
+import yaml
+
+
 
 
 
@@ -72,26 +76,6 @@ def get_method_type(file_name):
             #print('label', label)
             return label
 
-
-    '''
-    if 'final' in file_name:
-        return 'final'
-    elif 'no_sa' in file_name:
-        return 'no_sa'
-    elif 'no_sa_no_restarts' in file_name:
-        return 'no_sa_no_restarts'
-    elif 'no_dag' in file_name:
-        return 'no_dag'
-    elif 'no_groups' in file_name:
-        return 'no_groups'
-    elif 'no_groups_no_structure' in file_name:
-        return 'no_groups_no_structure'
-    elif 'no_cheat' in file_name:
-        return 'no_cheat'
-    else:
-        return None
-    '''
-
 def update_data_array_list(data, method, norm_reward): #final_data, no_sa_data, no_sa_no_restarts_data, no_dag_data, no_groups_data, no_groups_no_structure_data, no_cheat_data):
 
     print('method for update', method)
@@ -101,42 +85,6 @@ def update_data_array_list(data, method, norm_reward): #final_data, no_sa_data, 
 
     print('data update',data)
 
-    '''
-    if method == 'final':
-        final_data = np.append(final_data, norm_reward)
-    if method == 'no_sa':
-        no_sa_data = np.append(no_sa_data, norm_reward)
-    if method == 'no_sa_no_restarts':
-        no_sa_no_restarts_data = np.append(no_sa_no_restarts_data, norm_reward)
-    if method == 'no_dag':
-        no_dag = np.append(no_dag_data, norm_reward)
-    if method == 'no_groups':
-        no_groups_data = np.append(no_groups_data, norm_reward)
-    if method == 'no_groups_no_structure':
-        no_groups_no_structure_data = np.append(no_groups_no_structure_data, norm_reward)
-    if method == 'no_cheat':
-        no_cheat_data = np.append(no_cheat_data, norm_reward)
-
-
-    data_arrays = [final_data, no_sa_data, no_sa_no_restarts_data, no_dag_data, no_groups_data, no_groups_no_structure_data, no_cheat_data]
-
-    return data_arrays
-    '''
-
-'''
-def update_world(new_seed, underwater_simulator):
-
-    # THIS IS WRONG
-
-    # Update seed
-    underwater_simulator.seed = new_seed
-
-    # Create the world
-    world = World(self.config)
-    do_test = True # don't error check graph
-
-    world.init_world(new_seed, do_test)
-'''
 
 def extract_BT_string(path,file):
     open_file = open(path + '/' + file, 'r')
@@ -264,7 +212,7 @@ def extract_final_tree(path,file):
     return temp[:-1]
 
 
-def generate_reward_list(path_to_intermediates, timestamp, do_skips_for_testing):
+def generate_reward_list(path_to_intermediates, timestamp, do_skips_for_testing, num_rounds):
 
     '''
     for all files with given timestamp
@@ -279,7 +227,7 @@ def generate_reward_list(path_to_intermediates, timestamp, do_skips_for_testing)
     files = [f for f in listdir(path_to_intermediates)]
 
     # new_reward_list = [None]*50
-    new_reward_list = [None]*2
+    new_reward_list = [None]*num_rounds
 
     # Create a simulator
     underwater_simulator = UnderwaterSimulator(seed = seed)
@@ -307,6 +255,7 @@ def generate_reward_list(path_to_intermediates, timestamp, do_skips_for_testing)
             else:
 
                 final_best_tree_string = extract_final_tree(path_to_intermediates,file_name)
+                print('final best tree string', final_best_tree_string)
                 print('current filename: ', file_name)
                 if final_best_tree_string == 'overall_best_word is None':
                     final_best_tree_string = ''
@@ -333,7 +282,7 @@ def generate_reward_list(path_to_intermediates, timestamp, do_skips_for_testing)
     return new_reward_list
 
 
-def generate_all_reward_lists(path_to_intermediates, to_be_summed_list, do_skips_for_testing):
+def generate_all_reward_lists(path_to_intermediates, to_be_summed_list, do_skips_for_testing, num_rounds):
     # Given the path to the output directory
     files = [f for f in listdir(path_to_intermediates)]
 
@@ -342,12 +291,12 @@ def generate_all_reward_lists(path_to_intermediates, to_be_summed_list, do_skips
         if 'round' not in file_name:
             timestamp = file_name[:13]
             method = get_method_type(file_name)
-            new_reward_list = generate_reward_list(path_to_intermediates, timestamp, do_skips_for_testing)
+            new_reward_list = generate_reward_list(path_to_intermediates, timestamp, do_skips_for_testing, num_rounds)
             accumulate_method_lists(method, to_be_summed_list, new_reward_list)
 
     return to_be_summed_list
 
-def update_convergence_plot(path, path_to_intermediates, do_skips_for_testing):
+def update_convergence_plot(path, path_to_intermediates, do_skips_for_testing, num_rounds):
     # Given the path to the output directory
     files = [f for f in listdir(path)]
     #print(files)
@@ -356,7 +305,7 @@ def update_convergence_plot(path, path_to_intermediates, do_skips_for_testing):
     convergence_data_list_list = initialize_convergence_data_lists() #each element will be a list of average best rewards for the element-specific method]
 
     # Generate rewards for each rounds best tree on same world, normalized wrt manual tree performance
-    to_be_summed_list = generate_all_reward_lists(path_to_intermediates, to_be_summed_list, do_skips_for_testing)
+    to_be_summed_list = generate_all_reward_lists(path_to_intermediates, to_be_summed_list, do_skips_for_testing, num_rounds)
 
     print('to_be_summed_list', to_be_summed_list)
 
@@ -423,17 +372,21 @@ if __name__ == '__main__':
 
     rospy.init_node('plot_results')
 
+    # Get the config file etc
+    rospack = rospkg.RosPack()
+    filepath = rospack.get_path('mcts') + "/config/" + rospy.get_param('~config')
+    with open(filepath, 'r') as stream:
+        config = yaml.safe_load(stream)
+
+    num_rounds = config['num_rounds']
+    print('num rounds', num_rounds)
+
     do_skips_for_testing = False
 
-    num_worlds = input('For convergence plot, enter 0. For box plot, enter 1 for training world, and otherwise specify number of new worlds to test on: ')
+    #num_worlds = input('For convergence plot, enter 0. For box plot, enter 1 for training world, and otherwise specify number of new worlds to test on: ')
+    num_worlds = 0 # Always want convergence plot right now (For AI 535 Project)
 
-    #data_labels_no_underscore = ['final', 'no sa', 'no sa\nno restarts', 'no dag','no groups','no groups\nno structure','no cheat']
-    #data_labels = ['final', 'no_sa', 'no_sa_no_restarts', 'no_dag','no_groups','no_groups_no_structure','no_cheat']
-    #data_labels_no_underscore = ['final', 'no sa', 'no dag','no groups','no cheat']
-    #data_labels = ['final', 'no_sa', 'no_dag','no_groups','no_cheat']
-    if num_worlds == 0: # convergence comparisons (no sa no restart doesnt count b/c doesnt do 50 rounds)
-        # data_labels_no_underscore = ['MCDAGS+SA', 'No Default', 'MCTS+SA', 'MCDAGS', 'No Groups','No Structure']
-        # data_labels = ['final', 'no_cheat', 'no_dag', 'no_sa', 'no_groups', 'no_groups_no_structure']
+    if num_worlds == 0:
         # data_labels_cmap_indices = [1,5,2,3,6,4] # order of colors setup to match the version of this code on graeme's branch
         data_labels_no_underscore = ['MCDAGS']#,'MCDAGS+NN']
         data_labels = ['no_sa']
@@ -453,39 +406,6 @@ if __name__ == '__main__':
     if num_worlds != 0:
         update_box_plot(path,num_worlds,manual_word)
     else:
-        update_convergence_plot(path, path_to_intermediates, do_skips_for_testing)
+        update_convergence_plot(path, path_to_intermediates, do_skips_for_testing, num_rounds)
 
-    # Just testing box plot stuff
-    '''
-    # Fixing random state for reproducibility
-    np.random.seed(19680801)
-
-    # fake up some data
-    spread = np.random.rand(50) * 100
-    print('Spread: ' + str(spread))
-    center = np.ones(25) * 50
-    flier_high = np.random.rand(10) * 100 + 100
-    flier_low = np.random.rand(10) * -100
-    data = np.concatenate((spread, center, flier_high, flier_low))
-
-    spread = np.random.rand(50) * 100
-    center = np.ones(25) * 40
-    flier_high = np.random.rand(10) * 100 + 100
-    flier_low = np.random.rand(10) * -100
-    d2 = np.concatenate((spread, center, flier_high, flier_low))
-
-    data = [data, d2, d2[::2]]
-    fig7, ax7 = plt.subplots()
-    ax7.set_title('Multiple Samples with Different sizes')
-    ax7.boxplot(data)
-
-    #data = np.array((23,42,13,0,47))
-    #fig7, ax7 = plt.subplots()
-    #ax7.set_title('Multiple Samples with Different sizes')
-    #ax7.boxplot(data)
-
-    plt.show()
-
-    '''
-
-    #ALSO NEED TO DIFFERENTIATE BETWEEN SAME WORLD AND DIFFERENT WORLD PLOT GENERATION
+ 

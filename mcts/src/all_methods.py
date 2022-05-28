@@ -21,17 +21,6 @@ import time
 
 class AllMethods():
 
-    '''
-    # this is not what we need
-    FINAL_METHOD = 7
-    NO_SA_METHOD = 1
-    NO_SA_NO_RESTARTS_METHOD = 2
-    NO_DAG_METHOD = 3
-    NO_CHEAT_METHOD = 4
-    NO_GROUPS_METHOD = 5
-    NO_GROUPS_NO_STRUCTURE_METHOD = 6
-    '''
-
     def __init__(self, config):
             
         self.num_rounds = config['num_rounds']
