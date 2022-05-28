@@ -23,6 +23,8 @@ import rospy
 import copy
 import json
 
+import scipy.stats as stats
+
 import re
 
 
@@ -276,7 +278,8 @@ def generate_reward_list(path_to_intermediates, timestamp, do_skips_for_testing)
 
     files = [f for f in listdir(path_to_intermediates)]
 
-    new_reward_list = [None]*50
+    # new_reward_list = [None]*50
+    new_reward_list = [None]*2
 
     # Create a simulator
     underwater_simulator = UnderwaterSimulator(seed = seed)
@@ -355,6 +358,8 @@ def update_convergence_plot(path, path_to_intermediates, do_skips_for_testing):
     # Generate rewards for each rounds best tree on same world, normalized wrt manual tree performance
     to_be_summed_list = generate_all_reward_lists(path_to_intermediates, to_be_summed_list, do_skips_for_testing)
 
+    print('to_be_summed_list', to_be_summed_list)
+
     # Average best rewards for each round of all 50-round runs
     for i in range(len(to_be_summed_list)): # for each method
         element = to_be_summed_list[i]
@@ -427,17 +432,20 @@ if __name__ == '__main__':
     #data_labels_no_underscore = ['final', 'no sa', 'no dag','no groups','no cheat']
     #data_labels = ['final', 'no_sa', 'no_dag','no_groups','no_cheat']
     if num_worlds == 0: # convergence comparisons (no sa no restart doesnt count b/c doesnt do 50 rounds)
-        data_labels_no_underscore = ['MCDAGS+SA', 'No Default', 'MCTS+SA', 'MCDAGS', 'No Groups','No Structure']
-        data_labels = ['final', 'no_cheat', 'no_dag', 'no_sa', 'no_groups', 'no_groups_no_structure']
-        data_labels_cmap_indices = [1,5,2,3,6,4] # order of colors setup to match the version of this code on graeme's branch
+        # data_labels_no_underscore = ['MCDAGS+SA', 'No Default', 'MCTS+SA', 'MCDAGS', 'No Groups','No Structure']
+        # data_labels = ['final', 'no_cheat', 'no_dag', 'no_sa', 'no_groups', 'no_groups_no_structure']
+        # data_labels_cmap_indices = [1,5,2,3,6,4] # order of colors setup to match the version of this code on graeme's branch
+        data_labels_no_underscore = ['MCDAGS']#,'MCDAGS+NN']
+        data_labels = ['no_sa']
+        data_labels_cmap_indices = [3]
     else: # final tree comparison
         data_labels_no_underscore = ['MCDAGS+SA', 'No Default', 'MCTS+SA', 'MCDAGS', 'No Groups','No Structure','No Restarts']
         data_labels = ['final', 'no_cheat', 'no_dag', 'no_sa', 'no_groups', 'no_groups_no_structure', 'no_sa_no_restarts']
 
 
     # Specify path to all output files
-    path = "/home/scheidee/Desktop/bt_learning_output/RESULTS/old/COMPLETE"
-    path_to_intermediates = "/home/scheidee/Desktop/bt_learning_output/RESULTS/old/INTERMEDIATE"
+    path = "/home/scheidee/Desktop/neural_mcdags_output/RESULTS/2022_05_27/final"
+    path_to_intermediates = "/home/scheidee/Desktop/neural_mcdags_output/RESULTS/2022_05_27/intermediate"
     #path_to_intermediates = "/home/scheidee/Desktop/bt_learning_output/RESULTS/old/test"
 
     manual_word = createWord('? ( -> ( (wildlife_found) ? ( (in_comms) [go_to_comms] ) [report] ) -> ( (mine_found) ? ( <!> ( (is_armed) ) [disarm] ) ) -> ( ? ( <!> ( (carrying_benign) ) [take_to_drop_off] ) (benign_object_found) [pick_up] ) -> ( (likely_target_found) [go_to_likely_target] ) -> ( [coverage] ) )')
