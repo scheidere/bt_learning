@@ -14,3 +14,10 @@ To run the final MCDAGS+SA method:
 ```
 roslaunch mcts all_methods.launch config:=final
 ```
+To run just MCDAGS:
+```
+roslaunch mcts all_methods.launch config:=no_sa
+```
+To plot results, go to plot_results.py:
+- Change the paths in plot_results.py to match the final and intermediate output file folder paths on your system
+- Run ```roslaunch mcts plot_results.launch config:=no_sa``` to plot MCDAGS (no_sa) results
