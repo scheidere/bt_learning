@@ -38,6 +38,8 @@ class AllMethods():
         self.use_sa = config['use_sa']
         self.best_reward_per_round_list = []
 
+        self.generate_data = config['generate_data']
+
     #def run(self, cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config):
     def run(self, cfg, budget, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config):
 
@@ -45,11 +47,8 @@ class AllMethods():
 
         overall_best_word_score = 0
         overall_best_word = None
-
-        # cfg.grammar = cfg.generateGrammarGuidedStructureGroupsOneSequence()
-
-        #cfg_shortcuts_only = CFG()
-        #cfg_shortcuts_only.grammar = cfg_shortcuts_only.generateGrammarShortcutsOnly()
+        total_time_to_best = 0
+        num_rounds_to_best = 0
 
         # Make it run one long round
         if not self.use_restarts:
@@ -57,6 +56,14 @@ class AllMethods():
             self.num_rounds = 1
 
         start_time = int(time.time()*1000) #milliseconds
+
+        # Neural network data generation
+        if self.generate_data:
+            # Initialize file for saving data
+            num_examples = self.num_rounds*self.iterations_per_round
+            data_gen_path = "/home/scheidee/Desktop/neural_mcdags_output/DATA/" + str(num_examples) + "examples" + str(start_time) + ".txt"
+            d = open(data_gen_path ,"w+")
+
 
         config_filename = rospy.get_param('~config')
         garbage_string = "_parameters.yaml"
@@ -99,7 +106,14 @@ class AllMethods():
                 print("Running MCTS round: ", round)
                 cfg_copy = copy.deepcopy(cfg)
                 shortcut_words_copy = copy.deepcopy(shortcut_words)
-                [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict, best_reward] = mcts( cfg_copy, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config, shortcut_words_copy )
+                [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict, best_reward] = mcts( cfg_copy, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config, shortcut_words_copy, generate_data = self.generate_data, data_gen_file_path = data_gen_path)
+                
+
+                # # Write example: tree word, reward int to data file, d
+                # if self.generate_data:
+                #     d.write(best_rollout.toString())
+                #     d.write(',' + str(best_reward) + '\n')
+
                 f.write("Best rollout: ")
                 if best_rollout:
                     f.write(best_rollout.toString())

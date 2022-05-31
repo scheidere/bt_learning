@@ -17,8 +17,13 @@ from cfg import CFG, Word, Character, extract_subtrees, ProductionRule, createWo
 import matplotlib.pyplot as plt
 
 import rospy
+import time
 
-def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config, shortcut_words): #shortcut_words=[] ):
+def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config, shortcut_words, generate_data = False, data_gen_file_path = None): #shortcut_words=[] ):
+
+    # Neural net data generation
+    if generate_data:
+        d = open(data_gen_file_path ,"w+")
 
     ################################
     # Add shortcut words to the production rules
@@ -267,6 +272,7 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
         #rollout_sequence = rollout(subsequence=current.sequence, action_set=action_set, budget=budget)
         #rollout_reward = reward(action_sequence=rollout_sequence)
         rollout_word = rollout(partial_word=current.sequence[-1], cfg=cfg, budget=budget)
+        
         #print('rollout_word')
         #rollout_word.printWord()
         # print("MCTS reward " + str(iter))
@@ -274,6 +280,17 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
 
         print("rollout_word")
         rollout_word.printWord()
+
+        if len(rollout_word.toString()) == 0:
+            input('why')
+
+        if generate_data:
+            # Should the reward be saved raw, like .09 instead of 9
+            # Should they be normalized wrt the manual tree or does it matter?
+            d.write(str(iter) + ',')
+            d.write(str(rollout_reward))
+            d.write(',' + rollout_word.toString() + '\n')
+
 
         print("rollout_active_words")
         for rollout_active_word in rollout_active_words:

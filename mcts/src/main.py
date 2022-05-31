@@ -77,10 +77,13 @@ def run():
     budget = config["budget"]
 
     exploration_exploitation_parameter = config["exploration_exploitation_parameter"]
-    max_mcts_iterations = config["max_mcts_iterations"]
+    # max_mcts_iterations = config["max_mcts_iterations"]
     max_sim_iterations = config["max_sim_iterations"]
     use_dag = config["use_dag"]
     use_sa = config["use_sa"]
+
+    # Neural net data generation flag
+    gen_data = config["generate_data"]
 
     num_rounds = config["num_rounds"]
     iterations_per_round = config["iterations_per_round"]

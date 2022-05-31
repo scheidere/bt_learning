@@ -32,3 +32,6 @@ max_reward: 100
 num_rounds: 50
 iterations_per_round:  1000
 consecutive_initial_rounds: 10
+
+# Neural net
+generate_data: False
