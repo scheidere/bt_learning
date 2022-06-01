@@ -12,19 +12,19 @@ pip install graphviz
 
 First, check that the output paths in main.py, all\_methods.py, and plot\_results.py in the mcts package are pointing to folders that exist on your system, and are consistent.
 
-To run the final MCDAGS+SA method:
+# To run the final MCDAGS+SA method:
 ```
 roslaunch mcts all_methods.launch config:=final
 ```
-To run just MCDAGS (which is what we want for AI535 neural net project contexts):
+# To run just MCDAGS (which is what we want for AI535 neural net project contexts):
 ```
 roslaunch mcts all_methods.launch config:=no_sa
 ```
-To plot results, go to plot_results.py in the mcts package:
+# To plot results, go to plot_results.py in the mcts package:
 - Change the paths in plot_results.py to match the final and intermediate output file folder paths on your system
-- Run ```roslaunch mcts plot_results.launch config:=no_sa``` to plot MCDAGS (no_sa) results
+```roslaunch mcts plot_results.launch config:=no_sa``` to plot MCDAGS (no_sa) results
 
-To generate training data for the neural net:
+# To generate training data for the neural net:
 - Change parameters (number of MCDAGS rounds, number of iterations per round, etc.) in mcts/config/data_generation.yaml
 - Ensure the output directory path matches the path on your system
-- Run ```roslaunch mcts all_methods.launch condig:=data_generation```
+```roslaunch mcts all_methods.launch condig:=data_generation```
