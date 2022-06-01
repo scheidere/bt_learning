@@ -21,7 +21,7 @@ roslaunch mcts all_methods.launch config:=final
 roslaunch mcts all_methods.launch config:=no_sa
 ```
 ### To plot results, go to plot_results.py in the mcts package:
-- Change the paths in plot_results.py to match the final and intermediate output file folder paths on your system
+- Ensure the paths in plot_results.py match the final and intermediate output file folder paths on your system
 - To plot MCDAGS (no_sa) results:
 ```
 roslaunch mcts plot_results.launch config:=no_sa
@@ -31,5 +31,5 @@ roslaunch mcts plot_results.launch config:=no_sa
 - Ensure the output directory path matches the path on your system
 - Generate data:
 ```
-roslaunch mcts all_methods.launch condig:=data_generation
+roslaunch mcts all_methods.launch config:=data_generation
 ```
