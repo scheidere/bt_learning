@@ -46,9 +46,8 @@ def run():
     now = datetime.datetime.now()
     start_time_milli = int(time.time()*1000) #milliseconds
 
-
     # Create output file (Change this path accordingly!)
-    f = open("/home/scheidee/Desktop/neural_mcdags_output/RESULTS/2022_05_28/final/" + str(start_time_milli) + current_method + "_output.txt","w+") #overall output file, can't load while running
+    # f = open("/home/scheidee/Desktop/neural_mcdags_output/RESULTS/2022_05_28/final/" + str(start_time_milli) + current_method + "_output.txt","w+") #overall output file, can't load while running
 
     # Create CFG object
     cfg = CFG()
@@ -88,100 +87,43 @@ def run():
     num_rounds = config["num_rounds"]
     iterations_per_round = config["iterations_per_round"]
     consecutive_initial_rounds = config["consecutive_initial_rounds"]
+
+    generate_data = config["generate_data"]
+
+    if not generate_data:
+        f = open("/home/scheidee/Desktop/neural_mcdags_output/RESULTS/2022_05_28/final/" + str(start_time_milli) + current_method + "_output.txt","w+") #overall output file, can't load while running
+
     
 
     # Create instance of class containing all methods
     all_methods = AllMethods(config)
 
     overall_best_word, overall_best_word_score, total_time_to_best, num_rounds_to_best, total_time_for_run, best_reward_per_round_list = all_methods.run(cfg, budget, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config)
-    f.write("Results for " + current_method + " method: \n")
-    f.write("Date and time: " + now.strftime("%Y-%m-%d %H:%M:%S")+ "\n")
-    f.write("Overall best word: \n")
-    if overall_best_word:
-        f.write(overall_best_word.toString() + "\n")
-    else:
-        f.write('None\n')
-    f.write("Overall best word score: " + str(overall_best_word_score) + "\n")
-    f.write("All rounds best score list: \n")
-    print(best_reward_per_round_list)  
-    f.write(str(best_reward_per_round_list))
-    f.write('\n')
-    f.write(str(len(best_reward_per_round_list)))
-    f.write('\n')
-    f.write("Total time to best: " + str(total_time_to_best) + " seconds\n")
-    f.write("Number of rounds to best: " + str(num_rounds_to_best) + "\n")
-    f.write("Total time for run: " + str(total_time_for_run) + " seconds\n")
-
-
-    '''
-    if use_sa: # Run simulated annealing as subtree compilation rounds
-        
-        final_best_word, final_best_word_score = all_methods.monte_carlo_sim_anneal_switching( cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config )    
-    
-        print('Final best word:')
-        if final_best_word:
-            final_best_word.printWord()
+    if not generate_data:
+        f.write("Results for " + current_method + " method: \n")
+        f.write("Date and time: " + now.strftime("%Y-%m-%d %H:%M:%S")+ "\n")
+        f.write("Overall best word: \n")
+        if overall_best_word:
+            f.write(overall_best_word.toString() + "\n")
         else:
-            print(final_best_word) #should be None in this case (to account for when no trees have score > 0 in a round)
-    
-    else: # Run Monte Carlo method as subtree compilation rounds
-        
-        [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict, best_reward] = all_methods.monte_carlo_restarts( cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config )    
+            f.write('None\n')
+        f.write("Overall best word score: " + str(overall_best_word_score) + "\n")
+        f.write("All rounds best score list: \n")
+        print(best_reward_per_round_list)  
+        f.write(str(best_reward_per_round_list))
+        f.write('\n')
+        f.write(str(len(best_reward_per_round_list)))
+        f.write('\n')
+        f.write("Total time to best: " + str(total_time_to_best) + " seconds\n")
+        f.write("Number of rounds to best: " + str(num_rounds_to_best) + "\n")
+        f.write("Total time for run: " + str(total_time_for_run) + " seconds\n")
 
-        print('sequence at best node:')
-        for soln in solution:
-            soln.printWord()
-        
-        print('best_rollout at best node:')
-        best_rollout.printWord()
 
-        print('best_rollout_active_words at best node:')
-        for best_rollout_active_word in winner.best_rollout_active_words:
-            best_rollout_active_word.printWord()
 
-        print('sequence at best_rollout_node:')
-        for soln in best_rollout_node.sequence:
-            soln.printWord()
-
-        print('best_rollout at best_rollout_node:')    
-        best_rollout_node.best_rollout.printWord()
-
-        print('best_rollout_active_words at best_rollout_node:')
-        for best_rollout_active_word in best_rollout_node.best_rollout_active_words:
-            best_rollout_active_word.printWord()
-
-        # OLD plotting function -- does not work for these cfg trees
-        #plotTree(list_of_all_nodes, winner, action_set, False, budget, 1, exploration_exploitation_parameter)
-        #plotTree(list_of_all_nodes, winner, action_set, True, budget, 2, exploration_exploitation_parameter)
-        plot_search_tree = config["plot_search_tree"]
-        if plot_search_tree:
-
-            # new plotting function
-            use_uct = False # True case doesn't currently work
-            max_height = 1000
-            # plot_cfg_tree(list_of_all_nodes, winner, use_uct, max_height, exploration_exploitation_parameter)
-
-            print_text = False
-            filename='dag.gv'
-            plot_cfg_dag(list_of_all_nodes, winner, use_uct, max_height, exploration_exploitation_parameter, print_text, filename)
-
-            print_text = True
-            filename='dag_text.gv'
-            plot_cfg_dag(list_of_all_nodes, winner, use_uct, max_height, exploration_exploitation_parameter, print_text, filename)
-
-            # Wait for Ctrl+C
-            while True:
-                try:
-                    time.sleep(.1)
-                except KeyboardInterrupt:
-                    sys.exit()
-
-    '''
-
-    f.write("Total number of rounds: " + str(num_rounds) + "\n")
-    f.write("Iterations per round: " + str(iterations_per_round) + "\n")
-    f.write("Consecutive initial rounds: " + str(consecutive_initial_rounds) + "\n")
-    f.close()
+        f.write("Total number of rounds: " + str(num_rounds) + "\n")
+        f.write("Iterations per round: " + str(iterations_per_round) + "\n")
+        f.write("Consecutive initial rounds: " + str(consecutive_initial_rounds) + "\n")
+        f.close()
 
 def run_profiler():
     cProfile.run('run()', 'profile_stats')

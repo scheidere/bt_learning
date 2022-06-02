@@ -12,29 +12,48 @@ from cfg import Word, Character, CFG
 # Output is a number representing how "good" that tree is
 
 import torch
-from torch_geometric.data import Data
+#from torch_geometric.data import Data
 import sys
 
+import pickle
+
 class MCDAGSNet:
-	def __init__(self, bt_word):
-		self.bt_word = bt_word
+    def __init__(self, bt_word):
+        self.bt_word = bt_word
 
-		# Number of nodes
-		# self.num_nodes = ...
-		# self.num_node_features = ...
+        # Number of nodes
+        # self.num_nodes = ...
+        # self.num_node_features = ...
 
-		#super()
-
-
+        #super()
 
 
-def main():
 
-	# Here is an simple training example example
-	example = [1, .06, '-> ( condition1 ? ( condition2 action1 ) )']
-	word = example[2]
-	bt = word.createBT()
-	print(BT)
+
+def main(pickle_path):
+
+    # Here is an simple training example example
+    # example = [1, .06, '-> ( condition1 ? ( condition2 action1 ) )']
+    # word = example[2]
+    # bt = word.createBT()
+    # print(BT)
+
+
+
+    data = []
+    with open(pickle_path,'rb') as fr:
+        try:
+            while True:
+                data.append(pickle.load(fr))
+        except EOFError:
+            pass
+ 
+    print(data)
+
 
 if __name__ == '__main__':
-	main()
+
+    pickle_path = "/home/scheidee/Desktop/neural_mcdags_output/DATA/"
+    file = "2examples1654137469072.p"
+    pickle_path = pickle_path + file
+    main(pickle_path)

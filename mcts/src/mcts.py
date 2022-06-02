@@ -18,12 +18,15 @@ import matplotlib.pyplot as plt
 
 import rospy
 import time
+import pickle
 
 def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config, shortcut_words, generate_data = False, data_gen_file_path = None): #shortcut_words=[] ):
 
     # Neural net data generation
     if generate_data:
-        d = open(data_gen_file_path ,"w+")
+        #d = open(data_gen_file_path + ".txt" ,"w+") # old .txt way
+        pickle_path = data_gen_file_path + ".p"
+
 
     ################################
     # Add shortcut words to the production rules
@@ -281,15 +284,23 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
         print("rollout_word")
         rollout_word.printWord()
 
-        if len(rollout_word.toString()) == 0:
-            input('why')
+        # if len(rollout_word.toString()) == 0:
+        #     input('why')
 
         if generate_data:
             # Should the reward be saved raw, like .09 instead of 9
             # Should they be normalized wrt the manual tree or does it matter?
-            d.write(str(iter) + ',')
-            d.write(str(rollout_reward))
-            d.write(',' + rollout_word.toString() + '\n')
+
+            # .txt method
+            # example_list = str([iter,rollout_reward,rollout_word.toString()])
+            # d.write(example_list)
+            # d.write(str(iter) + ',')
+            # d.write(str(rollout_reward))
+            # d.write(',' + rollout_word.toString() + '\n')
+
+            # pickle method
+            pickle_example_list = [iter,rollout_reward, rollout_word]
+            pickle.dump(pickle_example_list, open(pickle_path,'a+'))
 
 
         print("rollout_active_words")
