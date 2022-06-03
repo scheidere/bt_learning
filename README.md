@@ -7,7 +7,7 @@ Follow prompts to install dependencies (sorry), e.g.
 ```
 pip install graphviz
 ```
-- Create a catkin workspace as described [here](http://wiki.ros.org/catkin/Tutorials/create_a_workspace). Don't forget to source/devel.bash.
+- Create a catkin workspace as described [here](http://wiki.ros.org/catkin/Tutorials/create_a_workspace). Don't forget to source devel/setup.bash.
 - Clone the repo in your_ws/src/ and run ```catkin build```. If this successfully builds all packages, you are ready to run!
 
 ## How to run
