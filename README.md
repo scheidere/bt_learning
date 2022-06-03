@@ -2,11 +2,13 @@
 
 ## Prerequisites
 
-Confirm use of Python 2. Use ```conda deactivate``` to revert from Anaconda Python 3 if relevant.
+- Confirm use of Python 2. Use ```conda deactivate``` to revert from Anaconda Python 3 if relevant.
 Follow prompts to install dependencies (sorry), e.g.
 ```
 pip install graphviz
 ```
+- Create a catkin workspace as described [here](http://wiki.ros.org/catkin/Tutorials/create_a_workspace). Don't forget to source/devel.bash.
+- Clone the repo in your_ws/src/ and run ```catkin build```. If this successfully builds all packages, you are ready to run!
 
 ## How to run
 
