@@ -12,7 +12,7 @@ from cfg import Word, Character, CFG
 # Output is a number representing how "good" that tree is
 
 import torch
-#from torch_geometric.data import Data
+from torch_geometric.data import Data
 import sys
 
 import pickle
@@ -49,6 +49,19 @@ def main(pickle_path):
             pass
  
     print(data)
+
+    for example in data:
+        print(example)
+        bt_word = example[-1]
+        bt_word.printWord()
+        root, bt = bt_word.createBT()
+        print(bt)
+        print(bt.nodes)
+        test = bt.nodes
+        print(len(bt.nodes))
+
+    for node in test:
+        print(node.label)
 
 
 if __name__ == '__main__':

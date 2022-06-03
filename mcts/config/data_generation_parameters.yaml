@@ -31,7 +31,7 @@ max_reward: 100
 # Data Generation for training neural net
 generate_data: True
 num_rounds: 1
-iterations_per_round: 200 # Number of examples generated
+iterations_per_round: 2 # Number of examples generated
 consecutive_initial_rounds: 100 # Irrelevant for methods without simulated annealing
 
 
