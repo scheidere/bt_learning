@@ -84,7 +84,7 @@ class BT_Interface():
         self.graphviz_pub.publish(source_msg)
 
         compressed = String()
-        compressed.data = zlib.compress(source)
+        compressed.data = zlib.compress(source.encode('utf-8'))
         self.compressed_pub.publish(compressed)
 
     def defineActionNodes(self):

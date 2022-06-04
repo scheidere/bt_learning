@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #import graphviz
 import cv2
 import sys
@@ -7,8 +7,8 @@ import os
 
 import sys
 #from importlib import reload
-reload(sys)  
-sys.setdefaultencoding('utf8')
+# reload(sys)  
+# sys.setdefaultencoding('utf8')
 
 
 def get_graphviz(tree):

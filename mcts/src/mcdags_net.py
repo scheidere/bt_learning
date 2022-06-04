@@ -63,10 +63,12 @@ def main(pickle_path):
     for node in test:
         print(node.label)
 
+    print(torch.__version__)
+
 
 if __name__ == '__main__':
 
     pickle_path = "/home/scheidee/Desktop/neural_mcdags_output/DATA/"
-    file = "2examples1654137469072.p"
+    file = "2examples1654332707545.p"
     pickle_path = pickle_path + file
     main(pickle_path)
