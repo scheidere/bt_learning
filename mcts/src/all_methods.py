@@ -62,7 +62,7 @@ class AllMethods():
             # Initialize file for saving data
             num_examples = self.num_rounds*self.iterations_per_round
             data_gen_path = "/home/scheidee/Desktop/neural_mcdags_output/DATA/" + str(num_examples) + "examples" + str(start_time)
-            d = open(data_gen_path + ".txt" ,"w+")
+            # d = open(data_gen_path + ".txt" ,"w+")
 
         config_filename = rospy.get_param('~config')
         garbage_string = "_parameters.yaml"

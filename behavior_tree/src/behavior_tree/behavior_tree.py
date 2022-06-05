@@ -347,19 +347,27 @@ class BehaviorTree:
         #
         # Depth-first traversal to produce pre-ordering
 
+        # I DONT THINK THIS WORKS
+
         # Empty the list, since it's going to be completed regenerated here
         self.nodes = []
 
         # Setup a stack data structure (similar to nodes_worklist)
         nodes_stack = []
         nodes_stack.append(self.root) #push
+        print(nodes_stack)
 
         # Do the traversal, using the stack to help
         while len(nodes_stack) != 0:
             current_node = nodes_stack.pop()
-            self.nodes.append(current_node)
-            for child_idx in reversed(range(len(current_node.children))):
-                nodes_stack.append(current_node.children[child_idx]) #push
+            if current_node: #is not None, i.e. is not an action or condition which do not have child nodes
+                print('curr', current_node)
+                self.nodes.append(current_node)
+                print('nodes',self.nodes)
+                print('childs',current_node.children)
+
+                for child_idx in reversed(range(len(current_node.children))):
+                    nodes_stack.append(current_node.children[child_idx]) #push
 
 
     def parse_config(self, config_filename):

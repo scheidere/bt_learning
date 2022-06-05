@@ -14,6 +14,7 @@ import behavior_tree.behavior_tree as bt
 import behavior_tree.behavior_tree_graphviz as gv
 import cv2
 import zlib
+import numpy as np
 
 
 def getActionsConditions():
@@ -33,8 +34,10 @@ def getActionsConditions():
         actions.extend(g['actions'])
 
     # remove duplicates
-    conditions = list(set(conditions))
-    actions = list(set(actions))
+    # conditions = list(set(conditions)) # set changes order, it is unordered inherently
+    # actions = list(set(actions)) # set changes order, it is unordered inherently
+    conditions = np.unique(conditions).tolist() # this maintains order
+    actions = np.unique(actions).tolist() # this maintains order
 
     return actions, conditions
     #return bt_list["actions"], bt_list["conditions"]
