@@ -39,22 +39,24 @@ class BT2TorchConversion:
 
     def run(self):
 
-        # Walk through unprocessed data, example = [iteration, reward, bt_word]
-        for example in self.bt_word_data:
+        with open(self.final_pickle_path, 'ab') as f:
 
-            bt_word = example[-1]
-            bt = self.word2BT(bt_word)
-            edge_index = self.getEdgeIndexMatrix(bt) # Tensor, dtype long
-            x = self.getNodeFeatureMatrix(bt) # Tensor, dtype float
-            torch_data = Data(x=x, edge_index=edge_index)
+            # Walk through unprocessed data, example = [iteration, reward, bt_word]
+            for example in self.bt_word_data:
 
-            # Set y value equal to reward in example
-            reward = example[1]
-            torch_data.y = reward
+                bt_word = example[-1]
+                bt = self.word2BT(bt_word)
+                edge_index = self.getEdgeIndexMatrix(bt) # Tensor, dtype long
+                x = self.getNodeFeatureMatrix(bt) # Tensor, dtype float
+                torch_data = Data(x=x, edge_index=edge_index)
 
-            # Write Data objects to new pickle file
-            pickle.dump(torch_data, open(self.final_pickle_path,'a+'))
-        
+                # Set y value equal to reward in example
+                reward = example[1]
+                torch_data.y = reward
+
+                # Write Data objects to new pickle file
+                pickle.dump(torch_data, f)
+            
 
 
     def getAllUniqueNodeLabels(self):
@@ -239,12 +241,35 @@ def test(pickle_path):
     #torch_data = Data(x=x, edge_index=edge_index)
 
 
+def getTorchData(new_path):
+
+    # with open(new_path, 'rb') as f:
+
+    #     data_list = pickle.load(f)
+
+    # return data_list
+
+    data = []
+    with open(new_path,'rb') as fr:
+        try:
+            while True:
+                data.append(pickle.load(fr))
+        except EOFError:
+            pass
+
+    return data
 
 
 if __name__ == '__main__':
 
     pickle_path = "/home/scheidee/Desktop/neural_mcdags_output/DATA/"
     file = "2examples1654332707545"
-    pickle_path = pickle_path
-    #test(pickle_path)
+
+    # The following call will convert the give pickle file into one with equivalent torch.geometric.data objects
     BT2TorchConversion(pickle_path,file)
+
+    # The new pickle file can be read like this if using python3
+    new_path = '/home/scheidee/Desktop/neural_mcdags_output/DATA/2examples1654332707545torch.p'
+
+    data = getTorchData(new_path)
+    print(data)
