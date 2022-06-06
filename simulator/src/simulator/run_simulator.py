@@ -28,6 +28,8 @@ class UnderwaterSimulator():
     def __init__(self, seed):
         self.create_worlds(seed)
 
+        self.do_prints = False
+
     def create_worlds(self, seed):
 
         # Get the config file etc
@@ -81,8 +83,9 @@ class UnderwaterSimulator():
             # Create BT object from terminal BT CFG
             bt_root, bt = word.createBT()
 
-            print("run_simulator")
-            word.printWord()
+            if self.do_prints:
+                print("run_simulator")
+                word.printWord()
             #print("len(bt.nodes)", len(bt.nodes))
 
             robot = Robot(self.config, self.robot_id, self.num_robots, self.seed, bt, max_iterations, self.world)
@@ -93,12 +96,15 @@ class UnderwaterSimulator():
 
             # Get the Word of all active parts of the BT
             active_word = robot.bt_interface.generateActiveCFGWord()
-            print("active_word", active_word)
+            if self.do_prints:
+                print("active_word", active_word)
             active_subtree_indices = robot.bt_interface.getActiveSubtreeIndices()
-            print('active_subtree_indices', active_subtree_indices)
+            if self.do_prints:
+                print('active_subtree_indices', active_subtree_indices)
 
             #test = [score,target_reported,belief_distance,active_word,active_subtree_indices]
-            print('generateReward output', score,target_reported,belief_distance,active_word,active_subtree_indices)
+            if self.do_prints:
+                print('generateReward output', score,target_reported,belief_distance,active_word,active_subtree_indices)
             #print('number of outputs from generateReward', len(test))
             return score, target_reported, belief_distance, active_word, active_subtree_indices
 
@@ -127,12 +133,13 @@ def compare(word1, word2, sim_iterations, seed):
     #print('2',sim.world.classes_y)
     #print(original_target_locations == sim.world.classes_y)
     
-    #print('manual with target_belief:')
-    word1.printWord()
-    print('Score 1: ', score)
-    #print('manual without target_belief')
-    word2.printWord()
-    print('Score 2: ', score2)
+    if self.do_prints:
+        #print('manual with target_belief:')
+        word1.printWord()
+        print('Score 1: ', score)
+        #print('manual without target_belief')
+        word2.printWord()
+        print('Score 2: ', score2)
 
     return score, score2
 

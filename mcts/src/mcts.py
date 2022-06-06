@@ -20,6 +20,8 @@ import rospy
 import time
 import pickle
 
+do_prints = False
+
 def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config, shortcut_words, generate_data = False, data_gen_file_path = None): #shortcut_words=[] ):
 
     # Neural net data generation
@@ -162,7 +164,8 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
 
                 if found_duplicate:
                     # In this case, don't add a new node
-                    print("duplicate found! " + str(child_word.toString()))
+                    if do_prints:
+                        print("duplicate found! " + str(child_word.toString()))
                     duplicate_node.addParent(current)
 
                     # Also, merge the rewards of the child into the parent
@@ -281,8 +284,9 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
         # print("MCTS reward " + str(iter))
         is_valid, rollout_reward, best_rollout_reward, rollout_active_words, active_subtree_indices = reward(word = rollout_word, max_iterations=max_sim_iterations, underwater_simulator=underwater_simulator, min_reward = min_reward, max_reward = max_reward)
 
-        print("rollout_word")
-        rollout_word.printWord()
+        if do_prints:
+            print("rollout_word")
+            rollout_word.printWord()
 
         # if len(rollout_word.toString()) == 0:
         #     input('why')
@@ -302,10 +306,10 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
             pickle_example_list = [iter,rollout_reward, rollout_word]
             pickle.dump(pickle_example_list, open(pickle_path,'a+'))
 
-
-        print("rollout_active_words")
-        for rollout_active_word in rollout_active_words:
-            rollout_active_word.printWord()
+        if do_prints:
+            print("rollout_active_words")
+            for rollout_active_word in rollout_active_words:
+                rollout_active_word.printWord()
 
         # if not is_valid:
         #     print('invalid rollout from ' + current.sequence[-1].toString())
@@ -328,7 +332,8 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
         
         # If iteration is multiple of 100
         # if iter != 0 and not iter%plot_intermediate_results_iterations: # Check with Graeme
-        if True:
+        #if True:
+        if do_prints:
             print("Average rollout reward: " + str(avg_rollout_rewards[-1]))
             print("Best reward: " + str(best_reward))
             best_reward_word.printWord()
@@ -383,7 +388,8 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
             # DAG case
             # backpropagate up ALL paths through the graph to the root node
 
-            print('backprop start')
+            if do_prints:
+                print('backprop start')
 
             list_of_parents = []
             list_of_parents.append(current)
@@ -411,7 +417,8 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
 
                     # Remember that we've already looked at this
                     list_of_already_updated.append(parent)
-            print('backprop finished')
+            if do_prints:
+                print('backprop finished')
 
             # Also update updateNumSelections, but only along the selection path
             for selection_node in selection_path:
@@ -442,7 +449,8 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     else:
                         break
             else:
-                print("invalid rollout (empty?)")
+                if do_prints:
+                    print("invalid rollout (empty?)")
                 # print("MCTS backprop " + str(iter))
                 parent = current
                 rollout_reward = 0.0
@@ -534,14 +542,14 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                                 # First sequenceX
                                 best_nodes_dict[key] = node
 
-
-                print("best nodes for adding new production rules:")
-                for node in best_nodes_dict.values():
-                    # node.sequence[-1].printWord()
-                    node.best_rollout_active_words[0].printWord()
-                print("associated keys:")
-                for key in best_nodes_dict.keys():
-                    print(key)
+                if do_prints:
+                    print("best nodes for adding new production rules:")
+                    for node in best_nodes_dict.values():
+                        # node.sequence[-1].printWord()
+                        node.best_rollout_active_words[0].printWord()
+                    print("associated keys:")
+                    for key in best_nodes_dict.keys():
+                        print(key)
 
                 # Append the best_rollout_active_words
                 # Since the best rollout is computed a little bit differently -- not guaranteed to appear above
@@ -651,10 +659,11 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                                                 # Add unpicked child
                                                 if not already_unpicked_child:
                                                     node.unpicked_child_words.append(child_word)
-                # Print all shortcut words
-                print("All shortcut words:")
-                for word in shortcut_words:
-                    word.printWord()
+                if do_prints:
+                    # Print all shortcut words
+                    print("All shortcut words:")
+                    for word in shortcut_words:
+                        word.printWord()
 
     ################################
     # Extract solution
@@ -732,8 +741,9 @@ def add_backwards_edges(cfg, dict_of_all_nodes, current_node, all_iteration_rewa
     else:
         ancestors = current_node.ancestor_words
 
-    print('add_backwards_edges current_node_word:')
-    current_node_word.printWord()
+    if do_prints:
+        print('add_backwards_edges current_node_word:')
+        current_node_word.printWord()
 
     # print('add_backwards_edges ancestors:')
     # for a in ancestors:
@@ -797,7 +807,8 @@ def add_backwards_edges(cfg, dict_of_all_nodes, current_node, all_iteration_rewa
                     # Remember that we've already looked at this
                     list_of_already_updated.append(parent)
 
-    # Print stats
-    print('add_backwards_edges stats_count_ancestors', stats_count_ancestors)
-    print('add_backwards_edges stats_count_new_parents', stats_count_new_parents)
+    if do_prints:
+        # Print stats
+        print('add_backwards_edges stats_count_ancestors', stats_count_ancestors)
+        print('add_backwards_edges stats_count_new_parents', stats_count_new_parents)
             

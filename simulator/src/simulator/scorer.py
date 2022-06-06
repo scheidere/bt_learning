@@ -31,6 +31,7 @@ class Scorer():
         self.belief_distance = self.world.config['environment_size'][0] + self.world.config['environment_size'][1]
         self.detection_rewarded_tracker = np.zeros(self.world.num_nodes, dtype=bool)
         self.action_rewarded_tracker = np.zeros(self.world.num_nodes, dtype=bool)
+        self.do_prints = False
 
 
     def action_reward(self, vertex_idx, y): #Check with Graeme DONE
@@ -48,20 +49,25 @@ class Scorer():
             #print("In reward loop")
             if y == World.CLASS_WILDLIFE:
                 self.score += 3 #4
-                print('wildlife reported correctly, +3; at vertex ' + str(vertex_idx))
+                if self.do_prints:
+                    print('wildlife reported correctly, +3; at vertex ' + str(vertex_idx))
             if y == World.CLASS_MINE:
                 self.score += 3 #5
-                print('mine disarmed, +4; at vertex ' + str(vertex_idx))
+                if self.do_prints:
+                    print('mine disarmed, +4; at vertex ' + str(vertex_idx))
             if y == World.CLASS_BENIGN:
                 self.score += 3 #1
-                print('garbage picked up, +2; at vertex ' + str(vertex_idx))
+                if self.do_prints:
+                    print('garbage picked up, +2; at vertex ' + str(vertex_idx))
             self.action_rewarded_tracker[vertex_idx] = True 
-            print('updated score: ', self.score)
+            if self.do_prints:
+                print('updated score: ', self.score)
 
     def dropoff_reward(self, num_targets_picked_up):
         self.score += 2*num_targets_picked_up
-        print('garbage dropped off, +2 for each of: ', num_targets_picked_up)
-        print('updated score: ', self.score)
+        if self.do_prints:
+            print('garbage dropped off, +2 for each of: ', num_targets_picked_up)
+            print('updated score: ', self.score)
 
     def detection_reward(self, detection_list): #Check with Graeme DONE
         '''
@@ -78,9 +84,12 @@ class Scorer():
                         self.score += 0 #Graeme changed this from 1 to 0
                     else:
                         self.score += 0 #Graeme changed this from 1 to 0
-                    print('target detected of class: ', class_i)
+                    if self.do_prints:
+                        print('target detected of class: ', class_i)
                     self.detection_rewarded_tracker[vertex_idx_i] = True
-                    print('updated score: ', self.score)
+
+                    if self.do_prints:
+                        print('updated score: ', self.score)
 
     '''
     def update_scorer(self, num_iterations, robot_belief_idx): # Check with Graeme for help with reward update

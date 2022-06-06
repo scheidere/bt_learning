@@ -263,13 +263,18 @@ def getTorchData(new_path):
 if __name__ == '__main__':
 
     pickle_path = "/home/scheidee/Desktop/neural_mcdags_output/DATA/"
-    file = "2examples1654332707545"
+    #file = "2examples1654332707545"
+    file = '10000examples1654535066918'
 
     # The following call will convert the give pickle file into one with equivalent torch.geometric.data objects
     BT2TorchConversion(pickle_path,file)
 
     # The new pickle file can be read like this if using python3
-    new_path = '/home/scheidee/Desktop/neural_mcdags_output/DATA/2examples1654332707545torch.p'
+    new_path = '/home/scheidee/Desktop/neural_mcdags_output/DATA/'
+    # file = '2examples1654332707545torch.p'
+    #file = '1500ish_examplestorch.p'
+    file = '10000examples1654535066918torch.p'
+    new_path += file
 
     data = getTorchData(new_path)
-    print(data)
+    print(data,len(data))

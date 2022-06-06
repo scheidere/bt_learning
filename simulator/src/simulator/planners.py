@@ -80,10 +80,12 @@ class PlannerShortestPath(Planner):
     def set_parameters(self, vertex_start_idx, vertex_goal_idx):
         self.vertex_start_idx = vertex_start_idx
         self.vertex_goal_idx = vertex_goal_idx
+        self.do_prints = False
 
         # if find_nearest_target returned None (doesn't think it knows where any targets are)
         if self.vertex_goal_idx == None: # Check with Graeme
-            rospy.logerr("PlannerShortestPath() goal vertex is None") #maybe just print it instead 
+            if self.do_prints:
+                rospy.logerr("PlannerShortestPath() goal vertex is None") #maybe just print it instead 
             #pause()           
 
 

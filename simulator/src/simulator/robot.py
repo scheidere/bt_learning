@@ -334,6 +334,7 @@ class Robot():
         self.belief_distance = 500
         self.robot_belief_idx = None #issue solved: used before do_iteration called in robot controller
         #self.communicate_observations = communicate_observations
+        self.do_prints = False
 
         ##self.nearest_mine_idx = None
 
@@ -393,7 +394,8 @@ class Robot():
 
         # Initialize visit_tracker for coverage planner
         self.visit_tracker = np.zeros(num_vertices)
-        print('VISIT TRACKER: ', self.visit_tracker)
+        if self.do_prints:
+            print('VISIT TRACKER: ', self.visit_tracker)
 
         # create sensor model
         # moved within world instead
@@ -717,9 +719,10 @@ class Robot():
             self.planner_type = Robot.PLANNER_TYPE_SHORTEST
 
         elif 'disarm' in active_actions:
-            print('disarm is active')
-            print('Current vertex (vertex_from_idx): ' + str(self.state.vertex_from_idx))
-            print('Goal vertex (vertex_to_idx): ' + str(self.state.vertex_to_idx))
+            if self.do_prints:
+                print('disarm is active')
+                print('Current vertex (vertex_from_idx): ' + str(self.state.vertex_from_idx))
+                print('Goal vertex (vertex_to_idx): ' + str(self.state.vertex_to_idx))
             #if self.nearest_mine_idx != None:
                 #print('Closest mine (nearest_mine_idx): ' + str(self.nearest_mine_idx))
             #print('Actual target locations (mine = class 2): ')
@@ -1029,6 +1032,7 @@ class RobotController():
     def __init__(self, config, robot):
         self.config = config
         self.robot = robot
+        self.do_prints = False
 
     def run(self):
         # Give an initial observation
@@ -1063,14 +1067,16 @@ class RobotController():
                 no_move_count += 1
                 #print("no_move_count", no_move_count)
                 if no_move_count >= 10: 
-                    print("Exiting due to robot not moving")
-                    print("========Performing error check========")
-                    print('self.robot.armed_mine_found_flag', self.robot.armed_mine_found_flag)
-                    print('self.robot.mine_disarmed_flag', self.robot.mine_disarmed_flag)
+                    if self.do_prints:
+                        print("Exiting due to robot not moving")
+                        print("========Performing error check========")
+                        print('self.robot.armed_mine_found_flag', self.robot.armed_mine_found_flag)
+                        print('self.robot.mine_disarmed_flag', self.robot.mine_disarmed_flag)
                     if self.robot.armed_mine_found_flag and not self.robot.mine_disarmed_flag:
-                        print('Armed mine found, but not disarmed')
-                        print('+++++++++++++ERROR FOUND+++++++++++++')
-                        #time.sleep(10000)
+                        if self.do_prints:
+                            print('Armed mine found, but not disarmed')
+                            print('+++++++++++++ERROR FOUND+++++++++++++')
+                            #time.sleep(10000)
                     break
             else:
                 no_move_count = 0

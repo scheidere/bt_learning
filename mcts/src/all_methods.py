@@ -40,6 +40,8 @@ class AllMethods():
 
         self.generate_data = config['generate_data']
 
+        self.do_prints = False
+
     #def run(self, cfg, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config):
     def run(self, cfg, budget, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config):
 
@@ -128,51 +130,59 @@ class AllMethods():
                         f1.write(best_rollout.toString())
                         f1.write("\n")
 
-                    print('sequence at best node:')
-                    for soln in solution:
-                        soln.printWord()
-                
-                    print('best_rollout at best node:')
-                    best_rollout.printWord()
+                    if self.do_prints:
+                        print('sequence at best node:')
+                        for soln in solution:
+                            soln.printWord()
+                    
+                        print('best_rollout at best node:')
+                        best_rollout.printWord()
 
-                    print('best_rollout_active_words at best node:')
-                    for best_rollout_active_word in winner.best_rollout_active_words:
-                        best_rollout_active_word.printWord()
-                        #active_best_rollout = best_rollout_active_word
+                        print('best_rollout_active_words at best node:')
+                        for best_rollout_active_word in winner.best_rollout_active_words:
+                            best_rollout_active_word.printWord()
+                            #active_best_rollout = best_rollout_active_word
 
-                    print('sequence at best_rollout_node:')
-                    for soln in best_rollout_node.sequence:
-                        soln.printWord()
+                        print('sequence at best_rollout_node:')
+                        for soln in best_rollout_node.sequence:
+                            soln.printWord()
 
-                    print('best_rollout at best_rollout_node:')    
-                    best_rollout_node.best_rollout.printWord()
+                        print('best_rollout at best_rollout_node:')    
+                        best_rollout_node.best_rollout.printWord()
 
-                    print('best_rollout_active_words at best_rollout_node:')
+                    if self.do_prints:
+                        print('best_rollout_active_words at best_rollout_node:')
                     for best_rollout_active_word in best_rollout_node.best_rollout_active_words:
-                        best_rollout_active_word.printWord()
+                        if self.do_prints:
+                            best_rollout_active_word.printWord()
                         active_best_rollout = best_rollout_active_word
 
-                    print('best_reward from best_rollout: %s' % best_reward )
+                    if self.do_prints:
+                        print('best_reward from best_rollout: %s' % best_reward )
                     
 
                     prev_round_best_word = active_best_rollout
                     best_reward = float(best_reward*(self.max_reward - self.min_reward)) + float(self.min_reward) # reverse normalization, to match sa scale
                     intermediate_best_word_score = best_reward
                 else:
-                    print('Not printing results because best_rollout is None')
+                    if self.do_prints:
+                        print('Not printing results because best_rollout is None')
                     prev_round_best_word = None
                     intermediate_best_word_score = 0
 
 
-                print("++++++++++++++++++++++++++++++++++")
-                print("intermediate_best_word_score: %s\n" % intermediate_best_word_score)
+                if self.do_prints:
+                    print("++++++++++++++++++++++++++++++++++")
+                    print("intermediate_best_word_score: %s\n" % intermediate_best_word_score)
                 if not self.generate_data:
                     f.write("intermediate_best_word_score: %s\n" % intermediate_best_word_score)
-                print("++++++++++++++++++++++++++++++++++")
-                print("overall_best_word_score before check: %s\n" % overall_best_word_score)
+                if self.do_prints:
+                    print("++++++++++++++++++++++++++++++++++")
+                    print("overall_best_word_score before check: %s\n" % overall_best_word_score)
                 if not self.generate_data:
                     f.write("overall_best_word_score before check: %s\n" % overall_best_word_score)
-                print("++++++++++++++++++++++++++++++++++")
+                if self.do_prints:
+                    print("++++++++++++++++++++++++++++++++++")
 
                 # Keep track of current best tree (of the entire search)
                 if intermediate_best_word_score > overall_best_word_score:
@@ -180,9 +190,11 @@ class AllMethods():
                     overall_best_word_score = intermediate_best_word_score
                     total_time_to_best = int(time.time()) - start_time/1000 #total time in seconds, that it took to reach the overall best word
                     num_rounds_to_best = round
-                    print("CURRENT OVERALL BEST WORD (active parts only): ")
-                    overall_best_word.printWord()
-                    print("OVERALL BEST WORD REWARD: %s" % overall_best_word_score)
+
+                    if self.do_prints:
+                        print("CURRENT OVERALL BEST WORD (active parts only): ")
+                        overall_best_word.printWord()
+                        print("OVERALL BEST WORD REWARD: %s" % overall_best_word_score)
                     
                     if not self.generate_data:
                         f.write("CURRENT OVERALL BEST WORD (active parts only): ")
@@ -293,7 +305,8 @@ class AllMethods():
                 
 
             else:
-                print("Running SA round: ", round)
+                if self.do_prints:
+                    print("Running SA round: ", round)
                 if not self.generate_data:
                     f.write("Simulated annealing...\n")
                     f1.write("Simulated annealing...\n")
@@ -308,7 +321,8 @@ class AllMethods():
                 if not self.generate_data:
                     f.write("TESTING TESTING TESTING - prev_round_best_word\n")
                     f1.write("TESTING TESTING TESTING - prev_round_best_word\n")
-                    print("TESTING TESTING TESTING - prev_round_best_word\n")
+                    if self.do_prints:
+                        print("TESTING TESTING TESTING - prev_round_best_word\n")
                     if prev_round_best_word:
                         f.write(prev_round_best_word.toString())
                         f.write("\n")
@@ -322,10 +336,12 @@ class AllMethods():
                 
                 
                 if overall_best_word_score > 0:
-                    print('Initializing SA with overall best word...')
-                    print('Overall best word: ', overall_best_word.toString())
+                    if self.do_prints:
+                        print('Initializing SA with overall best word...')
+                        print('Overall best word: ', overall_best_word.toString())
                     initial_state.state_list = initial_state.wordToList(overall_best_word)
-                print('initial_state.state_list',initial_state.state_list)
+                if self.do_prints:
+                    print('initial_state.state_list',initial_state.state_list)
                 if not self.generate_data:
                     f.write("Test to see if SA gets current best word as starting point...\n")
                     f1.write("Test to see if SA gets current best word as starting point...\n")
@@ -342,10 +358,11 @@ class AllMethods():
                 k_max = 1000
                 sim_anneal = SimulatedAnnealing(initial_state, initial_temperature, k_max, round, underwater_simulator, self.use_cheat)
                 sim_anneal_best_word, score, iteration_best_was_found, sim_anneal_best_words, scores = sim_anneal.run()
-                print("++++++++++++++++++++++")
-                print("Sim anneal best words: " + str(sim_anneal_best_words) + "len = " + str(len(sim_anneal_best_words)))
-                print("Associated scores: " + str(scores) + "len = " + str(len(scores)))
-                print("++++++++++++++++++++++")
+                if self.do_prints:
+                    print("++++++++++++++++++++++")
+                    print("Sim anneal best words: " + str(sim_anneal_best_words) + "len = " + str(len(sim_anneal_best_words)))
+                    print("Associated scores: " + str(scores) + "len = " + str(len(scores)))
+                    print("++++++++++++++++++++++")
                 
                 if not self.generate_data:
                     f.write("Best word: ")
@@ -365,15 +382,18 @@ class AllMethods():
 
                 prev_round_best_word = sim_anneal_best_word # to give back to initialize consecutive SA rounds
                 intermediate_best_word_score = score
-                print("++++++++++++++++++++++++++++++++++")
-                print("intermediate_best_word_score: %s\n" % intermediate_best_word_score)
+                if self.do_prints:
+                    print("++++++++++++++++++++++++++++++++++")
+                    print("intermediate_best_word_score: %s\n" % intermediate_best_word_score)
                 if not self.generate_data:
                     f.write("intermediate_best_word_score: %s\n" % intermediate_best_word_score)
-                print("++++++++++++++++++++++++++++++++++")
-                print("overall_best_word_score before check: %s\n" % overall_best_word_score)
+                if self.do_prints:
+                    print("++++++++++++++++++++++++++++++++++")
+                    print("overall_best_word_score before check: %s\n" % overall_best_word_score)
                 if not self.generate_data:
                     f.write("overall_best_word_score: %s\n" % overall_best_word_score)
-                print("++++++++++++++++++++++++++++++++++")
+                if self.do_prints:
+                    print("++++++++++++++++++++++++++++++++++")
 
                 if intermediate_best_word_score > overall_best_word_score:
                     # Keep track of current best tree (of the entire search)
@@ -381,7 +401,8 @@ class AllMethods():
                     overall_best_word_score = intermediate_best_word_score
                     total_time_to_best = int(time.time()) - start_time/1000 #total time in seconds, that it took to reach the overall best word
                     num_rounds_to_best = round
-                    print("CURRENT OVERALL BEST WORD (active parts only): ")
+                    if self.do_prints:
+                        print("CURRENT OVERALL BEST WORD (active parts only): ")
                     if not self.generate_data:
                         f.write("CURRENT OVERALL BEST WORD (active parts only): ")
                         f1.write("CURRENT OVERALL BEST WORD (active parts only): ")
@@ -393,12 +414,14 @@ class AllMethods():
                             f1.write(overall_best_word.toString())
                             f1.write("\n")
                     else:
-                        print('None')
+                        if self.do_prints:
+                            print('None')
                         if not self.generate_data:
                             f.write('None\n')
                             f1.wrote('None\n')
 
-                    print("OVERALL BEST WORD REWARD: %s" % overall_best_word_score)
+                    if self.do_prints:
+                        print("OVERALL BEST WORD REWARD: %s" % overall_best_word_score)
                     if not self.generate_data:
                         f.write("OVERALL BEST WORD REWARD: %s" % overall_best_word_score)
                         f.write("\n")
@@ -492,13 +515,14 @@ class AllMethods():
                         production_rule = ProductionRule(input_word, output_word)
             '''
 
-            # Print all shortcut words
-            print("All shortcut words:")
-            for word in shortcut_words:
-                if word:
-                    word.printWord()
-                else:
-                    print('None')
+            if self.do_prints:
+                # Print all shortcut words
+                print("All shortcut words:")
+                for word in shortcut_words:
+                    if word:
+                        word.printWord()
+                    else:
+                        print('None')
 
 
             # Append best word from last round to overall list

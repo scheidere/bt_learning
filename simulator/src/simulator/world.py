@@ -70,6 +70,7 @@ class World():
         self.config = config
         self.surface_level = 0
         self.fully_set_seed = rospy.get_param('~fully_set_seed')
+        self.do_prints = False
 
 
     def init_world(self, seed1, do_test=True):
@@ -77,10 +78,12 @@ class World():
         random.seed(seed1) # for repeatable trials
         if self.fully_set_seed:
             np.random.seed(seed1) # for repeatable trials
-        print('init_world seed1 test: random.randint(25,50)', random.randint(25,50))
+        if self.do_prints:
+            print('init_world seed1 test: random.randint(25,50)', random.randint(25,50))
         self.init_world_once(do_test)
         while not self.is_connected():
-            print("World graph is disconnected. Reinitializing...")
+            if self.do_prints:
+                print("World graph is disconnected. Reinitializing...")
             self.init_world_once(do_test)
 
 
@@ -270,9 +273,11 @@ class World():
 
     def reset_world(self):
 
-        print('original_classes_y',self.original_classes_y)
+        if self.do_prints:
+            print('original_classes_y',self.original_classes_y)
         self.classes_y = copy.copy(self.original_classes_y)
-        print('self.classes_y after reset', self.classes_y)
+        if self.do_prints:
+            print('self.classes_y after reset', self.classes_y)
 
     def reset_seed(self):
 
@@ -352,9 +357,11 @@ class World():
     def report_target(self, vertex_idx, scorer, is_at_surface, is_in_comms): # Check with Graeme DONE
         #if classes_y[vertex_idx] == World.CLASS_WILDLIFE:
         response = scorer.submit_target(vertex_idx, World.CLASS_WILDLIFE, is_at_surface, is_in_comms) # Generate score
-        print('reported something', response)
+        if self.do_prints:
+            print('reported something', response)
         if response == scorer.RESPONSE_CORRECT:
-            print('report is correct')
+            if self.do_prints:
+                print('report is correct')
             self.classes_y[vertex_idx] = World.CLASS_NONTARGET # Now is class 0 because target removed
 
         return response
