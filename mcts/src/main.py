@@ -52,6 +52,8 @@ def run():
     # Create CFG object
     cfg = CFG()
 
+    input('waitttt')
+
     '''
     # Setup the problem
     num_actions = 3

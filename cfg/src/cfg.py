@@ -15,7 +15,7 @@ import behavior_tree.behavior_tree_graphviz as gv
 import cv2
 import zlib
 import numpy as np
-
+import pickle
 
 def getActionsConditions():
     # Read in the list of actions and conditions from the bt_list file
@@ -1726,21 +1726,29 @@ class CFG():
         production_rule_list.append(production_rule)
         '''
 
+        nonterminal_char_words = []
+
         # Star denotes crossover has not yet been applied - REMOVED STAR FOR CROSSOVER
         input_word = createWord("S")
         output_word = createWord("? ( sequence add_sequence -> ( [coverage] ) )")
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
+        nonterminal_char_words.append(input_word)
+
         input_word = createWord("add_sequence")
         output_word = createWord("sequence add_sequence")
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
 
+        nonterminal_char_words.append(input_word)
+
         input_word = createWord("add_sequence")
         output_word = createWord("sequence")
         production_rule = ProductionRule(input_word, output_word)
         production_rule_list.append(production_rule)
+
+        #nonterminal_char_words.append(input_word) # redundant
 
         for g_idx in xrange(num_groups):
 
@@ -1753,55 +1761,77 @@ class CFG():
             production_rule = ProductionRule(input_word, output_word)
             production_rule_list.append(production_rule)
 
+            nonterminal_char_words.append(input_word)
+
             input_word = createWord("sequence"+s)
             output_word = createWord(["->", "(", "A"+s, "children_r"+s, ")"])
             production_rule = ProductionRule(input_word, output_word)
             production_rule_list.append(production_rule)
+
+            nonterminal_char_words.append(input_word)
 
             input_word = createWord("sequence"+s)
             output_word = createWord(["->","(","children_l"+s,"A"+s, ")"])
             production_rule = ProductionRule(input_word, output_word)
             production_rule_list.append(production_rule)
 
+            # nonterminal_char_words.append(input_word)
+
             input_word = createWord("sequence"+s)
             output_word = createWord(["->","(","fallback"+s,"children_r"+s, ")"])
             production_rule = ProductionRule(input_word, output_word)
             production_rule_list.append(production_rule)
+
+            # nonterminal_char_words.append(input_word)
 
             input_word = createWord("sequence"+s)
             output_word = createWord(["->","(","children_l"+s,"fallback"+s, ")"])
             production_rule = ProductionRule(input_word, output_word)
             production_rule_list.append(production_rule)
 
+            # nonterminal_char_words.append(input_word)
+
             input_word = createWord("fallback"+s)
             output_word = createWord(["?","(","A"+s,"level3_r"+s, ")"])
             production_rule = ProductionRule(input_word, output_word)
             production_rule_list.append(production_rule)
+
+            nonterminal_char_words.append(input_word)
 
             input_word = createWord("children_r"+s)
             output_word = createWord(["A"+s, "children_r"+s])
             production_rule = ProductionRule(input_word, output_word)
             production_rule_list.append(production_rule)
 
+            nonterminal_char_words.append(input_word)
+
             input_word = createWord("children_r"+s)
             output_word = createWord(["fallback"+s, "children_r"+s])
             production_rule = ProductionRule(input_word, output_word)
             production_rule_list.append(production_rule)
+
+            # nonterminal_char_words.append(input_word)
 
             input_word = createWord("children_r"+s)
             output_word = createWord("A"+s)
             production_rule = ProductionRule(input_word, output_word)
             production_rule_list.append(production_rule)
 
+            # nonterminal_char_words.append(input_word)
+
             input_word = createWord("children_r"+s)
             output_word = createWord("fallback"+s)
             production_rule = ProductionRule(input_word, output_word)
             production_rule_list.append(production_rule)
 
+            # nonterminal_char_words.append(input_word)
+
             input_word = createWord("children_l"+s)
             output_word = createWord(["children_l"+s,"fallback"+s])
             production_rule = ProductionRule(input_word, output_word)
             production_rule_list.append(production_rule)
+
+            nonterminal_char_words.append(input_word)
 
             # Only do the following if there are conditions in this group
             if len(g["conditions"]) > 0:
@@ -1811,35 +1841,49 @@ class CFG():
                 production_rule = ProductionRule(input_word, output_word)
                 production_rule_list.append(production_rule)
 
+                nonterminal_char_words.append(input_word)
+
                 input_word = createWord("children_l"+s)
                 output_word = createWord(["children_l"+s, "CorD"+s])
                 production_rule = ProductionRule(input_word, output_word)
                 production_rule_list.append(production_rule)
 
+                nonterminal_char_words.append(input_word)
+
                 input_word = createWord("children_l"+s)
                 output_word = createWord("CorD"+s)
                 production_rule = ProductionRule(input_word, output_word)
                 production_rule_list.append(production_rule)
+
+                # nonterminal_char_words.append(input_word)
 
                 input_word = createWord("level3_l"+s)
                 output_word = createWord(["level3_l"+s,"CorD"+s])
                 production_rule = ProductionRule(input_word, output_word)
                 production_rule_list.append(production_rule)
 
+                nonterminal_char_words.append(input_word)
+
                 input_word = createWord("level3_l"+s)
                 output_word = createWord("CorD"+s)
                 production_rule = ProductionRule(input_word, output_word)
                 production_rule_list.append(production_rule)
+
+                # nonterminal_char_words.append(input_word)
 
                 input_word = createWord("CorD"+s)
                 output_word = createWord("C"+s)
                 production_rule = ProductionRule(input_word, output_word)
                 production_rule_list.append(production_rule)
 
+                nonterminal_char_words.append(input_word)
+
                 input_word = createWord("CorD"+s)
                 output_word = createWord(["<!>", "(", "C"+s, ")"])
                 production_rule = ProductionRule(input_word, output_word)
                 production_rule_list.append(production_rule)
+
+                # nonterminal_char_words.append(input_word)
 
                 for condition in g["conditions"]:
                     condition_string = '(' + condition + ')'
@@ -1848,20 +1892,28 @@ class CFG():
                     production_rule = ProductionRule(input_word, output_word)
                     production_rule_list.append(production_rule)
 
+                    nonterminal_char_words.append(input_word)
+
             input_word = createWord("children_l"+s)
             output_word = createWord("fallback"+s)
             production_rule = ProductionRule(input_word, output_word)
             production_rule_list.append(production_rule)
+
+            # nonterminal_char_words.append(input_word)
 
             input_word = createWord("level3_r"+s)
             output_word = createWord(["A"+s,"level3_r"+s])
             production_rule = ProductionRule(input_word, output_word)
             production_rule_list.append(production_rule)
 
+            nonterminal_char_words.append(input_word)
+
             input_word = createWord("level3_r"+s)
             output_word = createWord("A"+s)
             production_rule = ProductionRule(input_word, output_word)
             production_rule_list.append(production_rule)
+
+            # nonterminal_char_words.append(input_word)
 
             for action in g["actions"]:
                 action_string = '[' + action + ']'
@@ -1869,6 +1921,13 @@ class CFG():
                 output_word = Word([Character(action_string)]) #'[]'
                 production_rule = ProductionRule(input_word, output_word)
                 production_rule_list.append(production_rule)
+
+                nonterminal_char_words.append(input_word)
+
+
+        # UNCOMMENT THE BELOW TO SAVE NONTERMINAL CHARS FOR PARSING (i.e. for neural net integrationc)
+        # char_pickle_path = "/home/scheidee/Desktop/neural_mcdags_output/DATA/nonterminal_char_words.p"
+        # pickle.dump(nonterminal_char_words, open(char_pickle_path,'a+'))
 
             
 

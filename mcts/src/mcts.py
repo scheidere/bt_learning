@@ -25,9 +25,15 @@ do_prints = False
 def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config, shortcut_words, generate_data = False, data_gen_file_path = None): #shortcut_words=[] ):
 
     # Neural net data generation
+    get_terminal_data = False # False if we want nonterminal data for pruning!
     if generate_data:
-        #d = open(data_gen_file_path + ".txt" ,"w+") # old .txt way
-        pickle_path = data_gen_file_path + ".p"
+        pickle_path = data_gen_file_path + ".p" # terminal
+        pickle_path2 = data_gen_file_path + "nonterminal_.p" # nonterminal
+
+
+    # Neural net stuff
+    high_confidence_threshold = 0.9
+    low_confidence_threshold = 0.3
 
 
     ################################
@@ -270,13 +276,30 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     # Recurse down the tree
                     current = best_child
                     selection_path.append(current)
-                    
+        
+
+        # NONTERMINAL DATA GENERATION (for pruning info)
+        # Word selected for rollout (but not rolled out yet) is current.sequence[-1]
+        # Save this non-terminal word and the average evaluation score at it
+        current_word = current.sequence[-1]
+        current_avg_score = current.average_evaluation_score
+        print(current_word, current_avg_score)
+        if generate_data and not get_terminal_data:
+            pickle.dump([current_word, current_avg_score], open(pickle_path2,'a+'))
+
+
+        if use_network:
+            # call network
+            # network_out
+            # if network_out > confidence_threshold:
+                #
+            pass
 
         ################################
         # Rollout
         # print("MCTS rollout " + str(iter))
         #rollout_sequence = rollout(subsequence=current.sequence, action_set=action_set, budget=budget)
-        #rollout_reward = reward(action_sequence=rollout_sequence)
+        #rollout_reward = reward(action_sequence=rollout_sequence
         rollout_word = rollout(partial_word=current.sequence[-1], cfg=cfg, budget=budget)
         
         #print('rollout_word')
@@ -291,16 +314,9 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
         # if len(rollout_word.toString()) == 0:
         #     input('why')
 
-        if generate_data:
-            # Should the reward be saved raw, like .09 instead of 9
-            # Should they be normalized wrt the manual tree or does it matter?
 
-            # .txt method
-            # example_list = str([iter,rollout_reward,rollout_word.toString()])
-            # d.write(example_list)
-            # d.write(str(iter) + ',')
-            # d.write(str(rollout_reward))
-            # d.write(',' + rollout_word.toString() + '\n')
+        ## TERMINAL DATA GENERATION (initial data, less info for pruning)
+        if generate_data and get_terminal_data:
 
             # pickle method
             pickle_example_list = [iter,rollout_reward, rollout_word]
