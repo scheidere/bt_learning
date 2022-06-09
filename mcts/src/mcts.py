@@ -20,6 +20,8 @@ import rospy
 import time
 import pickle
 
+from bt_to_torch_data import *
+
 do_prints = False
 
 def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config, shortcut_words, generate_data = False, data_gen_file_path = None): #shortcut_words=[] ):
@@ -94,6 +96,8 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
     ################################
     # Main loop
     for iter in range(max_iterations):
+
+        skip_rollout = False # Gets set to True if network_out if above confidence threshold
 
         if rospy.is_shutdown(): 
             # Return solution before closing
@@ -289,112 +293,118 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
 
 
         if use_network:
-            # call network
-            # network_out
-            # if network_out > confidence_threshold:
-                #
-            pass
-
-        ################################
-        # Rollout
-        # print("MCTS rollout " + str(iter))
-        #rollout_sequence = rollout(subsequence=current.sequence, action_set=action_set, budget=budget)
-        #rollout_reward = reward(action_sequence=rollout_sequence
-        rollout_word = rollout(partial_word=current.sequence[-1], cfg=cfg, budget=budget)
-        
-        #print('rollout_word')
-        #rollout_word.printWord()
-        # print("MCTS reward " + str(iter))
-        is_valid, rollout_reward, best_rollout_reward, rollout_active_words, active_subtree_indices = reward(word = rollout_word, max_iterations=max_sim_iterations, underwater_simulator=underwater_simulator, min_reward = min_reward, max_reward = max_reward)
-
-        if do_prints:
-            print("rollout_word")
-            rollout_word.printWord()
-
-        # if len(rollout_word.toString()) == 0:
-        #     input('why')
-
-
-        ## TERMINAL DATA GENERATION (initial data, less info for pruning)
-        if generate_data and get_terminal_data:
-
-            # pickle method
-            pickle_example_list = [iter,rollout_reward, rollout_word]
-            pickle.dump(pickle_example_list, open(pickle_path,'a+'))
-
-        if do_prints:
-            print("rollout_active_words")
-            for rollout_active_word in rollout_active_words:
-                rollout_active_word.printWord()
-
-        # if not is_valid:
-        #     print('invalid rollout from ' + current.sequence[-1].toString())
-        #     print('to ' + rollout_word.toString())
-
-        if best_reward_word == None or best_reward < rollout_reward:
-            best_reward = rollout_reward
-            best_reward_word = rollout_word
-            best_rollout_node = current
-
-        best_rewards.append(best_reward) # whether same or different
-        rollout_rewards.append(rollout_reward)
-
-        avg_rollout = float(avg_rollout*len(avg_rollout_rewards)+rollout_reward) / float(len(avg_rollout_rewards) + 1)
-        # avg_rollout_rewards.append(sum(rollout_rewards)/len(rollout_rewards))
-        avg_rollout_rewards.append(avg_rollout)
-
-        ################################
-        # Print intermediate results
-        
-        # If iteration is multiple of 100
-        # if iter != 0 and not iter%plot_intermediate_results_iterations: # Check with Graeme
-        #if True:
-        if do_prints:
-            print("Average rollout reward: " + str(avg_rollout_rewards[-1]))
-            print("Best reward: " + str(best_reward))
-            best_reward_word.printWord()
-            print("Num duplicates: " + str(count_duplicates) + "; num nodes: " + str(len(list_of_all_nodes)))
+            # Convert bt word to torch Data object
+            current_word_torch = convertBTWord2TorchDataObject(current_word)
+            # Call network
+            # network_out = model(current_word_torch.x,current_word_torch.edge_index, batch)
+            if network_out > high_confidence_threshold:
+                # Skip rollout/simulation because you are confident enough already
+                skip_rollout = True
+    
+            # Else: Continue and do rollout/simulation as "usual", skip_rollout remains False
             
-        if plot_intermediate_results:   
-            # If iteration is multiple of 1000
-            if iter != 0 and not iter%plot_intermediate_results_iterations: #changed to 100 for testing - was 1000
-                print('Plotting results')
-                if first_plot:
-                    first_plot = False
 
-                    line1, = ax.plot(range(iter+1),best_rewards,label = 'best reward') #plot
-                    #avg_rollout_rewards = rollout_rewards
-                    line2, = ax.plot(range(iter+1),avg_rollout_rewards,label = 'average reward')
-                    plt.xlabel('MCTS Iterations')
-                    plt.ylabel('Score')
-                    # fig_text = fig.text(0.5, 0.9, best_reward_word.toString(), ha='center')
-                    title_string = ""
-                    if best_rollout_node:
-                        if best_rollout_node.best_rollout_active_words:
-                            title_string = best_rollout_node.best_rollout_active_words[0].toString()
-                    fig_text = fig.text(0.5, 0.9, title_string, ha='center',wrap=True)
+        if not skip_rollout:
+            ################################
+            # Rollout
+            # print("MCTS rollout " + str(iter))
+            #rollout_sequence = rollout(subsequence=current.sequence, action_set=action_set, budget=budget)
+            #rollout_reward = reward(action_sequence=rollout_sequence
+            rollout_word = rollout(partial_word=current.sequence[-1], cfg=cfg, budget=budget)
+            
+            #print('rollout_word')
+            #rollout_word.printWord()
+            # print("MCTS reward " + str(iter))
+            is_valid, rollout_reward, best_rollout_reward, rollout_active_words, active_subtree_indices = reward(word = rollout_word, max_iterations=max_sim_iterations, underwater_simulator=underwater_simulator, min_reward = min_reward, max_reward = max_reward)
 
-                    
-                    plt.legend(loc='best')
-                    plt.show(block=False)
-                    # plt.ion()
-                else:
-                    line1.set_xdata(range(iter+1))
-                    line2.set_xdata(range(iter+1))
-                    line1.set_ydata(best_rewards)
-                    line2.set_ydata(avg_rollout_rewards)
-                    plt.xlim(0,iter+1)
-                    plt.ylim(0,best_rewards[-1]*1.1)
-                    title_string = ""
-                    if best_rollout_node:
-                        if best_rollout_node.best_rollout_active_words:
-                            title_string = best_rollout_node.best_rollout_active_words[0].toString()
-                    fig_text.set_text(title_string)
+            if do_prints:
+                print("rollout_word")
+                rollout_word.printWord()
 
-                    fig.canvas.draw()
-                    fig.canvas.flush_events()
-               
-                #plt.pause(0.001)
+            # if len(rollout_word.toString()) == 0:
+            #     input('why')
+
+
+            ## TERMINAL DATA GENERATION (initial data, less info for pruning)
+            if generate_data and get_terminal_data:
+
+                # pickle method
+                pickle_example_list = [iter,rollout_reward, rollout_word]
+                pickle.dump(pickle_example_list, open(pickle_path,'a+'))
+
+            if do_prints:
+                print("rollout_active_words")
+                for rollout_active_word in rollout_active_words:
+                    rollout_active_word.printWord()
+
+            # if not is_valid:
+            #     print('invalid rollout from ' + current.sequence[-1].toString())
+            #     print('to ' + rollout_word.toString())
+
+            if best_reward_word == None or best_reward < rollout_reward:
+                best_reward = rollout_reward
+                best_reward_word = rollout_word
+                best_rollout_node = current
+
+            best_rewards.append(best_reward) # whether same or different
+            rollout_rewards.append(rollout_reward)
+
+            avg_rollout = float(avg_rollout*len(avg_rollout_rewards)+rollout_reward) / float(len(avg_rollout_rewards) + 1)
+            # avg_rollout_rewards.append(sum(rollout_rewards)/len(rollout_rewards))
+            avg_rollout_rewards.append(avg_rollout)
+
+            ################################
+            # Print intermediate results
+            
+            # If iteration is multiple of 100
+            # if iter != 0 and not iter%plot_intermediate_results_iterations: # Check with Graeme
+            #if True:
+            if do_prints:
+                print("Average rollout reward: " + str(avg_rollout_rewards[-1]))
+                print("Best reward: " + str(best_reward))
+                best_reward_word.printWord()
+                print("Num duplicates: " + str(count_duplicates) + "; num nodes: " + str(len(list_of_all_nodes)))
+                
+            if plot_intermediate_results:   
+                # If iteration is multiple of 1000
+                if iter != 0 and not iter%plot_intermediate_results_iterations: #changed to 100 for testing - was 1000
+                    print('Plotting results')
+                    if first_plot:
+                        first_plot = False
+
+                        line1, = ax.plot(range(iter+1),best_rewards,label = 'best reward') #plot
+                        #avg_rollout_rewards = rollout_rewards
+                        line2, = ax.plot(range(iter+1),avg_rollout_rewards,label = 'average reward')
+                        plt.xlabel('MCTS Iterations')
+                        plt.ylabel('Score')
+                        # fig_text = fig.text(0.5, 0.9, best_reward_word.toString(), ha='center')
+                        title_string = ""
+                        if best_rollout_node:
+                            if best_rollout_node.best_rollout_active_words:
+                                title_string = best_rollout_node.best_rollout_active_words[0].toString()
+                        fig_text = fig.text(0.5, 0.9, title_string, ha='center',wrap=True)
+
+                        
+                        plt.legend(loc='best')
+                        plt.show(block=False)
+                        # plt.ion()
+                    else:
+                        line1.set_xdata(range(iter+1))
+                        line2.set_xdata(range(iter+1))
+                        line1.set_ydata(best_rewards)
+                        line2.set_ydata(avg_rollout_rewards)
+                        plt.xlim(0,iter+1)
+                        plt.ylim(0,best_rewards[-1]*1.1)
+                        title_string = ""
+                        if best_rollout_node:
+                            if best_rollout_node.best_rollout_active_words:
+                                title_string = best_rollout_node.best_rollout_active_words[0].toString()
+                        fig_text.set_text(title_string)
+
+                        fig.canvas.draw()
+                        fig.canvas.flush_events()
+                   
+                    #plt.pause(0.001)
         
 
         ################################
@@ -422,6 +432,11 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     
                     # Update the average
                     if is_valid:
+                        if skip_rollout:
+                            update_reward = network_out
+                        else: # usual way
+                            n
+
                         parent.updateAverage(rollout_reward, iter)
                         parent.updateBestRollout(rollout_word, rollout_active_words, rollout_reward)
                     else:

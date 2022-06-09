@@ -52,7 +52,7 @@ def run():
     # Create CFG object
     cfg = CFG()
 
-    input('waitttt')
+    #input('waitttt')
 
     '''
     # Setup the problem

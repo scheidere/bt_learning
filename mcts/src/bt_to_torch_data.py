@@ -20,6 +20,79 @@ import numpy as np
 
 #         #super()
 
+def convertBTWord2TorchDataObject(word):
+
+    # Takes in word (nonterminal)
+    word_labels, word_labels_with_parens = self.getWordCharlabels(word)
+    x = getNodeFeatureMatrixNT(word_labels, word_labels_with_parens)
+    edge_index = getEdgeIndexMatrixNT(word_labels, word_labels_with_parens)
+    torch_data = Data(x=x, edge_index=edge_index)
+
+    return torch_data
+
+def getNodeFeatureMatrixNT(self, word_labels, word_labels_with_parens):
+        # Input is two lists, one with just labels of nodes (terminal and nonterminal)
+        # the second is the same but with parenthesis to denote children/parental connections
+
+        # Output is one-hot of shape [num_nodes, num_node_features] but as a tensor
+        # Note num_node_features translates to number of unqiue node labels
+
+        # Count total nodes in bt
+        num_nodes = len(word_labels)
+
+        # Count unique node labels
+        num_node_features = len(self.unique_node_labels) # should be 112 for noterminal data
+
+        # Init array with zeros
+        x_arr = np.zeros((num_nodes,num_node_features))
+
+        # Now create one-hot encoding
+        for i in range(num_nodes):
+            label = word_labels[i]
+            label_idx = self.unique_node_labels.index(label)
+            #print(label, label_idx)
+            x_arr[i][label_idx] = 1
+
+        x = torch.tensor(x_arr,dtype=torch.float)
+
+        if self.test:
+            print(self.unique_node_labels, len(self.unique_node_labels))
+            print('x_arr',x_arr,x_arr.shape)
+            print('x',x, x.shape)
+
+        #print(x)
+
+        return x
+
+def getEdgeIndexMatrixNT(self, word_labels, word_labels_with_parens):
+        # Input is a list of chars in given bt word, with parenthesis denoting relations
+        # Output is a matrix of shape [2,2*num_edges] but as a long tensor
+        # Note it is 2*num_edges not just num_edges because it requires bidirectional edge definitions
+
+        # A BT with n nodes has n-1 edges
+        num_edges = len(word_labels) - 1
+
+        # Init array with zeros
+        ei_lst = []
+
+        # Create temporary, pseudo nonterminal/terminal BT nodes for tracking child/parent connections
+        root, nodes = self.createTempBT(word_labels, word_labels_with_parens)
+
+        # Add edge information
+        for node in nodes:
+            node_idx = nodes.index(node)
+            if node.children: # Look at control flow nodes only
+                for child_node in node.children:
+                    child_idx = nodes.index(child_node)
+                    # Count each edge twice
+                    ei_lst.append([node_idx,child_idx]), ei_lst.append([child_idx, node_idx])
+
+        ei_arr = np.array(ei_lst).T
+
+        edge_index = torch.tensor(ei_arr,dtype=torch.long)
+
+        return edge_index
+
 
 class BT2TorchConversion:
     def __init__(self, pickle_path,file, is_terminal_data,nonterminal_char_words):
