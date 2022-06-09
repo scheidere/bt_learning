@@ -26,7 +26,7 @@ class BT2TorchConversion:
 
         self.is_terminal_data = is_terminal_data
         self.final_pickle_path = pickle_path + file + 'torch.p' # Match initial output file name to final output file name, plus 'torch'
-        self.test = True
+        self.test = False
         self.bt_word_data = self.getUnprocessBTData(pickle_path + file + '.p')
         self.nonterminal_char_words = nonterminal_char_words
         self.unique_node_labels = self.getAllUniqueNodeLabels()
@@ -45,7 +45,8 @@ class BT2TorchConversion:
                 word_labels, word_labels_with_parens = self.getWordCharlabels(word)
                 x = self.getNodeFeatureMatrixNONTERMINAL(word_labels, word_labels_with_parens)
                 edge_index = self.getEdgeIndexMatrixNONTERMINAL(word_labels, word_labels_with_parens)
-                self.createTempBT(word_labels, word_labels_with_parens)
+                print(edge_index)
+                #self.createTempBT(word_labels, word_labels_with_parens)
         else:
             self.run()
 
@@ -53,21 +54,41 @@ class BT2TorchConversion:
 
         with open(self.final_pickle_path, 'ab') as f:
 
-            # Walk through unprocessed data, example = [iteration, reward, bt_word]
-            for example in self.bt_word_data:
+            if self.is_terminal_data:
 
-                bt_word = example[-1]
-                bt = self.word2BT(bt_word)
-                edge_index = self.getEdgeIndexMatrix(bt) # Tensor, dtype long
-                x = self.getNodeFeatureMatrix(bt) # Tensor, dtype float
-                torch_data = Data(x=x, edge_index=edge_index)
+                # Walk through unprocessed data, example = [iteration, reward, bt_word]
+                for example in self.bt_word_data:
 
-                # Set y value equal to reward in example
-                reward = example[1]
-                torch_data.y = reward
+                    bt_word = example[-1]
+                    bt = self.word2BT(bt_word)
+                    edge_index = self.getEdgeIndexMatrix(bt) # Tensor, dtype long
+                    x = self.getNodeFeatureMatrix(bt) # Tensor, dtype float
+                    torch_data = Data(x=x, edge_index=edge_index)
 
-                # Write Data objects to new pickle file
-                pickle.dump(torch_data, f)
+                    # Set y value equal to reward in example
+                    reward = example[1]
+                    torch_data.y = reward
+
+                    # Write Data objects to new pickle file
+                    pickle.dump(torch_data, f)
+
+            else: # NON TERMINAL DATA :)
+
+                # Walk through unprocessed data, example = [iteration, reward, bt_word]
+                for example in self.bt_word_data:
+
+                    word = example[0] # NONTERMINAL INPUT DATA: [nonterminal bt word, reward]
+                    word_labels, word_labels_with_parens = self.getWordCharlabels(word)
+                    x = self.getNodeFeatureMatrixNONTERMINAL(word_labels, word_labels_with_parens)
+                    edge_index = self.getEdgeIndexMatrixNONTERMINAL(word_labels, word_labels_with_parens)
+                    torch_data = Data(x=x, edge_index=edge_index)
+
+                    # Set y value equal to reward in example
+                    reward = example[1]
+                    torch_data.y = reward
+
+                    # Write Data objects to new pickle file
+                    pickle.dump(torch_data, f)
 
     def getWordCharlabels(self, word):
 
@@ -77,7 +98,7 @@ class BT2TorchConversion:
         labels_with_parentheses = []
         for char in word.list:
             char_string = char.toString()
-            if len(char_string) > 1 and char_string[0] == '(' or char_string[0] == '[':
+            if len(char_string) > 1 and char_string[0] == '(' or char_string[0] == '[' or char_string[0] == '<':
                 # sequence, [action_string], (condition_string) for e.g.
                 # we want to remove the brackets within the string
                 char_string = char_string[1:-1]
@@ -189,7 +210,7 @@ class BT2TorchConversion:
         for i in range(num_nodes):
             label = word_labels[i]
             label_idx = self.unique_node_labels.index(label)
-            print(label, label_idx)
+            #print(label, label_idx)
             x_arr[i][label_idx] = 1
 
         x = torch.tensor(x_arr,dtype=torch.float)
@@ -258,63 +279,29 @@ class BT2TorchConversion:
         # Init array with zeros
         ei_lst = []
 
-        # Add edge information
-        # for i in range(len(word_labels)):
-        #     node_label = word_labels[i]
-        #     node_idx = word_labels.index(node_label)
-        #     print(node_idx)
-
-        num_found = 0
-        potential_child_idx = None
-        for i in range(len(word_labels_with_parens)-1):
-            # if potential_child_idx:
-            #     i = potential_child_idx
-            char_string = word_labels_with_parens[i]
-            next_char_string = word_labels_with_parens[i+1]
-            print(char_string,next_char_string)
-            if char_string in word_labels: # excludes '(' and ')'
-                node_idx = word_labels.index(char_string)
-                print(node_idx)
-                if next_char_string == '(': # found parent
-                    print('is_parent')
-                    idx_of_next = word_labels_with_parens.index(next_char_string)
-                    potential_child_idx = i+2
-                    potential_child = word_labels_with_parens[potential_child_idx]
-                    count_children = 0
-                    while potential_child != ')':
-                        count_children+=1
-                        potential_child_idx += 1
-                        potential_child = word_labels_with_parens[potential_child_idx]
-                    num_found+= count_children
-        print(num_found)
-
-
+        # Create temporary, pseudo nonterminal/terminal BT nodes for tracking child/parent connections
+        root, nodes = self.createTempBT(word_labels, word_labels_with_parens)
 
         # Add edge information
-        # for char_string in word_labels:
-        #     node_idx = word_labels.index(char_string)
-        #     if node.children: # Look at control flow nodes only
-        #         for child_node in node.children:
-        #             child_idx = bt.nodes.index(child_node)
-        #             # Count each edge twice
-        #             ei_lst.append([node_idx,child_idx]), ei_lst.append([child_idx, node_idx])
-
+        for node in nodes:
+            node_idx = nodes.index(node)
+            if node.children: # Look at control flow nodes only
+                for child_node in node.children:
+                    child_idx = nodes.index(child_node)
+                    # Count each edge twice
+                    ei_lst.append([node_idx,child_idx]), ei_lst.append([child_idx, node_idx])
 
         ei_arr = np.array(ei_lst).T
 
         edge_index = torch.tensor(ei_arr,dtype=torch.long)
-        # if self.test:
-        #     for i in range(len(bt.nodes)):
-        #         node = bt.nodes[i]
-        #         print(i, node.label)
-        #     print("Need to print children to see which are children of which...")
-        #     print(edge_index, edge_index.shape)
+
         return edge_index
 
     def createTempBT(self, word_labels, word_labels_with_parens):        
     
         nodes_worklist = []
         root = None
+        all_nodes = []
         
         for i in range(len(word_labels_with_parens)-1):
 
@@ -325,6 +312,9 @@ class BT2TorchConversion:
 
             node = TempNode(char_label,children=[])
             # print('new node', node, node.label, node.children)
+
+            if char_label != '(' and char_label != ')':
+                all_nodes.append(node)
 
             # Check if it is the root node, and if so add to list
             if root == None:
@@ -365,18 +355,19 @@ class BT2TorchConversion:
                 # print('children', child_labels)
                 # test = input('wait')
 
-        print("+++++++++++++++++++++++++++++")
-        # print('UMMM',root, root.children)
+        # print("+++++++++++++++++++++++++++++")
+        # print('root', root.label)
+        # print('root.children', root.printChildLabels())
         # for child in root.children:
-        #     print(child.label)
-        #     print(child.children)
-        #     for c in child.children:
-        #         print(c.label)
-        print('root', root.label)
-        print('root.children', root.printChildLabels())
-        for child in root.children:
-            print('child', child.label)
-            print('child.children', child.printChildLabels())
+        #     print('child', child.label)
+        #     child.printChildLabels()
+
+        # print('===========================')
+        # print('all_nodes', all_nodes)
+        # for node in all_nodes:
+        #     print(node.label),node.printChildLabels()
+
+        return root, all_nodes
 
 
 class TempNode:
@@ -396,7 +387,7 @@ class TempNode:
         child_labels = []
         for child in self.children:
             child_labels.append(child.label)
-        # print('children', child_labels)
+        print('children', child_labels)
         return child_labels
 
 def test(pickle_path):
@@ -432,6 +423,7 @@ if __name__ == '__main__':
     # #file = "2examples1654332707545"
     # file = '10000examples1654535066918'
     # is_terminal_data = True
+    # nonterminal_chars = []
 
     #NONTERMINAL
     pickle_path = "/home/scheidee/Desktop/neural_mcdags_output/DATA/"
