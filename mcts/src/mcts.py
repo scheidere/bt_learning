@@ -21,10 +21,11 @@ import time
 import pickle
 
 from bt_to_torch_data import *
+from graph_neural_net import *
 
 do_prints = False
 
-def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config, shortcut_words, generate_data = False, data_gen_file_path = None): #shortcut_words=[] ):
+def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config, shortcut_words, generate_data = False, data_gen_file_path = None, use_network = False): #shortcut_words=[] ):
 
     # Neural net data generation
     get_terminal_data = False # False if we want nonterminal data for pruning!
@@ -34,8 +35,10 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
 
 
     # Neural net stuff
-    high_confidence_threshold = 0.9
-    low_confidence_threshold = 0.3
+    if use_network:
+        high_confidence_threshold = 0.9
+        low_confidence_threshold = 0.3
+        model, converter = getModel() # from graph_neural_net.py
 
 
     ################################
@@ -293,13 +296,13 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
 
 
         if use_network:
-            # Convert bt word to torch Data object
-            current_word_torch = convertBTWord2TorchDataObject(current_word)
-            # Call network
-            # network_out = model(current_word_torch.x,current_word_torch.edge_index, batch)
-            if network_out > high_confidence_threshold:
+
+            prediction = getPrediction(model,nonterminal_bt_word, converter)
+
+            if prediction > high_confidence_threshold:
                 # Skip rollout/simulation because you are confident enough already
                 skip_rollout = True
+                rollout_reward = prediction # so the code below uses the network prediction to update averages
     
             # Else: Continue and do rollout/simulation as "usual", skip_rollout remains False
             
@@ -432,11 +435,6 @@ def mcts( cfg, budget, max_iterations, exploration_exploitation_parameter, max_s
                     
                     # Update the average
                     if is_valid:
-                        if skip_rollout:
-                            update_reward = network_out
-                        else: # usual way
-                            n
-
                         parent.updateAverage(rollout_reward, iter)
                         parent.updateBestRollout(rollout_word, rollout_active_words, rollout_reward)
                     else:

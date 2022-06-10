@@ -20,78 +20,115 @@ import numpy as np
 
 #         #super()
 
-def convertBTWord2TorchDataObject(word):
+# def convertBTWord2TorchDataObject(word):
 
-    # Takes in word (nonterminal)
-    word_labels, word_labels_with_parens = self.getWordCharlabels(word)
-    x = getNodeFeatureMatrixNT(word_labels, word_labels_with_parens)
-    edge_index = getEdgeIndexMatrixNT(word_labels, word_labels_with_parens)
-    torch_data = Data(x=x, edge_index=edge_index)
+#     # Takes in word (nonterminal)
+#     word_labels, word_labels_with_parens = getWordCharlabels(word)
+#     x = getNodeFeatureMatrixNT(word_labels, word_labels_with_parens)
+#     edge_index = getEdgeIndexMatrixNT(word_labels, word_labels_with_parens)
+#     torch_data_obj = Data(x=x, edge_index=edge_index)
 
-    return torch_data
+#     return torch_data_obj
 
-def getNodeFeatureMatrixNT(self, word_labels, word_labels_with_parens):
-        # Input is two lists, one with just labels of nodes (terminal and nonterminal)
-        # the second is the same but with parenthesis to denote children/parental connections
+# def getWordCharlabels(word):
 
-        # Output is one-hot of shape [num_nodes, num_node_features] but as a tensor
-        # Note num_node_features translates to number of unqiue node labels
+#         # Get char labels, with and without parentheses
 
-        # Count total nodes in bt
-        num_nodes = len(word_labels)
+#         labels = []
+#         labels_with_parentheses = []
+#         for char in word.list:
+#             char_string = char.toString()
+#             if len(char_string) > 1 and char_string[0] == '(' or char_string[0] == '[' or char_string[0] == '<':
+#                 # sequence, [action_string], (condition_string) for e.g.
+#                 # we want to remove the brackets within the string
+#                 char_string = char_string[1:-1]
+#             if char_string != '(' and char_string != ')':
+#                 labels.append(char_string)
+#             labels_with_parentheses.append(char_string)
 
-        # Count unique node labels
-        num_node_features = len(self.unique_node_labels) # should be 112 for noterminal data
+#         #print(labels, labels_with_parentheses)
 
-        # Init array with zeros
-        x_arr = np.zeros((num_nodes,num_node_features))
+#         return labels, labels_with_parentheses
 
-        # Now create one-hot encoding
-        for i in range(num_nodes):
-            label = word_labels[i]
-            label_idx = self.unique_node_labels.index(label)
-            #print(label, label_idx)
-            x_arr[i][label_idx] = 1
+# def getNodeFeatureMatrixNT(word_labels, word_labels_with_parens):
+#         # Input is two lists, one with just labels of nodes (terminal and nonterminal)
+#         # the second is the same but with parenthesis to denote children/parental connections
 
-        x = torch.tensor(x_arr,dtype=torch.float)
+#         # Output is one-hot of shape [num_nodes, num_node_features] but as a tensor
+#         # Note num_node_features translates to number of unqiue node labels
 
-        if self.test:
-            print(self.unique_node_labels, len(self.unique_node_labels))
-            print('x_arr',x_arr,x_arr.shape)
-            print('x',x, x.shape)
+#         # Count total nodes in bt
+#         num_nodes = len(word_labels)
 
-        #print(x)
+#         # Count unique node labels
+#         num_node_features = len(self.unique_node_labels) # should be 112 for noterminal data
 
-        return x
+#         # Init array with zeros
+#         x_arr = np.zeros((num_nodes,num_node_features))
 
-def getEdgeIndexMatrixNT(self, word_labels, word_labels_with_parens):
-        # Input is a list of chars in given bt word, with parenthesis denoting relations
-        # Output is a matrix of shape [2,2*num_edges] but as a long tensor
-        # Note it is 2*num_edges not just num_edges because it requires bidirectional edge definitions
+#         # Now create one-hot encoding
+#         for i in range(num_nodes):
+#             label = word_labels[i]
+#             label_idx = self.unique_node_labels.index(label)
+#             #print(label, label_idx)
+#             x_arr[i][label_idx] = 1
 
-        # A BT with n nodes has n-1 edges
-        num_edges = len(word_labels) - 1
+#         x = torch.tensor(x_arr,dtype=torch.float)
 
-        # Init array with zeros
-        ei_lst = []
+#         if self.test:
+#             print(self.unique_node_labels, len(self.unique_node_labels))
+#             print('x_arr',x_arr,x_arr.shape)
+#             print('x',x, x.shape)
 
-        # Create temporary, pseudo nonterminal/terminal BT nodes for tracking child/parent connections
-        root, nodes = self.createTempBT(word_labels, word_labels_with_parens)
+#         #print(x)
 
-        # Add edge information
-        for node in nodes:
-            node_idx = nodes.index(node)
-            if node.children: # Look at control flow nodes only
-                for child_node in node.children:
-                    child_idx = nodes.index(child_node)
-                    # Count each edge twice
-                    ei_lst.append([node_idx,child_idx]), ei_lst.append([child_idx, node_idx])
+#         return x
 
-        ei_arr = np.array(ei_lst).T
+# def getAllUniqueNodeLabels():
 
-        edge_index = torch.tensor(ei_arr,dtype=torch.long)
+#         actions,conditions = getActionsConditions()
+#         control_flows = [Sequence().label,Fallback().label,NotDecorator().label]
+#         terminal_labels = actions + conditions + control_flows
 
-        return edge_index
+#         if self.is_terminal_data:
+#             actions,conditions = getActionsConditions()
+#             control_flows = [Sequence().label,Fallback().label,NotDecorator().label]
+#             return actions + conditions + control_flows
+
+#         else:
+#             nonterminal_char_labels = self.getNonTerminalCharLabels()
+#             control_flows = ['->',Fallback().label,NotDecorator().label]
+#             terminal_labels = actions + conditions + control_flows# with edit because arrow and '->' not equivalent
+#             return terminal_labels + nonterminal_char_labels
+
+# def getEdgeIndexMatrixNT(self, word_labels, word_labels_with_parens):
+#         # Input is a list of chars in given bt word, with parenthesis denoting relations
+#         # Output is a matrix of shape [2,2*num_edges] but as a long tensor
+#         # Note it is 2*num_edges not just num_edges because it requires bidirectional edge definitions
+
+#         # A BT with n nodes has n-1 edges
+#         num_edges = len(word_labels) - 1
+
+#         # Init array with zeros
+#         ei_lst = []
+
+#         # Create temporary, pseudo nonterminal/terminal BT nodes for tracking child/parent connections
+#         root, nodes = self.createTempBT(word_labels, word_labels_with_parens)
+
+#         # Add edge information
+#         for node in nodes:
+#             node_idx = nodes.index(node)
+#             if node.children: # Look at control flow nodes only
+#                 for child_node in node.children:
+#                     child_idx = nodes.index(child_node)
+#                     # Count each edge twice
+#                     ei_lst.append([node_idx,child_idx]), ei_lst.append([child_idx, node_idx])
+
+#         ei_arr = np.array(ei_lst).T
+
+#         edge_index = torch.tensor(ei_arr,dtype=torch.long)
+
+#         return edge_index
 
 
 class BT2TorchConversion:
@@ -103,6 +140,7 @@ class BT2TorchConversion:
         self.bt_word_data = self.getUnprocessBTData(pickle_path + file + '.p')
         self.nonterminal_char_words = nonterminal_char_words
         self.unique_node_labels = self.getAllUniqueNodeLabels()
+        self.convert_all = False # False if running with MCDAGS
 
         #print('hello',self.unique_node_labels, len(self.unique_node_labels))
 
@@ -120,8 +158,18 @@ class BT2TorchConversion:
                 edge_index = self.getEdgeIndexMatrixNONTERMINAL(word_labels, word_labels_with_parens)
                 print(edge_index)
                 #self.createTempBT(word_labels, word_labels_with_parens)
-        else:
-            self.run()
+        elif self.convert_all:
+            self.run()            
+
+    def convertBTWord2TorchDataObject(self, word):
+
+        # Takes in word (nonterminal)
+        word_labels, word_labels_with_parens = self.getWordCharlabels(word)
+        x = self.getNodeFeatureMatrixNONTERMINAL(word_labels, word_labels_with_parens)
+        edge_index = self.getEdgeIndexMatrixNONTERMINAL(word_labels, word_labels_with_parens)
+        torch_data_obj = Data(x=x, edge_index=edge_index)
+
+        return torch_data_obj
 
     def run(self):
 

@@ -17,6 +17,8 @@ from torch_geometric.nn import GCNConv
 from torch_geometric.nn import GENConv
 from torchmetrics import R2Score
 
+from bt_to_torch_data import *
+
 
 #To read the pre-processed data from file
 def getTorchData(new_path):
@@ -40,7 +42,7 @@ class GCN(torch.nn.Module):
         self.conv3 = GCNConv(hidden_channels, hidden_channels)
         self.lin = Linear(hidden_channels,1)
 
-    def forward(self, x, edge_index, batch=[]):
+    def forward(self, x, edge_index, batch):
         # 1. Obtain node embeddings 
         x = self.conv1(x, edge_index)
         x = x.relu()
@@ -49,13 +51,13 @@ class GCN(torch.nn.Module):
         x = self.conv3(x, edge_index)
 
         # 2. Readout layer
-        if batch:
-            x = global_max_pool(x, batch)  # [batch_size, hidden_channels]
+        x = global_max_pool(x, batch)  # [batch_size, hidden_channels]
         
         # 3. Apply a final classifier
 #         x = F.dropout(x, p=0.5, training=self.training)
         x = self.lin(x)
-#         x = F.softmax(x)
+        # x = F.softmax(x)
+        return torch.sigmoid(x)
         return x
 
 
@@ -83,13 +85,14 @@ class GEN(torch.nn.Module):
         # 3. Apply a final classifier
 #         x = F.dropout(x, p=0.5, training=self.training)
         x = self.lin(x)
-#         x = F.softmax(x)
+        # x = F.softmax(x)
+        #return torch.sigmoid(x) #to get between 0 and 1
         return x
 
 
 
 
-def train():
+def train(model, train_loader, optimizer, criterion):
     avg_loss = []
     avg_r2 = []
     model.train()
@@ -106,7 +109,7 @@ def train():
     return np.mean(avg_r2),np.mean(avg_loss)
 
 
-def val(loader):
+def val(loader, model, criterion):
     avg_loss = []
     avg_r2 = []
     model.eval()
@@ -130,6 +133,15 @@ def main_train():
     project_data = getTorchData(new_path)
 
 
+    # Normalize the y values (min is 0, max is 0.365)
+    # project_data = []
+    # for data in project_data:
+    #     print(data.y)
+    #     data.y = data.y/0.365
+
+
+    # wait = input('wait')
+
     #Train-Val-Test split
     train_size = int(0.7 * len(project_data))
     val_size = int(0.1*len(project_data))
@@ -140,10 +152,12 @@ def main_train():
 
 
     #Setting up data loaders
-    batch_size = 100
+    batch_size = 100 #50
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+
+    pickle.dump(test_loader, open('nonterminal_test_loader.p','wb'))
 
     #Model Setup
     if type_of_model == 'GEN':
@@ -151,30 +165,31 @@ def main_train():
     else:
         model = GCN(train_dataset,hidden_channels=8)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-    criterion = torch.nn.MSELoss()
+    #criterion = torch.nn.MSELoss()
+    criterion = torch.nn.L1Loss()
 
     #Training Loop
     start_time = time.time()
     r2_set = []
-    mse_set = []
+    loss_set = []
     val_r2_set = []
-    val_mse_set = []
+    val_loss_set = []
     num_epochs = 100
     for epoch in range(num_epochs):
-        r2,mse = train()
-        mse_set.append(mse)
+        r2,loss = train(model,train_loader,optimizer, criterion)
+        loss_set.append(loss)
         r2_set.append(r2)
-        r2_val,mse_val = val(val_loader)
-        val_mse_set.append(mse_val)
+        r2_val,loss_val = val(val_loader, model, criterion)
+        val_loss_set.append(loss_val)
         val_r2_set.append(r2_val)
     total_time = time.time() - start_time
     print("RUNTIME: --- %s seconds ---" % (total_time))
     print("RUNTIME: --- %s minutes ---" % str((total_time)/60.0))
     print("RUNTIME: --- %s hours ---" % str((total_time)/3600.0))
 
-    plot_performance(mse_set,val_mse_set,"MSE")
+    plot_performance(loss_set,val_loss_set,"Loss")
     plot_performance(r2_set,val_r2_set,"R2Score")
-    print(val(test_loader))
+    print(val(test_loader, model, criterion))
 
     # Print model's state_dict
     # print("Model's state_dict:")
@@ -204,12 +219,65 @@ def plot_performance(train_metric,val_metric,metric):
     plt.savefig(metric + '.png')
 
 
+def test(loader,model):
+
+    deltas = []
+    for i in range (2000):
+        data = loader.dataset[i]
+        if data.y == 0:
+            i+=1
+        else:
+            out = model(data.x, data.edge_index, data.batch)
+            pred = out.detach().numpy().item(0)
+            delta = abs(pred-data.y)
+            deltas.append(delta)
+            print(f"iter: {i} y: {data.y} pred: {pred} delta: {delta}")
+
+    print('avg delta: ', sum(deltas)/len(deltas))
+
+def test_with_zeros(loader, model):
+
+    deltas = []
+    for i in range (2000):
+        data = loader.dataset[i]
+
+        out = model(data.x, data.edge_index, data.batch)
+        pred = out.detach().numpy().item(0)
+        delta = abs(pred-data.y)
+        deltas.append(delta)
+        print(f"iter: {i} y: {data.y} pred: {pred} delta: {delta}")
+
+    print('avg delta: ', sum(deltas)/len(deltas))
+
+
 def main():
 
     # Get data
     new_path = 'nonterminal_data.p'
     project_data = getTorchData(new_path)
-    #data_loader = DataLoader(project_data, batch_size=1, shuffle=True)
+
+    # big = 0
+    # big_i = 0
+    # for i in range(len(project_data)):
+    #     if project_data[i].y > big:
+    #         big = project_data[i].y
+    #         big_i = i
+    #     # if project_data[i].y >= 0.2:
+    #     #     print(i)
+    #     #     break
+    # print(big, big_i)
+
+    #print(project_data[1056].y) #0.09
+    # 1058, 0.27
+
+    data_loader = DataLoader(project_data, batch_size=1, shuffle=True)
+
+    test_path = 'nonterminal_test_loader_batch100.p'
+    with open(test_path,'rb') as fr:
+        test_loader = pickle.load(fr)
+
+    print('test_loader',test_loader)
+    #wait = input('bla')
 
 
     # Load model from save
@@ -222,12 +290,88 @@ def main():
     # Input
     #single_bt_data = data_loader.batch
     #print(single_bt_data)
-    single_bt_data = project_data[0]
+    ##single_bt_data = project_data[1058] 
 
 
     # Eval a single Data object that represents nonterminal BT/avg reward
-    out = model(single_bt_data.x,single_bt_data.edge_index,None)
-    print(out)
+    ##out = model(single_bt_data.x,single_bt_data.edge_index,None)
+    ##print(out.data)
+
+    # deltas = []
+    # for i in range (10000):
+    #     data = data_loader.dataset[i]
+    #     if data.y == 0:
+    #         i+=1
+    #     else:
+    #         out = model(data.x, data.edge_index, data.batch)
+    #         pred = out.detach().numpy().item(0)
+    #         delta = abs(pred-data.y)
+    #         deltas.append(delta)
+    #         print(f"iter: {i} y: {data.y} pred: {pred} delta: {delta}")
+
+    # print('avg delta: ', sum(deltas)/len(deltas))
+
+    #test(test_loader, model)
+    test_with_zeros(test_loader, model)
+
+
+    # y val, index, out (not normalized input data)
+    # 0.09, 1056, 0.5134
+    # 0.27, 1058, 0.5455 # THIS IS CONCERNING, why is it above, even when reward is below (see line below)
+    # 0.365, 7273, 0.5239
+    # 0, 0, 0.4978
+
+# Functions for MCDAGS calls
+def getModel():
+
+    char_pickle_path = "/home/scheidee/Desktop/neural_mcdags_output/DATA/nonterminal1/nonterminal_char_words.p"
+    nonterminal_chars = getGrammarData(char_pickle_path)
+
+    pickle_path = "/home/scheidee/Desktop/neural_mcdags_output/DATA/nonterminal1/"
+    file = '10000examples1654670294773nonterminal_'
+    is_terminal_data = False
+    converter = BT2TorchConversion(pickle_path,file,is_terminal_data, nonterminal_chars)
+
+    new_path = 'nonterminal_data.p'
+    project_data = getTorchData(new_path)
+
+    model = GEN(project_data,hidden_channels=8)
+    model.load_state_dict(torch.load('saved_model_batch100.pth'))
+
+    # Set to eval mode
+    model.eval()
+
+    return model, converter
+
+def getPrediction(model,nonterminal_bt_word, converter):
+
+    torch_data_obj = converter.convertBTWord2TorchDataObject(nonterminal_bt_word)
+    print('torch', torch_data_obj)
+
+    return model(torch_data_obj.x, torch_data_obj.edge_index, None).item()
+
+
+def MCDAGS_example():
+
+    new_path = '/home/scheidee/Desktop/neural_mcdags_output/DATA/nonterminal1/10000examples1654670294773nonterminal_.p'
+
+    data = []
+    with open(new_path,'rb') as fr:
+        try:
+            while True:
+                data.append(pickle.load(fr))
+        except EOFError:
+                pass
+
+    # data is not torch yet
+    word = data[0][0]
+    print('word', word)
+    print('reward', data[0][1])
+
+    model, converter = getModel()
+    print(model, converter)
+
+    print(getPrediction(model,word,converter))
 
 
 
@@ -235,5 +379,6 @@ if __name__ == "__main__":
 
     #main_train()
 
-    main()
+    #main()
 
+    MCDAGS_example()

@@ -34,4 +34,6 @@ num_rounds: 10
 iterations_per_round: 1000 # Number of examples generated
 consecutive_initial_rounds: 100 # Irrelevant for methods without simulated annealing
 
+use_network: False
+
 

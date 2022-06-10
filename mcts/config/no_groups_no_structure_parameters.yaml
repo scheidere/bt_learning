@@ -35,3 +35,4 @@ consecutive_initial_rounds: 10
 
 # Neural net
 generate_data: False
+use_network: False

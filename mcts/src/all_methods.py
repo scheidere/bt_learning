@@ -39,6 +39,7 @@ class AllMethods():
         self.best_reward_per_round_list = []
 
         self.generate_data = config['generate_data']
+        self.use_network = True
 
         self.do_prints = False
 
@@ -65,6 +66,10 @@ class AllMethods():
             num_examples = self.num_rounds*self.iterations_per_round
             data_gen_path = "/home/scheidee/Desktop/neural_mcdags_output/DATA/" + str(num_examples) + "examples" + str(start_time)
             # d = open(data_gen_path + ".txt" ,"w+")
+
+        self.use_network = True
+        if self.use_network:
+
 
         config_filename = rospy.get_param('~config')
         garbage_string = "_parameters.yaml"
@@ -112,7 +117,7 @@ class AllMethods():
                 shortcut_words_copy = copy.deepcopy(shortcut_words)
                 if not self.generate_data:
                     data_gen_path = None # This is irrelevant if not generating data, duh
-                [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict, best_reward] = mcts( cfg_copy, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config, shortcut_words_copy, generate_data = self.generate_data, data_gen_file_path = data_gen_path)
+                [solution, best_rollout, root, list_of_all_nodes, winner, best_rollout_node, best_nodes_dict, best_reward] = mcts( cfg_copy, budget, max_mcts_iterations, exploration_exploitation_parameter, max_sim_iterations, underwater_simulator, use_dag, config, shortcut_words_copy, generate_data = self.generate_data, data_gen_file_path = data_gen_path, use_network=self.use_network)
                 
 
                 # # Write example: tree word, reward int to data file, d
