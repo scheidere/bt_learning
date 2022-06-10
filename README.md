@@ -22,6 +22,10 @@ roslaunch mcts all_methods.launch config:=final
 ```
 roslaunch mcts all_methods.launch config:=no_sa
 ```
+### To run MCDAGS with the behavior tree value network (this still needs testing due to PyTorch/Python2/ROS issues...):
+```
+roslaunch mcts all_methods.launch config:=no_sa_yes_network
+```
 ### To plot results, go to plot_results.py in the mcts package:
 - Ensure the paths in plot_results.py match the final and intermediate output file folder paths on your system
 - To plot MCDAGS (no_sa) results:
