@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 '''
 Behavior Tree Reward Return 
@@ -14,9 +14,9 @@ import yaml
 from std_msgs.msg import String
 
 from cfg import Word, Character, createWord
-from robot import Robot, RobotController, TargetBelief
-from world import World
-from sensor_model import SensorModel
+from simulator.robot import Robot, RobotController, TargetBelief
+from simulator.world import World
+from simulator.sensor_model import SensorModel
 
 import random
 import copy

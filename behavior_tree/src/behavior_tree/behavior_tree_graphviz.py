@@ -5,9 +5,11 @@ import sys
 import behavior_tree as bt
 import os
 
+from importlib import reload
+
 import sys
 reload(sys)  
-sys.setdefaultencoding('utf8')
+#sys.setdefaultencoding('utf8') # not relevant in python 3?
 
 
 def get_graphviz(tree):

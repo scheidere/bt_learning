@@ -8,7 +8,8 @@ import random
 import numpy as np
 import copy
 
-import cPickle as pickle
+#import cPickle as pickle
+import pickle # No cPickle for python3
 #from simulator.srv import PickleString
 from geometry_msgs.msg import Point
 
@@ -18,8 +19,8 @@ from geometry_msgs.msg import Point
 
 import matplotlib.pyplot as plt
 
-from sensor_model import SensorModel
-from distance import distance
+from simulator.sensor_model import SensorModel
+from simulator.distance import distance
 
 '''
 moved to separate file

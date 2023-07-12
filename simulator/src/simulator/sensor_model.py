@@ -1,5 +1,5 @@
 
-from distance import distance
+from simulator.distance import distance
 import numpy as np
 
 class SensorModel():

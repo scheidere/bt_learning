@@ -14,21 +14,21 @@ from geometry_msgs.msg import Point
 
 import matplotlib.pyplot as plt
 
-import world
-from world import World
-from world import distance
+import simulator.world as world
+from simulator.world import World
+from simulator.world import distance
 
 
-from scorer import Scorer
+from simulator.scorer import Scorer
 
 import copy
 
-import planners
+import simulator.planners
 #import communication_planner
 
 import random
 
-from bt_interface import *
+from simulator.bt_interface import *
 from behavior_tree.behavior_tree import *
 from cfg import CFG, Word, Character, createWord
 
